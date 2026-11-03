@@ -45,12 +45,12 @@ export interface Destination {
 
 export const HOTEL_INFO = {
   name: {
-    en: "VVotel Kampong Cham Riverside Resort",
-    km: "វីវ៉ូថែល កំពង់ចាម រីសតមាត់ទន្លេ",
+    en: "VVotel Kampong Cham Riverside Hotel",
+    km: "សណ្ឋាគារ វីវ៉ូថែល កំពង់ចាម មាត់ទន្លេ",
   },
   tagline: {
-    en: "Luxury Riverside Sanctuary on the Legendary Mekong River",
-    km: "រមណីយដ្ឋានប្រណីតជាប់មាត់ទន្លេមេគង្គដ៏ស្រស់បំព្រងនៃខេត្តកំពង់ចាម",
+    en: "Luxury Riverside Hotel on the Legendary Mekong River",
+    km: "សណ្ឋាគារប្រណីតជាប់មាត់ទន្លេមេគង្គដ៏ស្រស់បំព្រងនៃខេត្តកំពង់ចាម",
   },
   address: {
     en: "Riverfront Road, Phum 3, Sangkat Veal Vong, Kampong Cham City, Kampong Cham Province, Cambodia",
@@ -848,7 +848,7 @@ export const DESTINATIONS: Destination[] = [
       km: "ហាងកាហ្វេដ៏ទាក់ទាញ បម្រើកាហ្វេលីងថ្មីៗពីតំបន់ភ្នំមណ្ឌលគិរី នំប៉័ងបែបបារាំង ទឹកផ្លែឈើច្របាច់ស្រស់ និងនំខេកឆ្ងាញ់ៗ។",
     },
     fullDescription: {
-      en: "When you crave a specialty flat white, iced coconut latte, or flaky butter croissant, Destiny Café is your haven. Complete with blazing-fast Wi-Fi, cozy reading corners, and sustainable organic ingredients, it is a favorite pitstop for digital nomads and resort guests alike. Takeaway picnic baskets for island excursions can be ordered here. Only 4 minutes walk from VVotel.",
+      en: "When you crave a specialty flat white, iced coconut latte, or flaky butter croissant, Destiny Café is your haven. Complete with blazing-fast Wi-Fi, cozy reading corners, and sustainable organic ingredients, it is a favorite pitstop for digital nomads and hotel guests alike. Takeaway picnic baskets for island excursions can be ordered here. Only 4 minutes walk from VVotel.",
       km: "នៅពេលដែលអ្នកចង់ក្រេបកាហ្វេឡាតេទឹកដូង ឬកាហ្វេទឹកដោះគោត្រជាក់ និងនំក្រូសង់ប៊័រស្រួយៗ ហាង Destiny Café គឺជាជម្រើសដ៏ល្អឥតខ្ចោះ។ បំពាក់ដោយ Wi-Fi ល្បឿនលឿន កន្លែងអានសៀវភៅ និងគ្រឿងផ្សំសរីរាង្គ។ ភ្ញៀវអាចកុម្ម៉ង់កន្ត្រកអាហារ Picnic យកទៅកោះប៉ែនបានផងដែរ។ ដើរត្រឹម ៤ នាទីពី VVotel។",
     },
     distanceFromHotel: {

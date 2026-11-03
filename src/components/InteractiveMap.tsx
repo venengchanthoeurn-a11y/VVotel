@@ -145,7 +145,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     setMapType(type);
   };
 
-  // Recenter on VVotel Resort
+  // Recenter on VVotel Hotel
   const recenterMap = () => {
     if (mapInstanceRef.current) {
       mapInstanceRef.current.flyTo([HOTEL_INFO.latitude, HOTEL_INFO.longitude], 13, {
@@ -265,7 +265,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             <p className="text-xs text-gray-300">
               {lang === "km"
                 ? "ចុចលើ Marker នីមួយៗដើម្បីមើលទិសដៅ និងទីតាំងពិតប្រាកដលើ Google Maps"
-                : "Real coordinates in Kampong Cham with live directions from VVotel Resort"}
+                : "Real coordinates in Kampong Cham with live directions from VVotel Hotel"}
             </p>
           </div>
         </div>
@@ -300,7 +300,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           <button
             onClick={recenterMap}
             className="p-2 bg-white/10 hover:bg-white/20 rounded-xl text-vvotel-gold transition border border-white/15"
-            title="Recenter on VVotel Resort"
+            title="Recenter on VVotel Hotel"
           >
             <LocateFixed className="w-4 h-4" />
           </button>
@@ -338,7 +338,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           onClick={recenterMap}
           className="shrink-0 px-3 py-1.5 rounded-lg bg-vvotel-navy text-vvotel-gold text-xs font-bold shadow-sm hover:opacity-90 flex items-center space-x-1"
         >
-          <span>⭐ VVotel Resort</span>
+          <span>⭐ VVotel Hotel</span>
         </button>
         {destinations.slice(0, 8).map((d) => (
           <button

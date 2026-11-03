@@ -165,7 +165,7 @@ export const RESORT_SERVICES: ResortService[] = [
       km: "ដំណើរកម្សាន្តតាមទូកឯកជន គយគន់ថ្ងៃលិចជាមួយសំប៉ាញ ឬពិកនិកលើកោះ",
     },
     description: {
-      en: "Board our private resort vessel directly from the VVotel jetty. Enjoy bespoke river journeys to Phnom Hanchey mountain temple, rural sandbar sandbanks, or a romantic twilight champagne cruise.",
+      en: "Board our private hotel vessel directly from the VVotel jetty. Enjoy bespoke river journeys to Phnom Hanchey mountain temple, rural sandbar sandbanks, or a romantic twilight champagne cruise.",
       km: "ឡើងជិះទូកឯកជនរបស់សណ្ឋាគារចេញពីផែ VVotel ផ្ទាល់។ រីករាយជាមួយដំណើរកម្សាន្តទៅកាន់ភ្នំហាន់ជ័យ ឆ្នេរខ្សាច់កោះកណ្តាលទន្លេ ឬការជិះទូកគយគន់ថ្ងៃលិចដ៏រ៉ូមែនទិក។",
     },
     features: [
@@ -190,7 +190,7 @@ export const ServicesSection: React.FC = () => {
           <div className="space-y-3 max-w-3xl">
             <div className="inline-flex items-center space-x-2 bg-sky-50 text-sky-800 border border-sky-200 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-4 h-4 text-sky-600" />
-              <span>{lang === "km" ? "សេវាកម្ម & បរិក្ខារប្រណីត" : "Resort Services & Experiences"}</span>
+              <span>{lang === "km" ? "សេវាកម្ម & បរិក្ខារប្រណីត" : "Hotel Services & Experiences"}</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-vvotel-navy tracking-tight">
               {lang === "km"

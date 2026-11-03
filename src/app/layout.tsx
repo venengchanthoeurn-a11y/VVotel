@@ -14,7 +14,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Destination Guide - VVotel Kampong Cham Cambodia",
   description:
-    "Discover Kampong Cham and its surroundings with VVotel Kampong Cham Riverside Resort. Explore Wat Nokor Bachey, Koh Pen Bamboo Bridge, Phnom Hanchey, Mekong sunset cruises, fine riverside dining, and rich cultural heritage.",
+    "Discover Kampong Cham and its surroundings with VVotel Kampong Cham Riverside Hotel. Explore Wat Nokor Bachey, Koh Pen Bamboo Bridge, Phnom Hanchey, Mekong sunset cruises, fine riverside dining, and rich cultural heritage.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   keywords: [
     "VVotel Kampong Cham",
     "Kampong Cham Hotel",
-    "Mekong Riverside Resort",
+    "Mekong Riverside Hotel",
     "Koh Pen Bamboo Bridge",
     "Wat Nokor Bachey",
     "Phnom Hanchey",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     description:
       "Explore Cambodia's Legendary Mekong Heartland with VVotel Kampong Cham. 20 Authentic local attractions, interactive map, and guided tours.",
     url: "https://vvotel-kampongcham.com/about-us/destination-guide/",
-    siteName: "VVotel Kampong Cham Resort",
+    siteName: "VVotel Kampong Cham Hotel",
     locale: "km_KH",
     type: "website",
   },

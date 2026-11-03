@@ -23,15 +23,15 @@ export const Footer: React.FC = () => {
                   VVOTEL
                 </span>
                 <span className="text-[10px] tracking-widest uppercase text-vvotel-gold -mt-1 block">
-                  KAMPONG CHAM RIVERSIDE RESORT
+                  KAMPONG CHAM RIVERSIDE HOTEL
                 </span>
               </div>
             </div>
 
             <p className="text-gray-400 text-xs leading-relaxed max-w-md">
               {lang === "km"
-                ? "រមណីយដ្ឋានប្រណីតលំដាប់ខ្ពស់ជាប់មាត់ទន្លេមេគង្គក្នុងក្រុងកំពង់ចាម ផ្តល់ជូននូវបន្ទប់ស្នាក់នៅដ៏មានផាសុកភាព ម្ហូបអាហារឆ្ងាញ់ពិសា និងមគ្គុទ្ទេសក៍ទេសចរណ៍រុករកវប្បធម៌ខ្មែរដ៏សម្បូរបែប។"
-                : "A luxurious riverfront sanctuary along the legendary Mekong in Kampong Cham. Enjoy world-class hospitality, panoramic river views, authentic gastronomy, and enriching cultural discovery tours."}
+                ? "សណ្ឋាគារប្រណីតលំដាប់ខ្ពស់ជាប់មាត់ទន្លេមេគង្គក្នុងក្រុងកំពង់ចាម ផ្តល់ជូននូវបន្ទប់ស្នាក់នៅដ៏មានផាសុកភាព ម្ហូបអាហារឆ្ងាញ់ពិសា និងមគ្គុទ្ទេសក៍ទេសចរណ៍រុករកវប្បធម៌ខ្មែរដ៏សម្បូរបែប។"
+                : "A luxurious riverfront hotel along the legendary Mekong in Kampong Cham. Enjoy world-class hospitality, panoramic river views, authentic gastronomy, and enriching cultural discovery tours."}
             </p>
 
             <div className="space-y-2 pt-2 text-gray-300">
@@ -131,7 +131,7 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-4">
           <div>
-            © {new Date().getFullYear()} VVotel Kampong Cham Holiday Resort. All Rights Reserved. Managed in accordance with Accor Brand Standards.
+            © {new Date().getFullYear()} VVotel Kampong Cham Riverside Hotel. All Rights Reserved. Managed in accordance with Accor Brand Standards.
           </div>
           <div className="flex items-center space-x-4">
             <span>Powered by Next.js & Redis Cache & CDN</span>

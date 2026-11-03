@@ -61,7 +61,7 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
                 {lang === "km" ? "វីវ៉ូថែល កំពង់ចាម" : "VVOTEL KAMPONG CHAM"}
               </div>
               <div className="text-[10px] text-vvotel-gold uppercase tracking-widest font-semibold">
-                Holiday Resort & Spa
+                Riverside Hotel & Spa
               </div>
             </div>
           </div>

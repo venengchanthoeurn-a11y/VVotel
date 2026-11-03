@@ -59,7 +59,7 @@ export const Header: React.FC = () => {
                     VVOTEL
                   </span>
                   <span className="text-[10px] font-bold tracking-widest uppercase text-vvotel-gold -mt-1">
-                    KAMPONG CHAM RESORT
+                    KAMPONG CHAM HOTEL
                   </span>
                 </div>
               </a>

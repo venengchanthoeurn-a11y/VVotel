@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       bookingReference: bookingRef,
-      hotel: "VVotel Kampong Cham Riverside Resort",
+      hotel: "VVotel Kampong Cham Riverside Hotel",
       roomType,
       nights,
       rooms: Number(rooms),

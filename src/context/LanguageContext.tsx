@@ -57,22 +57,22 @@ interface LanguageContextType {
 
 const translations: Record<string, Partial<Record<Language, string>>> = {
   "brandName": {
-    "km": "វីវ៉ូថែល កំពង់ចាម រីសតមាត់ទន្លេ",
-    "en": "VVotel Kampong Cham Riverside Resort",
-    "fr": "VVotel Kampong Cham Riverside Resort",
-    "de": "VVotel Kampong Cham Riverside Resort",
-    "es": "VVotel Kampong Cham Riverside Resort",
-    "pt": "VVotel Kampong Cham Riverside Resort",
-    "id": "VVotel Kampong Cham Riverside Resort",
-    "zh": "VVotel 磅湛湄公河畔度假酒店",
-    "it": "VVotel Kampong Cham Riverside Resort",
-    "nl": "VVotel Kampong Cham Riverside Resort",
-    "ja": "VVotel コンポンチャム・リバーサイドリゾート",
-    "ko": "VVotel 캄퐁참 리버사이드 리조트",
-    "ru": "VVotel Kampong Cham Riverside Resort",
-    "th": "วีโวเทล กัมปงจาม ริเวอร์ไซด์ รีสอร์ท",
-    "vi": "VVotel Kampong Cham Riverside Resort",
-    "ar": "منتجع فيفوتيل كامبونغ تشام النهري"
+    "km": "សណ្ឋាគារ វីវ៉ូថែល កំពង់ចាម មាត់ទន្លេ",
+    "en": "VVotel Kampong Cham Riverside Hotel",
+    "fr": "VVotel Kampong Cham Riverside Hôtel",
+    "de": "VVotel Kampong Cham Riverside Hotel",
+    "es": "VVotel Kampong Cham Riverside Hotel",
+    "pt": "VVotel Kampong Cham Riverside Hotel",
+    "id": "VVotel Kampong Cham Riverside Hotel",
+    "zh": "VVotel 磅湛湄公河畔酒店",
+    "it": "VVotel Kampong Cham Riverside Hotel",
+    "nl": "VVotel Kampong Cham Riverside Hotel",
+    "ja": "VVotel コンポンチャム・リバーサイドホテル",
+    "ko": "VVotel 캄퐁참 리버사이드 호텔",
+    "ru": "VVotel Kampong Cham Riverside Hotel",
+    "th": "วีโวเทล กัมปงจาม ริเวอร์ไซด์ โฮเทล",
+    "vi": "VVotel Kampong Cham Riverside Hotel",
+    "ar": "فندق فيفوتيل كامبونغ تشام النهري"
   },
   "brandShort": {
     "km": "វីវ៉ូថែល",

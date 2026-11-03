@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       bookingRef,
-      merchantName: "VVOTEL KAMPONG CHAM RESORT",
+      merchantName: "VVOTEL KAMPONG CHAM HOTEL",
       merchantCity: "KAMPONG CHAM",
       currency: "USD",
       amountUSD: amt.toFixed(2),

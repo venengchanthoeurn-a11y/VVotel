@@ -918,7 +918,7 @@ export const BookingBar: React.FC = () => {
                       }`}
                     >
                       <Building className="w-5 h-5 mx-auto mb-1 text-gray-700" />
-                      <span className="text-xs block font-bold">Pay at Resort</span>
+                      <span className="text-xs block font-bold">Pay at Hotel</span>
                       <span className="text-[10px] text-gray-500 block">Guarantee with Card</span>
                     </button>
                   </div>
@@ -1071,7 +1071,7 @@ export const BookingBar: React.FC = () => {
                         className="w-full bg-vvotel-navy hover:bg-vvotel-blue text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center space-x-2 shadow"
                       >
                         <Building className="w-4 h-4 text-vvotel-gold" />
-                        <span>{lang === "km" ? "បញ្ជាក់ការកក់ដោយទូទាត់ពេលមកដល់" : "Confirm Reservation (Pay at Resort)"}</span>
+                        <span>{lang === "km" ? "បញ្ជាក់ការកក់ដោយទូទាត់ពេលមកដល់" : "Confirm Reservation (Pay at Hotel)"}</span>
                       </button>
                     </div>
                   )}
