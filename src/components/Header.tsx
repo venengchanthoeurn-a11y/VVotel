@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { Menu, ChevronDown, Phone, Compass, BedDouble, Utensils, Sparkles, Calendar, Users } from "lucide-react";
+import { Menu, ChevronDown, Phone, Compass, BedDouble, Utensils, Sparkles, Calendar, Users, Download } from "lucide-react";
 import { MenuSidebar } from "@/components/MenuSidebar";
 
 export const Header: React.FC = () => {
@@ -55,11 +55,11 @@ export const Header: React.FC = () => {
                   V
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-extrabold text-2xl tracking-tighter text-vvotel-navy">
+                  <span className="font-extrabold text-2xl tracking-tighter text-vvotel-navy leading-none">
                     VVOTEL
                   </span>
-                  <span className="text-[10px] font-bold tracking-widest uppercase text-vvotel-gold -mt-1">
-                    KAMPONG CHAM HOTEL
+                  <span className="text-[10px] font-bold tracking-wider text-vvotel-gold mt-0.5">
+                    {lang === "km" ? "សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម" : "VATTANAC HOTEL • KAMPONG CHAM"}
                   </span>
                 </div>
               </a>
@@ -155,7 +155,20 @@ export const Header: React.FC = () => {
             </nav>
 
             {/* Right Quick Actions */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              {/* Install PWA Button (Visible on Mobile, Tablet & Desktop) */}
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("open-pwa-install"));
+                }}
+                className="flex items-center space-x-1.5 text-xs font-bold text-vvotel-navy bg-gradient-to-r from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 px-3 py-2 rounded-xl border border-vvotel-gold/50 shadow-sm transition active:scale-95 cursor-pointer"
+                title={lang === "km" ? "ដំឡើងកម្មវិធីលើទូរស័ព្ទ / iPad" : "Install VVotel App"}
+              >
+                <Download className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                <span className="text-[11px] font-extrabold">{lang === "km" ? "ដំឡើង App" : "Install App"}</span>
+              </button>
+
               <a
                 href="tel:+85542982999"
                 className="hidden sm:flex items-center space-x-2 text-xs font-bold text-vvotel-navy bg-amber-50/80 hover:bg-amber-100 px-3.5 py-2.5 rounded-xl border border-vvotel-gold/30 transition shadow-sm"
@@ -166,7 +179,7 @@ export const Header: React.FC = () => {
 
               <button
                 onClick={scrollToBooking}
-                className="bg-gradient-to-r from-vvotel-gold to-amber-600 hover:from-amber-400 hover:to-amber-700 text-white font-extrabold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition"
+                className="bg-gradient-to-r from-vvotel-gold to-amber-600 hover:from-amber-400 hover:to-amber-700 text-white font-extrabold text-xs uppercase tracking-wider px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg transition"
               >
                 {t("bookNow")}
               </button>

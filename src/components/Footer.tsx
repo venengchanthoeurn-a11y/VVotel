@@ -22,8 +22,8 @@ export const Footer: React.FC = () => {
                 <span className="font-extrabold text-xl tracking-tight text-white block">
                   VVOTEL
                 </span>
-                <span className="text-[10px] tracking-widest uppercase text-vvotel-gold -mt-1 block">
-                  KAMPONG CHAM RIVERSIDE HOTEL
+                <span className="text-[10px] tracking-wider uppercase text-vvotel-gold -mt-1 block">
+                  {lang === "km" ? "សណ្ឋាគារ វឌ្ឍនៈ (VVOTEL) កំពង់ចាម" : "VATTANAC HOTEL (VVOTEL) • KAMPONG CHAM"}
                 </span>
               </div>
             </div>

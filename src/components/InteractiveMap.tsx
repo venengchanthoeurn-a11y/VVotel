@@ -81,16 +81,16 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       });
 
       const hotelPopup = `
-        <div style="width: 250px; font-family: sans-serif; padding: 12px;">
-          <div style="font-size: 10px; font-weight: bold; color: #c5a059; text-transform: uppercase;">Our Hotel Location</div>
-          <div style="font-size: 14px; font-weight: bold; color: #0c2340; margin-top: 2px;">${HOTEL_INFO.name.en}</div>
-          <div style="font-size: 11px; color: #555; margin-top: 4px;">${HOTEL_INFO.address.en}</div>
+        <div style="width: 260px; font-family: sans-serif; padding: 12px;">
+          <div style="font-size: 10px; font-weight: bold; color: #c5a059; text-transform: uppercase;">${lang === "km" ? "ទីតាំងសណ្ឋាគារផ្លូវការ" : "Official Hotel Location"}</div>
+          <div style="font-size: 14px; font-weight: bold; color: #0c2340; margin-top: 2px;">${lang === "km" ? HOTEL_INFO.name.km : HOTEL_INFO.name.en}</div>
+          <div style="font-size: 11px; color: #555; margin-top: 4px; line-height: 1.4;">${lang === "km" ? HOTEL_INFO.address.km : HOTEL_INFO.address.en}</div>
           <div style="margin-top: 8px; font-size: 11px; font-weight: bold; color: #0c2340;">
             📞 ${HOTEL_INFO.phone}
           </div>
           <div style="margin-top: 10px;">
             <a href="https://www.google.com/maps/search/?api=1&query=${HOTEL_INFO.latitude},${HOTEL_INFO.longitude}" target="_blank" style="display: block; text-align: center; background: #0c2340; color: #c5a059; padding: 6px 0; border-radius: 6px; font-size: 11px; font-weight: bold; text-decoration: none;">
-              Open in Google Maps ➔
+              ${lang === "km" ? "បើកមើលក្នុង Google Maps ➔" : "Open in Google Maps ➔"}
             </a>
           </div>
         </div>
@@ -338,7 +338,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           onClick={recenterMap}
           className="shrink-0 px-3 py-1.5 rounded-lg bg-vvotel-navy text-vvotel-gold text-xs font-bold shadow-sm hover:opacity-90 flex items-center space-x-1"
         >
-          <span>⭐ VVotel Hotel</span>
+          <span>⭐ {lang === "km" ? "សណ្ឋាគារ វឌ្ឍនៈ (VVotel)" : "Vattanac Hotel (VVotel)"}</span>
         </button>
         {destinations.slice(0, 8).map((d) => (
           <button

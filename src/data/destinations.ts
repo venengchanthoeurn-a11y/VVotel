@@ -45,19 +45,19 @@ export interface Destination {
 
 export const HOTEL_INFO = {
   name: {
-    en: "VVotel Kampong Cham Riverside Hotel",
-    km: "សណ្ឋាគារ វីវ៉ូថែល កំពង់ចាម មាត់ទន្លេ",
+    en: "Vattanac Hotel (VVotel) Kampong Cham",
+    km: "សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម",
   },
   tagline: {
-    en: "Luxury Riverside Hotel on the Legendary Mekong River",
-    km: "សណ្ឋាគារប្រណីតជាប់មាត់ទន្លេមេគង្គដ៏ស្រស់បំព្រងនៃខេត្តកំពង់ចាម",
+    en: "Vattanac Hotel (VVotel) - Comfort & Hospitality in Kampong Cham",
+    km: "សណ្ឋាគារ វឌ្ឍនៈ (VVotel) ផាសុកភាព និងភាពកក់ក្តៅក្នុងក្រុងកំពង់ចាម",
   },
   address: {
-    en: "Riverfront Road, Phum 3, Sangkat Veal Vong, Kampong Cham City, Kampong Cham Province, Cambodia",
-    km: "ផ្លូវមាត់ទន្លេ, ភូមិ ៣, សង្កាត់វាលវង់, ក្រុងកំពង់ចាម, ខេត្តកំពង់ចាម, ប្រទេសកម្ពុជា",
+    en: "No. 2052, Preah Monivong St., Phum 7, 030402, Kampong Cham City, Cambodia",
+    km: "ផ្ទះលេខ ២០៥២, ផ្លូវព្រះមុនីវង្ស, ភូមិ ៧, ០៣០៤០២, ក្រុងកំពង់ចាម, ខេត្តកំពង់ចាម, ប្រទេសកម្ពុជា",
   },
-  latitude: 11.9930,
-  longitude: 105.4635,
+  latitude: 11.9928,
+  longitude: 105.4625,
   phone: "+855 (0) 42 982 999",
   email: "reservations@vvotel-kampongcham.com",
   stars: 5,

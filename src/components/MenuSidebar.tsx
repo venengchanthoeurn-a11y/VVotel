@@ -18,6 +18,7 @@ import {
   Users,
   Smile,
   ShieldCheck,
+  Download,
 } from "lucide-react";
 
 interface MenuSidebarProps {
@@ -57,11 +58,11 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
               V
             </div>
             <div>
-              <div className="text-base font-extrabold tracking-tight text-white">
-                {lang === "km" ? "វីវ៉ូថែល កំពង់ចាម" : "VVOTEL KAMPONG CHAM"}
+              <div className="text-base font-extrabold tracking-tight text-white leading-tight">
+                {lang === "km" ? "សណ្ឋាគារ វឌ្ឍនៈ (VVotel)" : "VATTANAC HOTEL (VVOTEL)"}
               </div>
               <div className="text-[10px] text-vvotel-gold uppercase tracking-widest font-semibold">
-                Riverside Hotel & Spa
+                Kampong Cham • Cambodia
               </div>
             </div>
           </div>
@@ -278,6 +279,19 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
               </a>
             </div>
           </div>
+
+          {/* Install PWA App Button in Sidebar */}
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              window.dispatchEvent(new CustomEvent("open-pwa-install"));
+            }}
+            className="w-full bg-white/10 hover:bg-white/20 border border-vvotel-gold/50 text-vvotel-gold font-bold py-3 px-4 rounded-xl text-xs transition flex items-center justify-center space-x-2 cursor-pointer active:scale-95 shadow-sm"
+          >
+            <Download className="w-4 h-4 text-vvotel-gold" />
+            <span>{lang === "km" ? "ដំឡើងកម្មវិធី VVotel (Mobile / iPad)" : "Install VVotel App (Mobile / iPad)"}</span>
+          </button>
 
           <button
             onClick={() => {

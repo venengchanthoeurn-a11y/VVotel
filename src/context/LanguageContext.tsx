@@ -57,22 +57,22 @@ interface LanguageContextType {
 
 const translations: Record<string, Partial<Record<Language, string>>> = {
   "brandName": {
-    "km": "សណ្ឋាគារ វីវ៉ូថែល កំពង់ចាម មាត់ទន្លេ",
-    "en": "VVotel Kampong Cham Riverside Hotel",
-    "fr": "VVotel Kampong Cham Riverside Hôtel",
-    "de": "VVotel Kampong Cham Riverside Hotel",
-    "es": "VVotel Kampong Cham Riverside Hotel",
-    "pt": "VVotel Kampong Cham Riverside Hotel",
-    "id": "VVotel Kampong Cham Riverside Hotel",
-    "zh": "VVotel 磅湛湄公河畔酒店",
-    "it": "VVotel Kampong Cham Riverside Hotel",
-    "nl": "VVotel Kampong Cham Riverside Hotel",
-    "ja": "VVotel コンポンチャム・リバーサイドホテル",
-    "ko": "VVotel 캄퐁참 리버사이드 호텔",
-    "ru": "VVotel Kampong Cham Riverside Hotel",
-    "th": "วีโวเทล กัมปงจาม ริเวอร์ไซด์ โฮเทล",
-    "vi": "VVotel Kampong Cham Riverside Hotel",
-    "ar": "فندق فيفوتيل كامبونغ تشام النهري"
+    "km": "សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម",
+    "en": "Vattanac Hotel (VVotel) Kampong Cham",
+    "fr": "Hôtel Vattanac (VVotel) Kampong Cham",
+    "de": "Vattanac Hotel (VVotel) Kampong Cham",
+    "es": "Hotel Vattanac (VVotel) Kampong Cham",
+    "pt": "Hotel Vattanac (VVotel) Kampong Cham",
+    "id": "Hotel Vattanac (VVotel) Kampong Cham",
+    "zh": "磅湛瓦塔纳克酒店 (VVotel)",
+    "it": "Hotel Vattanac (VVotel) Kampong Cham",
+    "nl": "Vattanac Hotel (VVotel) Kampong Cham",
+    "ja": "ヴァタナックホテル (VVotel) コンポンチャム",
+    "ko": "바타낙 호텔 (VVotel) 캄퐁참",
+    "ru": "Отель Ваттанака (VVotel) Кампонгтям",
+    "th": "โรงแรมวัฒนะ (VVotel) กัมปงจาม",
+    "vi": "Khách sạn Vattanac (VVotel) Kampong Cham",
+    "ar": "فندق فاناتاك (VVotel) كامبونغ تشام"
   },
   "brandShort": {
     "km": "វីវ៉ូថែល",

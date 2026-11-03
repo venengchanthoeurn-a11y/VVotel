@@ -12,9 +12,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Destination Guide - VVotel Kampong Cham Cambodia",
+  title: "Destination Guide - Vattanac Hotel (VVotel) Kampong Cham Cambodia",
   description:
-    "Discover Kampong Cham and its surroundings with VVotel Kampong Cham Riverside Hotel. Explore Wat Nokor Bachey, Koh Pen Bamboo Bridge, Phnom Hanchey, Mekong sunset cruises, fine riverside dining, and rich cultural heritage.",
+    "Discover Kampong Cham with Vattanac Hotel (VVotel) located at No. 2052, Preah Monivong St., Phum 7, 030402, Kampong Cham City. Explore Wat Nokor Bachey, Koh Pen Bamboo Bridge, Phnom Hanchey, Mekong sunset cruises, fine dining, and luxury accommodation.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -30,22 +30,25 @@ export const metadata: Metadata = {
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
   },
   keywords: [
+    "សណ្ឋាគារ វឌ្ឍនៈ",
+    "VVotel",
+    "Vattanac Hotel",
     "VVotel Kampong Cham",
+    "No. 2052 Preah Monivong St",
     "Kampong Cham Hotel",
-    "Mekong Riverside Hotel",
     "Koh Pen Bamboo Bridge",
     "Wat Nokor Bachey",
     "Phnom Hanchey",
     "Kampong Cham Tourism",
     "Cambodia Destination Guide",
   ],
-  authors: [{ name: "VVotel Hospitality Group" }],
+  authors: [{ name: "Vattanac Hotel (VVotel) Group" }],
   openGraph: {
-    title: "Destination Guide - VVotel Kampong Cham Cambodia",
+    title: "Destination Guide - Vattanac Hotel (VVotel) Kampong Cham Cambodia",
     description:
-      "Explore Cambodia's Legendary Mekong Heartland with VVotel Kampong Cham. 20 Authentic local attractions, interactive map, and guided tours.",
+      "Explore Cambodia's Legendary Mekong Heartland with Vattanac Hotel (VVotel) Kampong Cham. Located at No. 2052, Preah Monivong St., Phum 7, 030402.",
     url: "https://vvotel-kampongcham.com/about-us/destination-guide/",
-    siteName: "VVotel Kampong Cham Hotel",
+    siteName: "Vattanac Hotel (VVotel) Kampong Cham",
     locale: "km_KH",
     type: "website",
   },
