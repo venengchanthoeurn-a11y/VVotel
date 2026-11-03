@@ -1,64 +1,79 @@
-# VVotel Kampong Cham Riverside Resort — Official Website & Destination Guide
+# VVotel Kampong Cham Riverside Resort — Official Website & PWA
 
-A high-performance, luxury hospitality web platform built for **VVotel Kampong Cham**, replicating all features, UI/UX components, interactive mapping, booking engine, and destination guide from Accor's Novotel platform, tailored to **Kampong Cham, Cambodia**.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvenengchanthoeurn-a11y%2FVVotel)
 
----
-
-## 🚀 Technology Architecture
-
-| Layer | Technology | Purpose |
-| :--- | :--- | :--- |
-| **Frontend** | **Next.js 14 (App Router) + React 18** | Server-side rendering (SSR), static generation, and high-performance client interactivity. |
-| **Styling** | **Tailwind CSS + Kantumruy Pro & Montserrat** | Authentic luxury Novotel design system with full bilingual Khmer & Latin typography. |
-| **Backend** | **Node.js API Routes** | RESTful endpoints for destinations, single-item lookups, bookings, and newsletters. |
-| **Caching Layer** | **Redis (ioredis) + Resilient In-Memory LRU Fallback** | Instant microsecond response times with TTL-based invalidation (`X-Cache: HIT-REDIS`). |
-| **CDN & Edge** | **Edge Caching & Stale-While-Revalidate Headers** | `Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400`. |
-| **Mapping** | **Leaflet & OpenStreetMap** | Interactive vector map with custom VVotel pin and 20 categorized destination markers. |
+A high-performance, luxury hospitality Progressive Web App (PWA) built for **VVotel Kampong Cham**, replicating all features, UI/UX components, interactive mapping, advanced multi-room booking engine, and destination guide from Accor's Novotel platform, tailored to **Kampong Cham, Cambodia**.
 
 ---
 
-## 🌟 Key Features
+## 🌐 Live Deployments & Repository
 
-1. **Accessibility Toolbar (ដូច Novotel 100%):**
-   - **Contrast Modes:** Black & White (`contrast-bw`), Black & Yellow (`contrast-by`), and Default.
-   - **Font & Spacing:** Dyslexia-friendly font toggle (`font-dyslexia`) and Large line/letter spacing (`spacing-large`).
-   - **Reset All:** Instant one-click reset to default settings.
-
-2. **Bilingual Khmer & English (ភាសាខ្មែរ & English):**
-   - Full native Khmer translation for all navigation, titles, taglines, summaries, and descriptions.
-   - Instant language switch modal including links to 14+ international language portals.
-
-3. **Booking Engine & Instant Rate Calculator:**
-   - Real-time arrival and departure date picker.
-   - Room count and adult/children counter with individual child age dropdowns (0–12 years).
-   - ALL loyalty card (16-digit) and Promo code discount calculator.
-   - Instant confirmation popup with booking reference and free perks.
-
-4. **Interactive Destination Map & Guide (២០ ទីតាំងពិតប្រាកដក្នុងខេត្តកំពង់ចាម):**
-   - **Beaches & Nature (ឆ្នេរខ្សាច់ និងធម្មជាតិ):** Koh Pen Sandbars, Haong Waterfall, Chup Rubber Plantation, Koh Samrong River Island.
-   - **Culture & Local Life (វប្បធម៌ និងជីវភាពរស់នៅ):** Wat Nokor Bachey (11th century), Phnom Hanchey / Wat Hanchey, Phnom Pros & Phnom Srei, Old French Watchtower, Psar Thom Central Market.
-   - **Sports & Activities (កីឡា និងសកម្មភាព):** Koh Pen Bamboo Bridge, Koh Pen Cycling Tour, Mekong Sunset Boat Cruise, Riverfront Jogging Path, Mekong Kayaking Adventure.
-   - **Restaurants & Dining (ភោជនីយដ្ឋាន និងអាហារដ្ឋាន):** Moon River Restaurant, Mekong Crossing Bistro, Smile Training Restaurant, Hao An Dim Sum, Mekong Riverside BBQ, Destiny Café & Bakery.
-
-5. **Detail Slide-Over Modal:**
-   - Rich descriptions, GPS coordinates, exact addresses, travel times, clickable phone numbers, and direct Google Maps navigation links.
-
-6. **Loyalty Program & Newsletter:**
-   - VVotel ALL - Accor Live Limitless promotional banner.
-   - Newsletter subscription form connected to live backend API.
+* **GitHub Repository:** [https://github.com/venengchanthoeurn-a11y/VVotel](https://github.com/venengchanthoeurn-a11y/VVotel)
+* **1-Click Deploy to Vercel:** [Deploy on Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvenengchanthoeurn-a11y%2FVVotel)
+* **Local Server:** `http://localhost:3000`
 
 ---
 
-## 🛠️ How to Run Locally
+## 📱 Progressive Web App (PWA) Features
+
+* **Installable as Standalone App:** Users can install VVotel on mobile (iOS Safari, Android Chrome) or desktop (Windows, macOS).
+* **Automatic Install Prompt:** Floating luxury prompt allows one-click installation on supported browsers.
+* **Service Worker (`/sw.js`):** Offline asset caching, fast page loads, and resilient offline navigation.
+* **App Manifest (`/manifest.json`):** Full standalone display, custom splash background (`#08182b`), theme color (`#0c2340`), and high-res luxury icons (192px, 512px, maskable, apple-touch-icon).
+
+---
+
+## 🌍 16-Language Live Multi-Language System
+
+Instantly switch between 16 languages across the entire site without page reload:
+1. 🇰🇭 **ភាសាខ្មែរ** (Khmer - National Language)
+2. 🇬🇧 **English** (International)
+3. 🇫🇷 **Français** (French)
+4. 🇩🇪 **Deutsch** (German)
+5. 🇪🇸 **Español** (Spanish)
+6. 🇵🇹 **Português** (Portuguese)
+7. 🇮🇩 **Bahasa Indonesia** (Indonesian)
+8. 🇨🇳 **简体中文** (Simplified Chinese)
+9. 🇮🇹 **Italiano** (Italian)
+10. 🇳🇱 **Nederlands** (Dutch)
+11. 🇯🇵 **日本語** (Japanese)
+12. 🇰🇷 **한국어** (Korean)
+13. 🇷🇺 **Русский** (Russian)
+14. 🇹🇭 **ภาษาไทย** (Thai)
+15. 🇻🇳 **Tiếng Việt** (Vietnamese)
+16. 🇸🇦 **العربية** (Arabic - with RTL layout support)
+
+---
+
+## 🏨 Complete Hotel Navigation Sections
+
+1. **Accommodation (`#rooms`):** 4 luxury room & suite tiers (Standard City View, Superior River View, Executive Mekong Suite, Royal Family River Suite) with detail modal and instant booking integration.
+2. **Dining (`#dining`):** 4 signature venues (Mekong Breeze, Sunset River Lounge, Gourmet River Café, In-Room 24/7) with interactive Table Reservation Modal.
+3. **Special Offers (`#special-offers`):** Exclusive discount packages (Weekend Mekong Getaway -25%, Family Discovery Package, Romantic Sunset Retreat).
+4. **Meeting & Events (`#meeting-events`):** Grand Mekong Ballroom (450 m²), Kizuna Boardroom (65 m²), and Riverside Lawn with Request for Proposal (RFP) modal.
+5. **Services & Wellness (`#services`):** 35m Mekong Infinity Pool, Lotus Spa, 24/7 Fitness Studio, The Mekong Explorers Kids Club, complimentary bicycle rental, and private boat charters.
+6. **Destination Guide (`#destination-guide`):** 20 authentic Kampong Cham destinations with genuine historical & cultural photography.
+7. **Interactive Map (`#map-section`):** Vector map with Google Maps roadmap and satellite layer toggle.
+8. **Advanced Booking Engine (`#booking-bar`):** Multi-room composition, individual child age selectors, Accor PMS deep-link builder, and payment gateway simulation.
+
+---
+
+## 🛠️ Local Development & Build
 
 ```bash
-# 1. Navigate to project directory
-cd c:\xampp\htdocs\VVotel
+# Clone the repository
+git clone https://github.com/venengchanthoeurn-a11y/VVotel.git
+cd VVotel
 
-# 2. Start production server (already built)
-npm run start
-# Website available at: http://localhost:3000
+# Install dependencies
+npm install
 
-# 3. For development mode
+# Run development server
 npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm run start
 ```
