@@ -1,0 +1,359 @@
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import { Destination, HOTEL_INFO } from "@/data/destinations";
+import { useLanguage } from "@/context/LanguageContext";
+import {
+  MapPin,
+  Navigation,
+  Compass,
+  ExternalLink,
+  Layers,
+  Maximize2,
+  Minimize2,
+  LocateFixed,
+  Sparkles,
+} from "lucide-react";
+
+interface InteractiveMapProps {
+  destinations: Destination[];
+  onSelectDestination: (dest: Destination) => void;
+  selectedCategory: string;
+}
+
+export const InteractiveMap: React.FC<InteractiveMapProps> = ({
+  destinations,
+  onSelectDestination,
+  selectedCategory,
+}) => {
+  const { lang, t } = useLanguage();
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+  const currentTileLayerRef = useRef<any>(null);
+
+  const [mapType, setMapType] = useState<"google-road" | "google-satellite">("google-road");
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [activeDestination, setActiveDestination] = useState<Destination | null>(null);
+
+  // Initialize Map
+  useEffect(() => {
+    let isMounted = true;
+
+    const initMap = async () => {
+      if (typeof window === "undefined" || !mapContainerRef.current) return;
+      if (mapInstanceRef.current) return;
+
+      const L = (await import("leaflet")).default;
+
+      // Create map centered on Kampong Cham
+      const map = L.map(mapContainerRef.current, {
+        center: [HOTEL_INFO.latitude, HOTEL_INFO.longitude],
+        zoom: 12,
+        scrollWheelZoom: false,
+        zoomControl: true,
+      });
+
+      // Add Google Maps Roadmap tile layer by default
+      const googleRoadTiles = L.tileLayer(
+        "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+        {
+          attribution: '&copy; <a href="https://maps.google.com">Google Maps</a> | VVotel Kampong Cham',
+          maxZoom: 20,
+          subdomains: ["mt0", "mt1", "mt2", "mt3"],
+        }
+      );
+
+      googleRoadTiles.addTo(map);
+      currentTileLayerRef.current = googleRoadTiles;
+
+      // Add Hotel Marker (Gold luxury star pin)
+      const hotelIcon = L.divIcon({
+        className: "custom-hotel-pin",
+        html: `
+          <div style="background-color: #0c2340; border: 3px solid #c5a059; width: 42px; height: 42px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 14px rgba(0,0,0,0.5);">
+            <div style="transform: rotate(45deg); color: #c5a059; font-weight: 900; font-size: 17px;">V</div>
+          </div>
+        `,
+        iconSize: [42, 42],
+        iconAnchor: [21, 42],
+        popupAnchor: [0, -42],
+      });
+
+      const hotelPopup = `
+        <div style="width: 250px; font-family: sans-serif; padding: 12px;">
+          <div style="font-size: 10px; font-weight: bold; color: #c5a059; text-transform: uppercase;">Our Hotel Location</div>
+          <div style="font-size: 14px; font-weight: bold; color: #0c2340; margin-top: 2px;">${HOTEL_INFO.name.en}</div>
+          <div style="font-size: 11px; color: #555; margin-top: 4px;">${HOTEL_INFO.address.en}</div>
+          <div style="margin-top: 8px; font-size: 11px; font-weight: bold; color: #0c2340;">
+            📞 ${HOTEL_INFO.phone}
+          </div>
+          <div style="margin-top: 10px;">
+            <a href="https://www.google.com/maps/search/?api=1&query=${HOTEL_INFO.latitude},${HOTEL_INFO.longitude}" target="_blank" style="display: block; text-align: center; background: #0c2340; color: #c5a059; padding: 6px 0; border-radius: 6px; font-size: 11px; font-weight: bold; text-decoration: none;">
+              Open in Google Maps ➔
+            </a>
+          </div>
+        </div>
+      `;
+
+      L.marker([HOTEL_INFO.latitude, HOTEL_INFO.longitude], { icon: hotelIcon })
+        .addTo(map)
+        .bindPopup(hotelPopup);
+
+      mapInstanceRef.current = map;
+
+      // Invalidate size multiple times to prevent any grey tiles
+      setTimeout(() => map.invalidateSize(), 150);
+      setTimeout(() => map.invalidateSize(), 500);
+      setTimeout(() => map.invalidateSize(), 1200);
+    };
+
+    initMap();
+
+    return () => {
+      isMounted = false;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  // Handle Tile Switcher (Google Roadmap vs Google Satellite Hybrid)
+  const switchMapType = async (type: "google-road" | "google-satellite") => {
+    if (!mapInstanceRef.current) return;
+    const L = (await import("leaflet")).default;
+    const map = mapInstanceRef.current;
+
+    if (currentTileLayerRef.current) {
+      map.removeLayer(currentTileLayerRef.current);
+    }
+
+    const tileUrl =
+      type === "google-satellite"
+        ? "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}" // Google Hybrid (Satellite + Labels)
+        : "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"; // Google Roadmap
+
+    const newLayer = L.tileLayer(tileUrl, {
+      attribution: '&copy; <a href="https://maps.google.com">Google Maps</a> | VVotel Kampong Cham',
+      maxZoom: 20,
+      subdomains: ["mt0", "mt1", "mt2", "mt3"],
+    });
+
+    newLayer.addTo(map);
+    currentTileLayerRef.current = newLayer;
+    setMapType(type);
+  };
+
+  // Recenter on VVotel Resort
+  const recenterMap = () => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([HOTEL_INFO.latitude, HOTEL_INFO.longitude], 13, {
+        duration: 1.2,
+      });
+    }
+  };
+
+  // Render Category Pins
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    const renderPins = async () => {
+      const L = (await import("leaflet")).default;
+      const map = mapInstanceRef.current;
+
+      // Clear existing pins
+      markersRef.current.forEach((m) => m.remove());
+      markersRef.current = [];
+
+      const categoryColors: Record<string, string> = {
+        "beaches-nature": "#0284c7",
+        "sports-activities": "#16a34a",
+        "culture-local-life": "#e11d48",
+        restaurants: "#d97706",
+      };
+
+      const categoryIcons: Record<string, string> = {
+        "beaches-nature": "🏝️",
+        "sports-activities": "🚴",
+        "culture-local-life": "🏛️",
+        restaurants: "🍽️",
+      };
+
+      destinations.forEach((dest) => {
+        const pinColor = categoryColors[dest.category] || "#4f46e5";
+        const pinEmoji = categoryIcons[dest.category] || "📍";
+
+        const icon = L.divIcon({
+          className: "custom-dest-pin",
+          html: `
+            <div style="background-color: ${pinColor}; width: 34px; height: 34px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 2.5px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor: pointer;">
+              <div style="transform: rotate(45deg); font-size: 13px;">${pinEmoji}</div>
+            </div>
+          `,
+          iconSize: [34, 34],
+          iconAnchor: [17, 34],
+          popupAnchor: [0, -34],
+        });
+
+        const directionUrl = `https://www.google.com/maps/dir/?api=1&origin=${HOTEL_INFO.latitude},${HOTEL_INFO.longitude}&destination=${dest.latitude},${dest.longitude}`;
+
+        const popupContent = `
+          <div style="width: 260px; font-family: sans-serif; overflow: hidden; border-radius: 8px;">
+            <div style="position: relative; height: 110px; width: 100%; overflow: hidden;">
+              <img src="${dest.imageUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${dest.title.en}" />
+              <div style="position: absolute; bottom: 6px; left: 6px; background: rgba(12, 35, 64, 0.9); color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: bold;">
+                ${lang === "km" ? dest.distanceFromHotel.km : dest.distanceFromHotel.en}
+              </div>
+            </div>
+            <div style="padding: 12px;">
+              <div style="font-size: 10px; font-weight: bold; color: ${pinColor}; text-transform: uppercase;">
+                ${lang === "km" ? dest.categoryName.km : dest.categoryName.en}
+              </div>
+              <div style="font-size: 13px; font-weight: bold; color: #0c2340; margin-top: 2px;">
+                ${lang === "km" ? dest.title.km : dest.title.en}
+              </div>
+              <div style="font-size: 11px; color: #555; margin-top: 4px; line-height: 1.35;">
+                ${lang === "km" ? dest.summary.km : dest.summary.en}
+              </div>
+              <div style="margin-top: 10px; display: flex; gap: 6px;">
+                <a href="${directionUrl}" target="_blank" style="flex: 1; text-align: center; background: #0c2340; color: white; padding: 7px 0; border-radius: 6px; font-size: 11px; font-weight: bold; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span>Directions on Google Maps ➔</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const marker = L.marker([dest.latitude, dest.longitude], { icon })
+          .addTo(map)
+          .bindPopup(popupContent);
+
+        marker.on("click", () => {
+          setActiveDestination(dest);
+        });
+
+        markersRef.current.push(marker);
+      });
+    };
+
+    renderPins();
+  }, [destinations, lang]);
+
+  return (
+    <div
+      id="map-section"
+      className={`bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 ${
+        isFullscreen ? "fixed inset-4 z-50 flex flex-col" : "w-full"
+      }`}
+    >
+      {/* Map Control Bar */}
+      <div className="p-4 sm:p-5 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3 bg-[#0c2340] text-white">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-vvotel-gold text-vvotel-navy flex items-center justify-center font-bold shadow">
+            <Compass className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center space-x-2">
+              <h3 className="font-extrabold text-base text-white">
+                {lang === "km" ? "Google Maps ផែនទីអន្តរកម្មខេត្តកំពង់ចាម" : "Interactive Google Maps — Kampong Cham"}
+              </h3>
+              <span className="text-[10px] bg-red-600 text-white font-bold px-2 py-0.5 rounded-full uppercase">
+                Live Google Data
+              </span>
+            </div>
+            <p className="text-xs text-gray-300">
+              {lang === "km"
+                ? "ចុចលើ Marker នីមួយៗដើម្បីមើលទិសដៅ និងទីតាំងពិតប្រាកដលើ Google Maps"
+                : "Real coordinates in Kampong Cham with live directions from VVotel Resort"}
+            </p>
+          </div>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex items-center space-x-2">
+          {/* Layer Switcher */}
+          <div className="bg-white/10 rounded-xl p-1 flex items-center space-x-1 border border-white/15 text-xs font-semibold">
+            <button
+              onClick={() => switchMapType("google-road")}
+              className={`px-3 py-1 rounded-lg transition ${
+                mapType === "google-road"
+                  ? "bg-vvotel-gold text-vvotel-navy font-bold shadow"
+                  : "text-gray-300 hover:text-white"
+              }`}
+            >
+              Roadmap
+            </button>
+            <button
+              onClick={() => switchMapType("google-satellite")}
+              className={`px-3 py-1 rounded-lg transition ${
+                mapType === "google-satellite"
+                  ? "bg-vvotel-gold text-vvotel-navy font-bold shadow"
+                  : "text-gray-300 hover:text-white"
+              }`}
+            >
+              Satellite (ផ្កាយរណប)
+            </button>
+          </div>
+
+          {/* Recenter */}
+          <button
+            onClick={recenterMap}
+            className="p-2 bg-white/10 hover:bg-white/20 rounded-xl text-vvotel-gold transition border border-white/15"
+            title="Recenter on VVotel Resort"
+          >
+            <LocateFixed className="w-4 h-4" />
+          </button>
+
+          {/* Fullscreen Toggle */}
+          <button
+            onClick={() => {
+              setIsFullscreen(!isFullscreen);
+              setTimeout(() => {
+                if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+              }, 200);
+            }}
+            className="p-2 bg-white/10 hover:bg-white/20 rounded-xl text-white transition border border-white/15"
+            title="Toggle Fullscreen"
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Map Canvas with Guaranteed Responsive Height */}
+      <div
+        ref={mapContainerRef}
+        className={`w-full z-10 bg-slate-100 ${
+          isFullscreen ? "flex-1" : "h-[450px] sm:h-[550px] lg:h-[620px]"
+        }`}
+      />
+
+      {/* Interactive Quick Selector Pill Bar Below Map */}
+      <div className="p-3 bg-gray-50 border-t border-gray-100 overflow-x-auto flex items-center space-x-2 scrollbar-none">
+        <span className="text-[11px] font-bold text-gray-500 uppercase px-2 shrink-0">
+          {lang === "km" ? "ចុចដើម្បី Zoom ទៅកាន់：" : "Quick Zoom To:"}
+        </span>
+        <button
+          onClick={recenterMap}
+          className="shrink-0 px-3 py-1.5 rounded-lg bg-vvotel-navy text-vvotel-gold text-xs font-bold shadow-sm hover:opacity-90 flex items-center space-x-1"
+        >
+          <span>⭐ VVotel Resort</span>
+        </button>
+        {destinations.slice(0, 8).map((d) => (
+          <button
+            key={d.id}
+            onClick={() => {
+              if (mapInstanceRef.current) {
+                mapInstanceRef.current.flyTo([d.latitude, d.longitude], 15, { duration: 1 });
+              }
+            }}
+            className="shrink-0 px-3 py-1.5 rounded-lg bg-white hover:bg-amber-50 text-gray-700 text-xs font-medium border border-gray-200 transition"
+          >
+            {lang === "km" ? d.title.km : d.title.en}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};

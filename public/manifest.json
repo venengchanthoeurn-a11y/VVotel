@@ -1,0 +1,60 @@
+{
+  "name": "VVotel Kampong Cham Riverside Resort",
+  "short_name": "VVotel",
+  "description": "Luxury Riverside Resort in Kampong Cham, Cambodia on the legendary Mekong River",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#08182b",
+  "theme_color": "#0c2340",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["travel", "hospitality", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Book a Room",
+      "short_name": "Book",
+      "description": "Book a luxury room or suite at VVotel",
+      "url": "/#booking-bar",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Destination Guide",
+      "short_name": "Guide",
+      "description": "Explore 20 authentic Kampong Cham destinations",
+      "url": "/#destination-guide",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dining & Bars",
+      "short_name": "Dining",
+      "description": "Mekong Breeze and Riverside Lounges",
+      "url": "/#dining",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

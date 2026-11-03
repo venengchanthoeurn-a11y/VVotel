@@ -1,0 +1,103 @@
+@import "leaflet/dist/leaflet.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-montserrat: 'Montserrat', sans-serif;
+    --font-khmer: 'Kantumruy Pro', sans-serif;
+  }
+
+  body {
+    @apply bg-[#fbfbfb] text-[#2b2b2b] antialiased selection:bg-vvotel-gold selection:text-white;
+    font-family: var(--font-khmer), var(--font-montserrat), sans-serif;
+  }
+}
+
+/* Accessibility Modes matching Novotel */
+html.contrast-bw {
+  filter: grayscale(100%) contrast(150%);
+}
+
+html.contrast-bw body {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+html.contrast-bw a,
+html.contrast-bw button {
+  border-color: #000000 !important;
+}
+
+html.contrast-by {
+  filter: invert(100%) hue-rotate(180deg);
+}
+
+html.contrast-by body {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+}
+
+html.contrast-by a,
+html.contrast-by button,
+html.contrast-by h1,
+html.contrast-by h2,
+html.contrast-by h3,
+html.contrast-by span {
+  color: #ffff00 !important;
+  border-color: #ffff00 !important;
+}
+
+/* Dyslexia font option */
+html.font-dyslexia * {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* Larger line & letter spacing */
+html.spacing-large * {
+  line-height: 1.9 !important;
+  letter-spacing: 0.08em !important;
+  word-spacing: 0.15em !important;
+}
+
+/* Custom styling for hotel elements */
+.gold-gradient {
+  background: linear-gradient(135deg, #c5a059 0%, #dfba73 50%, #b38b42 100%);
+}
+
+.navy-gradient {
+  background: linear-gradient(180deg, #0c2340 0%, #15355e 100%);
+}
+
+/* Leaflet map custom pins and popup overrides */
+.leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.custom-marker-pin {
+  width: 34px;
+  height: 34px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.35);
+}
+
+.custom-marker-pin span {
+  transform: rotate(45deg);
+  font-size: 14px;
+}
