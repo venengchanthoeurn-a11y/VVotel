@@ -131,12 +131,12 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-4">
           <div>
-            © {new Date().getFullYear()} VVotel Kampong Cham Riverside Hotel. All Rights Reserved. Managed in accordance with Accor Brand Standards.
+            © {new Date().getFullYear()} {lang === "km" ? "សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម" : "Vattanac Hotel (VVotel) Kampong Cham"}. All Rights Reserved.
           </div>
           <div className="flex items-center space-x-4">
-            <span>Powered by Next.js & Redis Cache & CDN</span>
-            <span>•</span>
-            <span className="text-vvotel-gold font-bold">100% Kampong Cham Local Destinations</span>
+            <span className="text-vvotel-gold font-bold">
+              {lang === "km" ? "១០០% គោលដៅទេសចរណ៍ខេត្តកំពង់ចាម" : "100% Kampong Cham Local Destinations"}
+            </span>
           </div>
         </div>
       </div>
