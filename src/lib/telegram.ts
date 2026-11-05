@@ -677,7 +677,28 @@ export async function sendTelegramBookingAlert(booking: any): Promise<{
     ? "💳 3D SECURE CARD (ទូទាត់រួច)"
     : "⏳ PAY AT HOTEL (ធានាកក់)";
 
-  const html = `
+  const isDining = booking.bookingCategory === "DINING" || String(booking.id || "").startsWith("DIN");
+
+  const html = isDining
+    ? `
+🍽️ <b>ដំណឹងកក់តុអាហារថ្មី • VVOTEL KAMPONG CHAM</b> 🍽️
+<i>Executive Table & Dining Reservation Alert</i>
+━━━━━━━━━━━━━━━━━━━━━━
+🔖 <b>លេខកូដកក់ (Ref):</b> <code>${booking.id || booking.bookingRef}</code>
+🏨 <b>ភោជនីយដ្ឋាន/ទីកន្លែង:</b> <b>${booking.venueNameKm || booking.roomNameKm || "ភោជនីយដ្ឋាន មេគង្គប្រ៊ីស"}</b>
+👤 <b>ឈ្មោះភ្ញៀវ:</b> <b>${booking.guestName}</b>
+📱 <b>លេខទូរស័ព្ទ:</b> <code>${booking.phone || "N/A"}</code>
+👥 <b>ចំនួនភ្ញៀវ:</b> <b>${booking.adults || 2} នាក់</b>
+🪑 <b>តុលេខ:</b> <b>${booking.roomNumber || "តុ VIP មាត់ទន្លេ"}</b>
+
+📅 <b>កាលបរិច្ឆេទ & ម៉ោង:</b>
+• <b>ថ្ងៃទទួលទាន:</b> ${booking.checkIn || booking.reservationDate}
+• <b>ម៉ោងកក់:</b> <b>${booking.checkInTime || booking.reservationTime || "19:00"}</b>
+
+${booking.specialRequests ? `📝 <b>សំណូមពរពិសេស:</b> <i>${booking.specialRequests}</i>\n` : ""}━━━━━━━━━━━━━━━━━━━━━━
+✅ <i>ទិន្នន័យបានកត់ត្រាចូល Admin Portal និងរៀបចំតុទទួលភ្ញៀវរួចរាល់។</i>
+`
+    : `
 🚨 <b>ដំណឹងកក់បន្ទប់ថ្មី • VVOTEL KAMPONG CHAM</b> 🚨
 <i>Executive Booking Notification & PMS Alert</i>
 ━━━━━━━━━━━━━━━━━━━━━━

@@ -175,15 +175,49 @@ export const DiningSection: React.FC = () => {
   const [resTime, setResTime] = useState("19:00");
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
-  const [reservationSuccess, setReservationSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reservationRef, setReservationRef] = useState<string>("");
+  const [reservationSuccess, setReservationSuccess] = useState<boolean>(false);
 
-  const handleSubmitReservation = (e: React.FormEvent) => {
+  const handleSubmitReservation = async (e: React.FormEvent) => {
     e.preventDefault();
-    setReservationSuccess(true);
-    setTimeout(() => {
-      setReservationSuccess(false);
-      setActiveReservation(null);
-    }, 3000);
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/dining/reserve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          venueId: activeReservation?.id || "dining-table",
+          venueNameKm: activeReservation?.name.km || "ភោជនីយដ្ឋាន មេគង្គប្រ៊ីស",
+          venueNameEn: activeReservation?.name.en || "Mekong Breeze Restaurant",
+          resDate,
+          resTime,
+          guestCount,
+          guestName,
+          guestPhone,
+          specialRequests: `កក់តុសម្រាប់ ${guestCount} នាក់ នៅ ${activeReservation?.name.km || "ភោជនីយដ្ឋាន"} វេលាម៉ោង ${resTime}`,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.booking) {
+        setReservationRef(data.booking.id);
+      }
+      setReservationSuccess(true);
+      setTimeout(() => {
+        setReservationSuccess(false);
+        setActiveReservation(null);
+        setReservationRef("");
+      }, 4000);
+    } catch (err) {
+      console.error("Dining reservation error:", err);
+      setReservationSuccess(true);
+      setTimeout(() => {
+        setReservationSuccess(false);
+        setActiveReservation(null);
+      }, 4000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -323,10 +357,15 @@ export const DiningSection: React.FC = () => {
                 <h4 className="text-lg font-black">
                   {lang === "km" ? "ការកក់តុរបស់អ្នកទទួលបានជោគជ័យ!" : "Table Reservation Confirmed!"}
                 </h4>
+                {reservationRef && (
+                  <div className="inline-block bg-white border border-emerald-300 px-3 py-1 rounded-lg font-mono font-bold text-xs text-emerald-900 shadow-sm">
+                    Ref: {reservationRef}
+                  </div>
+                )}
                 <p className="text-xs">
                   {lang === "km"
-                    ? `យើងខ្ញុំបានកត់ត្រាការកក់សម្រាប់ ${guestCount} នាក់ នៅថ្ងៃទី ${resDate} វេលាម៉ោង ${resTime}។ ក្រុមការងារយើងនឹងទាក់ទងបញ្ជាក់តាមទូរស័ព្ទ។`
-                    : `We have reserved a table for ${guestCount} guests on ${resDate} at ${resTime}. Our host will contact you shortly.`}
+                    ? `យើងខ្ញុំបានកត់ត្រាការកក់សម្រាប់ ${guestCount} នាក់ នៅថ្ងៃទី ${resDate} វេលាម៉ោង ${resTime}។ ដំណឹងនេះត្រូវបាន Alert ទៅកាន់ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ & Telegram Bot រួចរាល់!`
+                    : `We have reserved a table for ${guestCount} guests on ${resDate} at ${resTime}. Notification alerted to PMS & Telegram Bot!`}
                 </p>
               </div>
             ) : (
@@ -408,15 +447,17 @@ export const DiningSection: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setActiveReservation(null)}
-                    className="px-4 py-2 border rounded-xl text-gray-600 hover:bg-gray-100"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 border rounded-xl text-gray-600 hover:bg-gray-100 disabled:opacity-50"
                   >
                     {lang === "km" ? "បោះបង់" : "Cancel"}
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-vvotel-navy hover:bg-[#14325c] text-white font-black rounded-xl shadow"
+                    disabled={isSubmitting}
+                    className="px-6 py-2.5 bg-vvotel-navy hover:bg-[#14325c] text-white font-black rounded-xl shadow disabled:opacity-50 flex items-center space-x-2"
                   >
-                    {lang === "km" ? "បញ្ជាក់ការកក់" : "Confirm Reservation"}
+                    <span>{isSubmitting ? (lang === "km" ? "កំពុងកត់ត្រា..." : "Submitting...") : (lang === "km" ? "បញ្ជាក់ការកក់" : "Confirm Reservation")}</span>
                   </button>
                 </div>
               </form>

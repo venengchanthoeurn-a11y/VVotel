@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Skew Protection: Prevent Frontend-Backend Mismatches recommended by Vercel
+  deploymentId: process.env.VERCEL_DEPLOYMENT_ID || undefined,
   images: {
     remotePatterns: [
       {
@@ -20,16 +22,16 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // CDN and browser caching headers for API routes
+        // Dynamic API routes must NEVER be cached stale at CDN edge to guarantee fresh real-time data
         source: "/api/:path*",
         headers: [
           {
             key: "Cache-Control",
-            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+            value: "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
           },
           {
-            key: "X-CDN-Cache-Status",
-            value: "HIT-EDGE-VVOTEL",
+            key: "X-VVotel-API-Mode",
+            value: "REALTIME-PMS-SYNC",
           },
         ],
       },

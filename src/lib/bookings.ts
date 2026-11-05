@@ -6,6 +6,7 @@ import { sendTelegramBookingAlert } from "./telegram";
 export interface BookingRecord {
   id: string;
   createdAt: string;
+  bookingCategory?: "ROOM" | "DINING";
   guestName: string;
   firstName?: string;
   lastName?: string;
@@ -37,9 +38,14 @@ export interface BookingRecord {
   transactionId: string;
   signatureHMAC: string;
   tamperProofHash: string;
-  stayStatus: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
+  stayStatus: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED" | "SEATED" | "COMPLETED";
   actualCheckInAt: string | null;
   actualCheckOutAt: string | null;
+  venueId?: string;
+  venueNameKm?: string;
+  venueNameEn?: string;
+  reservationDate?: string;
+  reservationTime?: string;
 }
 
 const BOOKINGS_FILE = path.join(process.cwd(), "data", "bookings.json");
@@ -92,6 +98,7 @@ export async function createBooking(data: Partial<BookingRecord>): Promise<Booki
   const newBooking: BookingRecord = {
     id,
     createdAt: new Date().toISOString(),
+    bookingCategory: data.bookingCategory || (data.id?.startsWith("DIN") ? "DINING" : "ROOM"),
     guestName: data.guestName || `${data.firstName || ""} ${data.lastName || ""}`.trim() || "Sopheap Chan",
     firstName: data.firstName || "Sopheap",
     lastName: data.lastName || "Chan",
@@ -99,16 +106,16 @@ export async function createBooking(data: Partial<BookingRecord>): Promise<Booki
     phone: data.phone || "+855 12 345 678",
     country: data.country || "Cambodia",
     specialRequests: data.specialRequests || "High floor with Mekong river view",
-    roomType: data.roomType || "superior-river",
-    roomNameKm: data.roomNameKm || "បន្ទប់ស៊ុភើរៀ ទេសភាពទន្លេមេគង្គ",
-    roomNameEn: data.roomNameEn || "Superior Room River View",
+    roomType: data.roomType || (data.venueId ? "dining-table" : "superior-river"),
+    roomNameKm: data.roomNameKm || data.venueNameKm || "បន្ទប់ស៊ុភើរៀ ទេសភាពទន្លេមេគង្គ",
+    roomNameEn: data.roomNameEn || data.venueNameEn || "Superior Room River View",
     roomCount,
-    roomNumber: data.roomNumber || `Room ${Math.floor(201 + Math.random() * 29)}`,
+    roomNumber: data.roomNumber || (data.bookingCategory === "DINING" ? `Table ${Math.floor(1 + Math.random() * 20)}` : `Room ${Math.floor(201 + Math.random() * 29)}`),
     basePrice,
-    checkIn: data.checkIn || "2026-11-05",
-    checkOut: data.checkOut || "2026-11-08",
-    checkInTime: "14:00 (Check-in from 2:00 PM)",
-    checkOutTime: "12:00 (Check-out until 12:00 PM)",
+    checkIn: data.checkIn || data.reservationDate || "2026-11-05",
+    checkOut: data.checkOut || data.checkIn || "2026-11-08",
+    checkInTime: data.checkInTime || data.reservationTime || "14:00 (Check-in from 2:00 PM)",
+    checkOutTime: data.checkOutTime || "12:00 (Check-out until 12:00 PM)",
     nights,
     adults: Number(data.adults) || 2,
     children: Number(data.children) || 0,
@@ -119,13 +126,18 @@ export async function createBooking(data: Partial<BookingRecord>): Promise<Booki
     totalAmountUSD,
     totalAmountKHR,
     paymentMethod: data.paymentMethod || "KHQR_BAKONG",
-    paymentStatus: data.paymentStatus || (data.paymentMethod === "PAY_AT_HOTEL" ? "GUARANTEED" : "PAID"),
+    paymentStatus: data.paymentStatus || (data.paymentMethod === "PAY_AT_HOTEL" || data.paymentMethod === "RESERVE_TABLE" ? "GUARANTEED" : "PAID"),
     transactionId: txId,
     signatureHMAC: hmac,
     tamperProofHash: `sha256:${hmac.slice(0, 32)}...`,
     stayStatus: "CONFIRMED",
     actualCheckInAt: null,
     actualCheckOutAt: null,
+    venueId: data.venueId,
+    venueNameKm: data.venueNameKm,
+    venueNameEn: data.venueNameEn,
+    reservationDate: data.reservationDate || data.checkIn,
+    reservationTime: data.reservationTime || data.checkInTime,
   };
 
   // Add to top of list
