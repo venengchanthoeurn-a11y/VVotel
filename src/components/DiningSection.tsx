@@ -201,6 +201,15 @@ export const DiningSection: React.FC = () => {
       const data = await res.json();
       if (data.success && data.booking) {
         setReservationRef(data.booking.id);
+        if (typeof window !== "undefined") {
+          try {
+            const raw = localStorage.getItem("vvotel_client_bookings");
+            const list = raw ? JSON.parse(raw) : [];
+            list.unshift(data.booking);
+            localStorage.setItem("vvotel_client_bookings", JSON.stringify(list));
+            window.dispatchEvent(new CustomEvent("vvotel-booking-updated", { detail: data.booking }));
+          } catch (e) {}
+        }
       }
       setReservationSuccess(true);
       setTimeout(() => {

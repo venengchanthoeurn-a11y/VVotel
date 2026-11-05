@@ -258,6 +258,17 @@ export const BookingBar: React.FC = () => {
     setIs3DSModalOpen(true);
   };
 
+  const recordClientBooking = (booking: any) => {
+    if (!booking || typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem("vvotel_client_bookings");
+      const list = raw ? JSON.parse(raw) : [];
+      list.unshift(booking);
+      localStorage.setItem("vvotel_client_bookings", JSON.stringify(list));
+      window.dispatchEvent(new CustomEvent("vvotel-booking-updated", { detail: booking }));
+    } catch (e) {}
+  };
+
   const handleAuthorize3DSPayment = async () => {
     setIsAuthorizing3DS(true);
     try {
@@ -292,6 +303,9 @@ export const BookingBar: React.FC = () => {
         }),
       });
       const data = await res.json();
+      if (data.booking) {
+        recordClientBooking(data.booking);
+      }
       setPaymentConfirmed(data);
       setIs3DSModalOpen(false);
       setCurrentStep("confirmed");
@@ -335,6 +349,9 @@ export const BookingBar: React.FC = () => {
         }),
       });
       const data = await res.json();
+      if (data.booking) {
+        recordClientBooking(data.booking);
+      }
       setPaymentConfirmed(data);
       setCurrentStep("confirmed");
     } catch {
@@ -376,6 +393,9 @@ export const BookingBar: React.FC = () => {
         }),
       });
       const data = await res.json();
+      if (data.booking) {
+        recordClientBooking(data.booking);
+      }
       setPaymentConfirmed(data);
       setCurrentStep("confirmed");
     } catch {

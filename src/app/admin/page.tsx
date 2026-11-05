@@ -208,33 +208,52 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/bookings", { cache: "no-store" });
       const data = await res.json();
+      let serverList: BookingRecord[] = [];
       if (data.success && Array.isArray(data.bookings)) {
-        const fetchedList: BookingRecord[] = data.bookings;
+        serverList = data.bookings;
+      }
 
-        // Detect new bookings if not initial load
-        if (initialLoadDoneRef.current && !isInitial) {
-          const fresh = fetchedList.find((b) => !knownBookingIdsRef.current.has(b.id));
-          if (fresh) {
-            const isDin = fresh.bookingCategory === "DINING" || fresh.id.startsWith("DIN");
-            setNewBookingAlert({
-              id: fresh.id,
-              guestName: fresh.guestName,
-              category: isDin ? "DINING" : "ROOM",
-              title: isDin
-                ? fresh.roomNameKm || "តុអាហារប្រណីត"
-                : fresh.roomNameKm || fresh.roomNameEn || "បន្ទប់ស្នាក់នៅ",
-            });
-            if (soundEnabled) {
-              playHotelChime();
-            }
+      // Check client-side recorded bookings (from website booking or dining reservation)
+      let localList: BookingRecord[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem("vvotel_client_bookings");
+          if (raw) localList = JSON.parse(raw);
+        } catch (e) {}
+      }
+
+      const map = new Map<string, BookingRecord>();
+      for (const b of localList) map.set(b.id, b);
+      for (const b of serverList) {
+        if (!map.has(b.id)) map.set(b.id, b);
+      }
+      const fetchedList = Array.from(map.values()).sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      // Detect new bookings if not initial load
+      if (initialLoadDoneRef.current && !isInitial) {
+        const fresh = fetchedList.find((b) => !knownBookingIdsRef.current.has(b.id));
+        if (fresh) {
+          const isDin = fresh.bookingCategory === "DINING" || fresh.id.startsWith("DIN");
+          setNewBookingAlert({
+            id: fresh.id,
+            guestName: fresh.guestName,
+            category: isDin ? "DINING" : "ROOM",
+            title: isDin
+              ? fresh.roomNameKm || "តុអាហារប្រណីត"
+              : fresh.roomNameKm || fresh.roomNameEn || "បន្ទប់ស្នាក់នៅ",
+          });
+          if (soundEnabled) {
+            playHotelChime();
           }
         }
-
-        // Update tracking ref
-        knownBookingIdsRef.current = new Set(fetchedList.map((b) => b.id));
-        setBookings(fetchedList);
-        initialLoadDoneRef.current = true;
       }
+
+      // Update tracking ref
+      knownBookingIdsRef.current = new Set(fetchedList.map((b) => b.id));
+      setBookings(fetchedList);
+      initialLoadDoneRef.current = true;
     } catch (err) {
       console.error("Failed to load bookings", err);
     } finally {
@@ -242,7 +261,7 @@ export default function AdminPage() {
     }
   };
 
-  // Polling loop for real-time updates every 5 seconds
+  // Polling loop for real-time updates every 5 seconds + Event Listener
   useEffect(() => {
     if (!isAuthenticated) return;
     fetchBookings(true);
@@ -251,7 +270,20 @@ export default function AdminPage() {
       fetchBookings(false);
     }, 5000);
 
-    return () => clearInterval(pollInterval);
+    const handleBookingEvent = () => {
+      fetchBookings(false);
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("vvotel-booking-updated", handleBookingEvent);
+    }
+
+    return () => {
+      clearInterval(pollInterval);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("vvotel-booking-updated", handleBookingEvent);
+      }
+    };
   }, [isAuthenticated, soundEnabled]);
 
   // Send Telegram test alert to @vvotel_bot
