@@ -861,14 +861,14 @@ export default function AdminPage() {
               <span>{t.liveClockLabel} <strong>{currentTimeStr || "Loading..."}</strong></span>
             </div>
 
-            <div className="w-full overflow-hidden">
+            <div className="w-full overflow-visible py-1">
               <h2
-                className="text-sm sm:text-base md:text-lg lg:text-[18px] xl:text-[21px] 2xl:text-[23px] font-mool text-white tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-normal"
+                className="text-xs sm:text-sm md:text-[15px] lg:text-[17px] xl:text-[20px] 2xl:text-[22px] font-mool text-white tracking-normal whitespace-nowrap overflow-visible leading-[2.3] py-2.5 block select-none"
                 title={t.showcaseTitle}
               >
                 {t.showcaseTitle}
               </h2>
-              <p className="text-amber-300 font-serif italic text-xs sm:text-sm md:text-base mt-1.5 font-normal tracking-wide whitespace-nowrap overflow-hidden text-ellipsis">
+              <p className="text-amber-300 font-serif italic text-xs sm:text-sm md:text-base mt-0.5 font-normal tracking-wide whitespace-nowrap overflow-visible">
                 {t.showcaseSubtitle}
               </p>
             </div>
@@ -1763,7 +1763,7 @@ export default function AdminPage() {
 
       {/* ======================= MODAL 1: CHECK-IN / SEAT GUEST ======================= */}
       {checkInModalBooking && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-siemreap">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-siemreap print:hidden">
           <div className="bg-white border border-amber-200 rounded-3xl max-w-md w-full p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div className="flex items-center space-x-2">
@@ -1833,7 +1833,7 @@ export default function AdminPage() {
 
       {/* ======================= MODAL 2: WALK-IN / NEW BOOKING ======================= */}
       {isNewBookingModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto font-siemreap">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto font-siemreap print:hidden">
           <div className="bg-white border border-amber-200 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl my-auto">
             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div className="flex items-center space-x-2">
@@ -2044,7 +2044,7 @@ export default function AdminPage() {
 
       {/* ======================= EXECUTIVE ADMINISTRATIVE REPORT MODAL ======================= */}
       {isReportModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto font-siemreap">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto font-siemreap print:hidden">
           <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-amber-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="p-6 bg-gradient-to-r from-[#0c2340] to-[#12335e] text-white relative">

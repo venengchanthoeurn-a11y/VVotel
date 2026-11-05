@@ -1,8 +1,134 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Printer, X, CheckCircle, ShieldCheck, QrCode, Building, Lock } from "lucide-react";
 import { BookingRecord } from "@/lib/bookings";
+
+/**
+ * Isolated high-fidelity printing engine for VVotel receipts and invoices.
+ * Prints ONLY the designated container without rendering the rest of the website.
+ */
+function printDedicatedInvoice(targetId: string, mode: "pos-80mm" | "a4-invoice") {
+  if (typeof window === "undefined") return;
+
+  const targetElement = document.getElementById(targetId);
+  if (!targetElement) {
+    window.print();
+    return;
+  }
+
+  // Remove any preexisting print iframe
+  const oldIframe = document.getElementById("vvotel-print-frame");
+  if (oldIframe) {
+    oldIframe.remove();
+  }
+
+  // Create an invisible iframe attached to body
+  const iframe = document.createElement("iframe");
+  iframe.id = "vvotel-print-frame";
+  iframe.setAttribute(
+    "style",
+    "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;z-index:-1;"
+  );
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow?.document;
+  if (!doc) {
+    window.print();
+    return;
+  }
+
+  // Collect stylesheet tags from parent document
+  const styleElements = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
+  const stylesMarkup = styleElements.map((el) => el.outerHTML).join("\n");
+
+  const pageSpecificCss =
+    mode === "pos-80mm"
+      ? `
+        @page {
+          size: 80mm auto;
+          margin: 0;
+        }
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 80mm !important;
+          background: #ffffff !important;
+          color: #000000 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        #thermal-receipt {
+          width: 80mm !important;
+          max-width: 80mm !important;
+          margin: 0 auto !important;
+          padding: 4mm 3mm !important;
+          box-shadow: none !important;
+          border: none !important;
+        }
+      `
+      : `
+        @page {
+          size: A4 portrait;
+          margin: 8mm;
+        }
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          background: #ffffff !important;
+          color: #000000 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        #a4-invoice {
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 0 !important;
+          padding: 2mm !important;
+          box-shadow: none !important;
+          border: none !important;
+          min-height: auto !important;
+        }
+      `;
+
+  doc.open();
+  doc.write(`
+    <!DOCTYPE html>
+    <html lang="km">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>VVotel Official ${mode === "pos-80mm" ? "POS Receipt" : "Tax Invoice"}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Moul&family=Siemreap&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+        ${stylesMarkup}
+        <style>
+          ${pageSpecificCss}
+          .font-mool { font-family: 'Moul', cursive, serif !important; }
+          .font-siemreap { font-family: 'Siemreap', 'Khmer OS Siemreap', sans-serif !important; }
+          * { box-sizing: border-box; }
+        </style>
+      </head>
+      <body class="bg-white text-black font-siemreap antialiased">
+        ${targetElement.outerHTML}
+      </body>
+    </html>
+  `);
+  doc.close();
+
+  // Allow styles and fonts to render before prompting native print dialog
+  setTimeout(() => {
+    try {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+    } catch (e) {
+      console.warn("Iframe print fallback to window.print():", e);
+      window.print();
+    }
+  }, 400);
+}
 
 interface PrintableReceiptProps {
   booking: BookingRecord | any;
@@ -19,10 +145,30 @@ export const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
 }) => {
   const [printMode, setPrintMode] = useState<"pos-80mm" | "a4-invoice">(defaultMode);
 
+  // Synchronize printMode whenever defaultMode or modal state updates
+  useEffect(() => {
+    if (defaultMode) {
+      setPrintMode(defaultMode);
+    }
+  }, [defaultMode, isOpen]);
+
+  // Synchronize body class for print styling
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("print-receipt-modal-active");
+    } else {
+      document.body.classList.remove("print-receipt-modal-active");
+    }
+    return () => {
+      document.body.classList.remove("print-receipt-modal-active");
+    };
+  }, [isOpen]);
+
   if (!isOpen || !booking) return null;
 
   const handlePrint = () => {
-    window.print();
+    const targetId = printMode === "pos-80mm" ? "thermal-receipt" : "a4-invoice";
+    printDedicatedInvoice(targetId, printMode);
   };
 
   const formattedDate = new Date(booking.createdAt || Date.now()).toLocaleString("en-GB", {
@@ -31,11 +177,20 @@ export const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-[80] flex items-center justify-center p-3 sm:p-6 overflow-y-auto print:p-0 print:bg-white print:static">
+    <div
+      id="printable-receipt-backdrop"
+      className="fixed inset-0 bg-black/85 backdrop-blur-md z-[80] flex items-center justify-center p-3 sm:p-6 overflow-y-auto print:p-0 print:bg-white print:static"
+    >
       {/* Container - hide screen header when printing */}
-      <div className="bg-white text-gray-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] flex flex-col overflow-hidden border border-gray-200 my-auto print:max-w-none print:w-full print:border-none print:shadow-none print:max-h-none">
+      <div
+        id="printable-receipt-card"
+        className="bg-white text-gray-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] flex flex-col overflow-hidden border border-gray-200 my-auto print:max-w-none print:w-full print:border-none print:shadow-none print:max-h-none"
+      >
         {/* Modal Controls Bar (Hidden during printing) */}
-        <div className="p-4 bg-[#0c2340] text-white flex items-center justify-between border-b border-white/10 print:hidden shrink-0">
+        <div
+          id="printable-receipt-controls"
+          className="p-4 bg-[#0c2340] text-white flex items-center justify-between border-b border-white/10 print:hidden shrink-0"
+        >
           <div className="flex items-center space-x-2">
             <Printer className="w-5 h-5 text-vvotel-gold" />
             <div>
@@ -78,10 +233,10 @@ export const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
             <button
               type="button"
               onClick={handlePrint}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl transition flex items-center space-x-1.5 shadow"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow"
             >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Print Now</span>
+              <Printer className="w-4 h-4" />
+              <span>បោះពុម្ព (Print Now)</span>
             </button>
 
             <button

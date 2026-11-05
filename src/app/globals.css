@@ -111,3 +111,91 @@ html.spacing-large * {
   transform: rotate(45deg);
   font-size: 14px;
 }
+
+/* ==========================================================================
+   OFFICIAL STANDARDIZED PRINT ENGINE (POS 80mm & A4 Tax Invoice)
+   ========================================================================== */
+@media print {
+  /* Hide the entire website background, header, navbar, footer, sections */
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* When receipt modal is open, strictly hide all non-receipt elements */
+  body.print-receipt-modal-active > *:not(#printable-receipt-backdrop) {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.print-receipt-modal-active header,
+  body.print-receipt-modal-active nav,
+  body.print-receipt-modal-active footer,
+  body.print-receipt-modal-active main,
+  body.print-receipt-modal-active section,
+  body.print-receipt-modal-active aside,
+  body.print-receipt-modal-active #main-content,
+  body.print-receipt-modal-active .no-print,
+  body.print-receipt-modal-active .print-hidden {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Make sure the receipt backdrop is full width, clean white, no overlay */
+  #printable-receipt-backdrop {
+    position: static !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  #printable-receipt-card {
+    border: none !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    border-radius: 0 !important;
+  }
+
+  #printable-receipt-controls {
+    display: none !important;
+  }
+
+  #thermal-receipt {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    margin: 0 auto !important;
+    padding: 4mm 2mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #a4-invoice {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 2mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    min-height: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}

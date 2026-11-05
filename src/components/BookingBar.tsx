@@ -781,7 +781,7 @@ export const BookingBar: React.FC = () => {
 
       {/* Advanced Booking Checkout & PMS Integration Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto print:hidden">
           <div className="bg-white text-gray-900 rounded-3xl shadow-2xl max-w-3xl w-full max-h-[94vh] flex flex-col overflow-hidden border border-gray-100 my-auto animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
             <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between bg-[#0c2340] text-white">
