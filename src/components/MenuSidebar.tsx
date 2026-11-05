@@ -19,6 +19,9 @@ import {
   Smile,
   ShieldCheck,
   Download,
+  Building,
+  Send,
+  ExternalLink,
 } from "lucide-react";
 
 interface MenuSidebarProps {
@@ -254,6 +257,51 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
           >
             <Users className="w-4 h-4 text-vvotel-gold" />
             <span>{t("services")}</span>
+          </a>
+
+          {/* Accor PMS Direct Link */}
+          <a
+            href="https://all.accor.com/booking/en/accor/hotel/A611"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
+            className="flex items-center justify-between p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 text-purple-200 hover:bg-purple-900/50 transition font-bold text-xs"
+          >
+            <div className="flex items-center space-x-2.5">
+              <Building className="w-4 h-4 text-vvotel-gold" />
+              <span>{lang === "km" ? "ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS" : "ALL Accor Central PMS"}</span>
+            </div>
+            <ExternalLink className="w-3.5 h-3.5 text-purple-300" />
+          </a>
+
+          {/* Admin Hotel Management */}
+          <a
+            href="/admin"
+            onClick={onClose}
+            className="flex items-center justify-between p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-200 hover:bg-slate-700 transition font-bold text-xs"
+          >
+            <div className="flex items-center space-x-2.5">
+              <ShieldCheck className="w-4 h-4 text-vvotel-gold" />
+              <span>{lang === "km" ? "ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ (Admin Portal)" : "Hotel Admin Management"}</span>
+            </div>
+            <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+              Live PMS
+            </span>
+          </a>
+
+          {/* Telegram Alert Bot */}
+          <a
+            href="https://t.me/vvotel_bot"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
+            className="flex items-center justify-between p-3 rounded-xl bg-sky-950/40 border border-sky-500/30 text-sky-200 hover:bg-sky-900/50 transition font-bold text-xs"
+          >
+            <div className="flex items-center space-x-2.5">
+              <Send className="w-4 h-4 text-sky-400" />
+              <span>{lang === "km" ? "Telegram Alert Bot (@vvotel_bot)" : "Telegram Alert Bot (@vvotel_bot)"}</span>
+            </div>
+            <ExternalLink className="w-3.5 h-3.5 text-sky-400" />
           </a>
         </div>
 

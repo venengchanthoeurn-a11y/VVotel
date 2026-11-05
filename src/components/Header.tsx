@@ -152,6 +152,26 @@ export const Header: React.FC = () => {
                 <Compass className="w-4 h-4 text-vvotel-gold animate-spin-slow" />
                 <span>{t("destinationGuide")}</span>
               </a>
+
+              {/* Accor PMS Deep Link */}
+              <a
+                href="https://all.accor.com/booking/en/accor/hotel/A611"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-2.5 py-1.5 rounded-lg text-purple-900 bg-purple-50 hover:bg-purple-100 transition font-extrabold text-xs border border-purple-200"
+                title="ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS (Hotel A611)"
+              >
+                ALL Accor
+              </a>
+
+              {/* Admin Portal Link */}
+              <a
+                href="/admin"
+                className="px-2.5 py-1.5 rounded-lg text-slate-800 bg-slate-100 hover:bg-slate-200 transition font-extrabold text-xs border border-slate-300"
+                title="ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ VVotel PMS Admin"
+              >
+                Admin
+              </a>
             </nav>
 
             {/* Right Quick Actions */}

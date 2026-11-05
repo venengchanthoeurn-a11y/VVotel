@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import { PrintableReceipt } from "@/components/PrintableReceipt";
 import {
   Calendar,
   Users,
@@ -28,6 +29,7 @@ import {
   RotateCw,
   AlertCircle,
   Receipt,
+  Send,
 } from "lucide-react";
 
 interface RoomComposition {
@@ -83,6 +85,8 @@ export const BookingBar: React.FC = () => {
   const [khqrTimer, setKhqrTimer] = useState<number>(299); // 5 mins
   const [isVerifyingPayment, setIsVerifyingPayment] = useState<boolean>(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState<any>(null);
+  const [receiptModalOpen, setReceiptModalOpen] = useState<boolean>(false);
+  const [receiptModalMode, setReceiptModalMode] = useState<"pos-80mm" | "a4-invoice">("pos-80mm");
 
   // 3D Secure 2.0 / Card Security states
   const [is3DSModalOpen, setIs3DSModalOpen] = useState<boolean>(false);
@@ -296,7 +300,23 @@ export const BookingBar: React.FC = () => {
         body: JSON.stringify({
           bookingRef: `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`,
           paymentMethod: "CARD_3DSECURE_V2",
-          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
+          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
+          firstName: guestDetails.firstName,
+          lastName: guestDetails.lastName,
+          email: guestDetails.email,
+          phone: guestDetails.phone,
+          country: guestDetails.country,
+          specialRequests: guestDetails.specialRequests,
+          roomType: selectedRoomType,
+          roomNameKm: activeRoom.nameKm,
+          roomNameEn: activeRoom.nameEn,
+          roomCount,
+          checkIn,
+          checkOut,
+          nights,
+          adults: totalAdults,
+          children: totalChildren,
+          includeBreakfast,
           amountUSD: totalAmountUSD,
           cardLast4: cardNumber.replace(/\D/g, "").slice(-4) || "8920",
           cardBrand: getCardBrandInfo(cardNumber).brand,
@@ -326,7 +346,23 @@ export const BookingBar: React.FC = () => {
         body: JSON.stringify({
           bookingRef: `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`,
           paymentMethod: "KHQR_BAKONG",
-          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
+          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
+          firstName: guestDetails.firstName,
+          lastName: guestDetails.lastName,
+          email: guestDetails.email,
+          phone: guestDetails.phone,
+          country: guestDetails.country,
+          specialRequests: guestDetails.specialRequests,
+          roomType: selectedRoomType,
+          roomNameKm: activeRoom.nameKm,
+          roomNameEn: activeRoom.nameEn,
+          roomCount,
+          checkIn,
+          checkOut,
+          nights,
+          adults: totalAdults,
+          children: totalChildren,
+          includeBreakfast,
           amountUSD: totalAmountUSD,
           otpVerified: true,
         }),
@@ -351,7 +387,23 @@ export const BookingBar: React.FC = () => {
         body: JSON.stringify({
           bookingRef: `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`,
           paymentMethod: "PAY_AT_HOTEL",
-          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
+          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
+          firstName: guestDetails.firstName,
+          lastName: guestDetails.lastName,
+          email: guestDetails.email,
+          phone: guestDetails.phone,
+          country: guestDetails.country,
+          specialRequests: guestDetails.specialRequests,
+          roomType: selectedRoomType,
+          roomNameKm: activeRoom.nameKm,
+          roomNameEn: activeRoom.nameEn,
+          roomCount,
+          checkIn,
+          checkOut,
+          nights,
+          adults: totalAdults,
+          children: totalChildren,
+          includeBreakfast,
           amountUSD: totalAmountUSD,
           otpVerified: false,
         }),
@@ -454,17 +506,40 @@ export const BookingBar: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center flex-wrap gap-2.5">
+              {/* Accor PMS Central Link */}
+              <a
+                href={`https://all.accor.com/booking/en/accor/hotel/A611?dateIn=${checkIn}&nights=${nights}&compositions=${rooms.slice(0, roomCount).map((r) => `${r.adults}${r.children ? `-${r.childAges.join("-")}` : ""}`).join(".")}${loyaltyNumber ? `&loyaltyNumber=${loyaltyNumber}` : ""}${clientCode ? `&clientCode=${clientCode}` : ""}${preferentialCode ? `&preferentialCode=${preferentialCode}` : ""}&utm_campaign=vvotel_kampongcham_search`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-500/50 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
+                title="ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS (Hotel A611)"
+              >
+                <Building className="w-3.5 h-3.5 text-vvotel-gold" />
+                <span>{lang === "km" ? "ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS" : "ALL Accor PMS"}</span>
+                <ExternalLink className="w-3 h-3 text-purple-300" />
+              </a>
+
+              {/* Admin Portal Button */}
+              <a
+                href="/admin"
+                className="bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-600 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
+                title="ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ (Admin Management Portal)"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-vvotel-gold" />
+                <span>{lang === "km" ? "ប្រព័ន្ធគ្រប់គ្រង (Admin)" : "Admin"}</span>
+              </a>
+
               <button
                 type="button"
                 onClick={() => setShowAdvancedCodes(!showAdvancedCodes)}
-                className="text-xs text-vvotel-gold hover:text-amber-300 flex items-center space-x-1 transition font-medium"
+                className="text-xs text-vvotel-gold hover:text-amber-300 flex items-center space-x-1 transition font-medium ml-1"
               >
                 <Tag className="w-3.5 h-3.5" />
                 <span>
                   {showAdvancedCodes
                     ? lang === "km" ? "លាក់កូដកិច្ចសន្យា" : "Hide Contract Codes"
-                    : lang === "km" ? "កាតសមាជិក / កូដពិសេស (Special Codes)" : "Loyalty / Preferential Code"}
+                    : lang === "km" ? "កាតសមាជិក / កូដពិសេស" : "Loyalty / Preferential Code"}
                 </span>
                 {showAdvancedCodes ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
               </button>
@@ -1446,21 +1521,58 @@ export const BookingBar: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Telegram Real-time Dispatch Badge */}
+                  <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-left max-w-lg mx-auto text-xs text-sky-900 flex items-center space-x-2.5 shadow-sm">
+                    <Send className="w-4 h-4 text-sky-600 shrink-0" />
+                    <div className="leading-tight">
+                      <strong className="block text-sky-950 font-bold">
+                        {lang === "km" ? "✅ បានបញ្ជូនដំណឹងទៅកាន់ Telegram @vvotel_bot" : "✅ Alert Dispatched to Telegram @vvotel_bot"}
+                      </strong>
+                      <span className="text-[11px] text-sky-800">
+                        {lang === "km"
+                          ? "ទិន្នន័យការកក់ និងទឹកប្រាក់ត្រូវបានកត់ត្រាក្នុងប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគាររួចរាល់។"
+                          : "Booking record and payment details synchronized with Hotel PMS."}
+                      </span>
+                    </div>
+                  </div>
+
                   {/* Actions */}
-                  <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+                    {/* 80mm POS Thermal Receipt */}
                     <button
-                      onClick={() => window.print()}
-                      className="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs uppercase tracking-wider rounded-xl transition flex items-center space-x-1.5 border border-gray-300"
+                      type="button"
+                      onClick={() => {
+                        setReceiptModalMode("pos-80mm");
+                        setReceiptModalOpen(true);
+                      }}
+                      className="px-4 py-2.5 bg-gray-900 hover:bg-black text-vvotel-gold font-bold text-xs rounded-xl transition flex items-center space-x-1.5 shadow"
+                      title="បោះពុម្ពវិក្កយបត្រម៉ាស៊ីនកម្ដៅ 80mm POS Thermal Receipt"
+                    >
+                      <Receipt className="w-4 h-4" />
+                      <span>{lang === "km" ? "វិក្កយបត្រ 80mm POS" : "80mm POS Receipt"}</span>
+                    </button>
+
+                    {/* A4 Tax Invoice */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReceiptModalMode("a4-invoice");
+                        setReceiptModalOpen(true);
+                      }}
+                      className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl transition flex items-center space-x-1.5 shadow"
+                      title="បោះពុម្ពវិក្កយបត្រពន្ធផ្លូវការ A4 Tax Invoice"
                     >
                       <Printer className="w-4 h-4" />
-                      <span>{lang === "km" ? "បោះពុម្ពវិក្កយបត្រ (Print E-Voucher)" : "Print E-Voucher"}</span>
+                      <span>{lang === "km" ? "វិក្កយបត្រពន្ធ A4" : "A4 Tax Invoice"}</span>
                     </button>
+
                     <button
+                      type="button"
                       onClick={() => {
                         setIsModalOpen(false);
                         setCurrentStep("options");
                       }}
-                      className="px-6 py-3 bg-vvotel-navy hover:bg-vvotel-blue text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                      className="px-5 py-2.5 bg-vvotel-navy hover:bg-vvotel-blue text-white font-bold text-xs rounded-xl transition"
                     >
                       {lang === "km" ? "រួចរាល់ (Close)" : "Done"}
                     </button>
@@ -1599,6 +1711,36 @@ export const BookingBar: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Standardized Printable Receipt & Invoice Modal */}
+      <PrintableReceipt
+        booking={
+          paymentConfirmed?.booking || {
+            id: paymentConfirmed?.bookingRef || `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`,
+            guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
+            phone: guestDetails.phone,
+            email: guestDetails.email,
+            roomNameKm: activeRoom.nameKm,
+            roomNameEn: activeRoom.nameEn,
+            roomCount,
+            checkIn,
+            checkOut,
+            nights,
+            adults: totalAdults,
+            children: totalChildren,
+            totalAmountUSD,
+            totalAmountKHR,
+            paymentMethod: paymentMethod === "khqr" ? "KHQR_BAKONG" : paymentMethod === "card" ? "CARD_3DSECURE_V2" : "PAY_AT_HOTEL",
+            paymentStatus: paymentMethod === "hotel" ? "GUARANTEED" : "PAID",
+            transactionId: paymentConfirmed?.transactionId || `TXN-SEC-${Date.now().toString(36).toUpperCase()}`,
+            signatureHMAC: paymentConfirmed?.security?.signatureHMAC,
+            createdAt: new Date().toISOString(),
+          }
+        }
+        isOpen={receiptModalOpen}
+        onClose={() => setReceiptModalOpen(false)}
+        defaultMode={receiptModalMode}
+      />
     </div>
   );
 };

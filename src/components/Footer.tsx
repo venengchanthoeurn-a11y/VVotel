@@ -115,8 +115,28 @@ export const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
-                <a href="#sitemap" className="hover:text-vvotel-gold transition">
-                  {lang === "km" ? "ប្លង់គេហទំព័រ (Sitemap)" : "Sitemap"}
+                <a
+                  href="https://all.accor.com/booking/en/accor/hotel/A611"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-vvotel-gold transition text-purple-300 font-bold"
+                >
+                  {lang === "km" ? "ប្រព័ន្ធកណ្តាល ALL Accor PMS (Hotel A611)" : "ALL Accor Central PMS (Hotel A611)"}
+                </a>
+              </li>
+              <li>
+                <a href="/admin" className="hover:text-vvotel-gold transition text-amber-300 font-bold">
+                  {lang === "km" ? "ផ្ទាំងគ្រប់គ្រងសណ្ឋាគារ (Admin Portal)" : "Hotel Admin Management Portal"}
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://t.me/vvotel_bot"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-vvotel-gold transition text-sky-300 font-bold"
+                >
+                  Telegram Bot: @vvotel_bot
                 </a>
               </li>
               <li>

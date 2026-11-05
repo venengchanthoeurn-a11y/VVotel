@@ -35,3 +35,5 @@ next-env.d.ts
 
 # scratch files
 temple_out.txt
+
+.vercel
