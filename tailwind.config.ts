@@ -20,8 +20,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-montserrat)", "sans-serif"],
-        khmer: ["var(--font-khmer)", "sans-serif"],
+        mool: ["'Moul'", "'Khmer OS Muol Light'", "'Khmer OS Muol'", "serif"],
+        siemreap: ["'Khmer OS Siemreap'", "'Siemreap'", "'Kantumruy Pro'", "'Battambang'", "sans-serif"],
+        sans: ["'Khmer OS Siemreap'", "'Siemreap'", "'Kantumruy Pro'", "var(--font-montserrat)", "sans-serif"],
+        khmer: ["'Khmer OS Siemreap'", "'Siemreap'", "'Kantumruy Pro'", "sans-serif"],
       },
     },
   },

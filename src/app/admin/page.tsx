@@ -38,12 +38,165 @@ import {
   Bell,
   Check,
   MapPin,
-  Compass,
+  Globe,
+  SlidersHorizontal,
 } from "lucide-react";
 import { BookingRecord } from "@/lib/bookings";
 import { PrintableReceipt } from "@/components/PrintableReceipt";
 
-// Harmonic Web Audio Chime for Real-Time Booking Alerts (Works without external mp3 files)
+// Dual Language Translations Dictionary for Admin Portal & Login Screen
+const ADMIN_I18N = {
+  km: {
+    hotelName: "សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម",
+    hotelTagline: "សណ្ឋាគារប្រណីតផ្កាយ ៥ មាត់ទន្លេមេគង្គ",
+    securityGateTitle: "ផ្ទាំងសុវត្ថិភាពគ្រប់គ្រងសណ្ឋាគារ",
+    portalSubtitle: "ប្រព័ន្ធគ្រប់គ្រងការកក់បន្ទប់ តុអាហារ និងភ្ញៀវចូលចេញកណ្តាល",
+    securityNotice: "ការចូលប្រើប្រាស់ត្រូវបានការពារ៖ អនុញ្ញាតសម្រាប់តែថ្នាក់ដឹកនាំ និងបុគ្គលិកទទួលភ្ញៀវផ្លូវការប៉ុណ្ណោះ។",
+    passcodeLabel: "លេខកូដសម្ងាត់អ្នកគ្រប់គ្រង (Admin Passcode / PIN):",
+    passcodePlaceholder: "បញ្ចូលលេខសម្ងាត់ (ឧ. 2052)",
+    quickCodeHint: "ចុចជ្រើសលេខកូដរហ័ស:",
+    rememberSession: "ចងចាំការចូលប្រើលើឧបករណ៍នេះ (Remember Session)",
+    enterAdminBtn: "ចូលផ្ទាំងគ្រប់គ្រង (ENTER ADMIN PMS)",
+    backToHome: "ត្រឡប់ទៅកាន់គេហទំព័រ VVotel",
+    invalidCodeError: "លេខកូដសម្ងាត់មិនត្រឹមត្រូវឡើយ! ប្រព័ន្ធអនុញ្ញាតសម្រាប់តែអ្នកគ្រប់គ្រង និងបុគ្គលិកសណ្ឋាគារប៉ុណ្ណោះ។",
+    liveClockLabel: "ម៉ោងនៅកំពង់ចាម:",
+    liveStatus: "ប្រព័ន្ធដំណើរការ ១០០%",
+    authorizedManager: "អ្នកគ្រប់គ្រងផ្លូវការ",
+    showcaseTitle: "ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ និងភោជនីយដ្ឋានកណ្តាល",
+    showcaseSubtitle: "ALL Accor PMS Central Hub & Telegram Real-Time Alerts",
+    feat1Title: "Telegram Bot Real-Time",
+    feat1Desc: "Alerts រាល់ការកក់បន្ទប់ និងតុអាហារ",
+    feat2Title: "Payment Gateway 3DS",
+    feat2Desc: "Bakong KHQR & 3D Secure Card",
+    feat3Title: "ALL Accor PMS Sync",
+    feat3Desc: "ភ្ជាប់ផ្ទាល់ទៅកាន់ប្រព័ន្ធកណ្តាល",
+    feat4Title: "Dual Print Engine",
+    feat4Desc: "POS 80mm & A4 Tax Invoice",
+    addressLabel: "អាសយដ្ឋាន: អគារលេខ ២០៥២, ផ្លូវព្រះមុនីវង្ស, ភូមិ៧, កំពង់ចាម",
+    // Dashboard
+    soundOn: "សំឡេង Alert: បើក",
+    soundOff: "សំឡេង: បិទ",
+    sendTestAlert: "ផ្ញើ Alert ទៅ @vvotel_bot",
+    sendingAlert: "កំពុងផ្ញើ...",
+    refreshData: "ទាញទិន្នន័យ",
+    walkInBtn: "កក់ផ្ទាល់ / Walk-in",
+    accorPmsBtn: "ALL Accor PMS",
+    homeBtn: "គេហទំព័រដើម",
+    logoutBtn: "ចាកចេញ",
+    totalBookings: "ការកក់សរុប",
+    totalRevenue: "ចំណូលសរុប (USD)",
+    roomBookings: "បន្ទប់ស្នាក់នៅ",
+    diningBookings: "កក់តុអាហារ",
+    inHouseGuests: "កំពុងស្នាក់នៅ/តុ",
+    botStatus: "Telegram Bot",
+    searchPlaceholder: "ស្វែងរកតាម ឈ្មោះភ្ញៀវ, លេខកូដកក់, លេខទូរស័ព្ទ, លេខបន្ទប់ ឬតុ...",
+    tabAll: "ទាំងអស់",
+    tabRooms: "🛏️ បន្ទប់",
+    tabDining: "🍽️ តុអាហារ",
+    statusAll: "គ្រប់ស្ថានភាព",
+    statusConfirmed: "បានកក់",
+    statusInHouse: "កំពុងស្នាក់នៅ/តុ",
+    statusCheckedOut: "បានចេញ/ចប់",
+    statusPaid: "បង់រួច",
+    dateAll: "គ្រប់កាលបរិច្ឆេទ",
+    dateTodayIn: "ចូលថ្ងៃនេះ",
+    dateTodayOut: "ចេញថ្ងៃនេះ",
+    tableHeading: "តារាងគ្រប់គ្រងការកក់បន្ទប់ និងតុអាហារ",
+    thRef: "កូដកក់ / ប្រភេទ",
+    thGuest: "ឈ្មោះភ្ញៀវ & ទំនាក់ទំនង",
+    thRoomVenue: "បន្ទប់ / ភោជនីយដ្ឋាន",
+    thSchedule: "កាលបរិច្ឆេទ & ពេលវេលា",
+    thFinance: "ទឹកប្រាក់ & វិធីទូទាត់",
+    thStatus: "ស្ថានភាព",
+    thAction: "សកម្មភាពគ្រប់គ្រង",
+    statusInHouseText: "🛎️ កំពុងស្នាក់នៅ",
+    statusSeatedText: "🍽️ កំពុងទទួលទាន",
+    statusCheckedOutText: "🚪 បានចេញ",
+    statusCompletedText: "🎉 រួចរាល់",
+    statusCancelledText: "❌ បានលុបចោល",
+    statusConfirmedText: "✅ បានកក់",
+    btnCheckIn: "Check-In",
+    btnSeat: "ទទួលតុ",
+    btnCheckOut: "Check-Out",
+    btnComplete: "បញ្ចប់",
+  },
+  en: {
+    hotelName: "Vattanac Hotel (VVotel) Kampong Cham",
+    hotelTagline: "Five-Star Luxury Riverfront Hotel",
+    securityGateTitle: "Hotel PMS Security Gate",
+    portalSubtitle: "Centralized Reservation, Dining & Guest Management System",
+    securityNotice: "Protected Area: Authorized for General Manager and official Front Desk personnel only.",
+    passcodeLabel: "Manager Passcode / PIN:",
+    passcodePlaceholder: "Enter Passcode (e.g. 2052)",
+    quickCodeHint: "Quick PIN selection:",
+    rememberSession: "Remember session on this device",
+    enterAdminBtn: "ENTER ADMIN PMS",
+    backToHome: "Return to VVotel Website",
+    invalidCodeError: "Invalid security passcode! Access is restricted to authorized hotel staff only.",
+    liveClockLabel: "Kampong Cham Time:",
+    liveStatus: "System Live 100%",
+    authorizedManager: "Authorized Manager",
+    showcaseTitle: "Central Hotel & Dining Management System",
+    showcaseSubtitle: "ALL Accor PMS Central Hub & Telegram Real-Time Alerts",
+    feat1Title: "Telegram Bot Real-Time",
+    feat1Desc: "Instant alerts for room and table bookings",
+    feat2Title: "3D Secure Payment Gateway",
+    feat2Desc: "Bakong KHQR & 3DS Verified Cards",
+    feat3Title: "ALL Accor PMS Sync",
+    feat3Desc: "Direct integration with central system",
+    feat4Title: "Dual Print Engine",
+    feat4Desc: "POS 80mm & Official A4 Tax Invoice",
+    addressLabel: "Address: No. 2052, Preah Monivong St., Phum 7, Kampong Cham City",
+    // Dashboard
+    soundOn: "Alert Sound: ON",
+    soundOff: "Alert Sound: OFF",
+    sendTestAlert: "Send Test Alert to @vvotel_bot",
+    sendingAlert: "Sending...",
+    refreshData: "Refresh",
+    walkInBtn: "+ Walk-in / Booking",
+    accorPmsBtn: "ALL Accor PMS",
+    homeBtn: "Public Website",
+    logoutBtn: "Sign Out",
+    totalBookings: "Total Bookings",
+    totalRevenue: "Total Revenue (USD)",
+    roomBookings: "Room Stays",
+    diningBookings: "Dining & Tables",
+    inHouseGuests: "In-House / Seated",
+    botStatus: "Telegram Bot",
+    searchPlaceholder: "Search guest name, ref code, phone, room, or table...",
+    tabAll: "All",
+    tabRooms: "🛏️ Rooms",
+    tabDining: "🍽️ Dining",
+    statusAll: "All Status",
+    statusConfirmed: "Confirmed",
+    statusInHouse: "In-House / Seated",
+    statusCheckedOut: "Checked Out",
+    statusPaid: "Paid",
+    dateAll: "All Dates",
+    dateTodayIn: "Today Check-In",
+    dateTodayOut: "Today Check-Out",
+    tableHeading: "Room & Dining Reservation Master Table",
+    thRef: "Ref / Category",
+    thGuest: "Guest & Contact",
+    thRoomVenue: "Room / Restaurant",
+    thSchedule: "Schedule & Dates",
+    thFinance: "Amount & Gateway",
+    thStatus: "Status",
+    thAction: "Actions",
+    statusInHouseText: "🛎️ In-House",
+    statusSeatedText: "🍽️ Seated",
+    statusCheckedOutText: "🚪 Checked Out",
+    statusCompletedText: "🎉 Completed",
+    statusCancelledText: "❌ Cancelled",
+    statusConfirmedText: "✅ Confirmed",
+    btnCheckIn: "Check-In",
+    btnSeat: "Seat Table",
+    btnCheckOut: "Check-Out",
+    btnComplete: "Complete",
+  },
+};
+
+// Harmonic Web Audio Chime for Real-Time Booking Alerts
 function playHotelChime() {
   try {
     if (typeof window === "undefined") return;
@@ -72,6 +225,10 @@ function playHotelChime() {
 }
 
 export default function AdminPage() {
+  // Language State
+  const [lang, setLang] = useState<"km" | "en">("km");
+  const t = ADMIN_I18N[lang];
+
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [passcode, setPasscode] = useState<string>("");
@@ -80,7 +237,7 @@ export default function AdminPage() {
   const [rememberLogin, setRememberLogin] = useState<boolean>(true);
   const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
 
-  // Live Clock State (Phnom Penh / Kampong Cham time)
+  // Live Clock State
   const [currentTimeStr, setCurrentTimeStr] = useState<string>("");
 
   // Sound alert toggle
@@ -99,10 +256,10 @@ export default function AdminPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL"); // ALL, ROOM, DINING
-  const [selectedStatus, setSelectedStatus] = useState<string>("ALL"); // ALL, CONFIRMED, CHECKED_IN, CHECKED_OUT, PAID
-  const [dateFilter, setDateFilter] = useState<string>("ALL"); // ALL, TODAY_IN, TODAY_OUT
+  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+  const [dateFilter, setDateFilter] = useState<string>("ALL");
 
-  // Known booking IDs tracking for real-time alert trigger
+  // Tracking
   const knownBookingIdsRef = useRef<Set<string>>(new Set());
   const initialLoadDoneRef = useRef<boolean>(false);
 
@@ -118,7 +275,7 @@ export default function AdminPage() {
   const [receiptOpen, setReceiptOpen] = useState<boolean>(false);
   const [receiptMode, setReceiptMode] = useState<"pos-80mm" | "a4-invoice">("pos-80mm");
 
-  // Check-in / Room assign modal state
+  // Check-in modal state
   const [checkInModalBooking, setCheckInModalBooking] = useState<BookingRecord | null>(null);
   const [assignedRoomNumber, setAssignedRoomNumber] = useState<string>("");
 
@@ -140,6 +297,23 @@ export default function AdminPage() {
     paymentMethod: "PAY_AT_HOTEL",
     roomNumber: "201",
   });
+
+  // Load language preference
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedLang = localStorage.getItem("vvotel_admin_lang") as "km" | "en" | null;
+      if (savedLang === "km" || savedLang === "en") {
+        setLang(savedLang);
+      }
+    }
+  }, []);
+
+  const switchLanguage = (newLang: "km" | "en") => {
+    setLang(newLang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("vvotel_admin_lang", newLang);
+    }
+  };
 
   // Live Clock updater
   useEffect(() => {
@@ -188,9 +362,7 @@ export default function AdminPage() {
       }
       fetchBookings(true);
     } else {
-      setPasscodeError(
-        "លេខកូដសម្ងាត់មិនត្រឹមត្រូវឡើយ! ប្រព័ន្ធអនុញ្ញាតសម្រាប់តែអ្នកគ្រប់គ្រង និងបុគ្គលិកសណ្ឋាគារប៉ុណ្ណោះ។"
-      );
+      setPasscodeError(t.invalidCodeError);
     }
   };
 
@@ -213,7 +385,7 @@ export default function AdminPage() {
         serverList = data.bookings;
       }
 
-      // Check client-side recorded bookings (from website booking or dining reservation)
+      // Merge with client-side recorded bookings
       let localList: BookingRecord[] = [];
       if (typeof window !== "undefined") {
         try {
@@ -296,20 +468,20 @@ export default function AdminPage() {
         setTelegramStatus({
           loading: false,
           success: true,
-          message: data.message || "បានផ្ញើ Alert ទៅកាន់ @vvotel_bot រួចរាល់!",
+          message: data.message || (lang === "km" ? "បានផ្ញើ Alert ទៅកាន់ @vvotel_bot រួចរាល់!" : "Alert sent to @vvotel_bot!"),
         });
       } else {
         setTelegramStatus({
           loading: false,
           success: false,
-          message: data.error || "មិនអាចផ្ញើទៅកាន់ Telegram បានទេ",
+          message: data.error || "Failed to contact Telegram API",
         });
       }
     } catch {
       setTelegramStatus({
         loading: false,
         success: false,
-        message: "Network Error: មិនអាចទាក់ទង Telegram API បានទេ",
+        message: "Network Error: Cannot reach Telegram",
       });
     }
 
@@ -336,6 +508,21 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success) {
+        // Also update local storage cache
+        if (typeof window !== "undefined") {
+          try {
+            const raw = localStorage.getItem("vvotel_client_bookings");
+            if (raw) {
+              const list: BookingRecord[] = JSON.parse(raw);
+              const idx = list.findIndex((b) => b.id === checkInModalBooking.id);
+              if (idx !== -1) {
+                list[idx].stayStatus = nextStatus;
+                list[idx].roomNumber = assignedRoomNumber || list[idx].roomNumber;
+                localStorage.setItem("vvotel_client_bookings", JSON.stringify(list));
+              }
+            }
+          } catch (e) {}
+        }
         setCheckInModalBooking(null);
         setAssignedRoomNumber("");
         await fetchBookings(false);
@@ -348,8 +535,8 @@ export default function AdminPage() {
   // Perform Check-out or Complete Dining
   const handleCheckOut = async (id: string, isDining = false) => {
     const confirmMsg = isDining
-      ? "តើអ្នកពិតជាចង់បញ្ចប់ការទទួលទាន (Complete Dining Order) មែនទេ?"
-      : "តើអ្នកពិតជាចង់ Check-out ភ្ញៀវនេះមែនទេ? (Check-out Time: 12:00 Standard)";
+      ? (lang === "km" ? "តើអ្នកពិតជាចង់បញ្ចប់ការទទួលទានមែនទេ?" : "Confirm complete dining order?")
+      : (lang === "km" ? "តើអ្នកពិតជាចង់ Check-out ភ្ញៀវនេះមែនទេ? (ម៉ោង Check-out: 12:00)" : "Confirm check-out this guest?");
     if (!confirm(confirmMsg)) return;
 
     try {
@@ -363,6 +550,19 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success) {
+        if (typeof window !== "undefined") {
+          try {
+            const raw = localStorage.getItem("vvotel_client_bookings");
+            if (raw) {
+              const list: BookingRecord[] = JSON.parse(raw);
+              const idx = list.findIndex((b) => b.id === id);
+              if (idx !== -1) {
+                list[idx].stayStatus = nextStatus;
+                localStorage.setItem("vvotel_client_bookings", JSON.stringify(list));
+              }
+            }
+          } catch (e) {}
+        }
         await fetchBookings(false);
       }
     } catch (err) {
@@ -393,7 +593,15 @@ export default function AdminPage() {
           }),
         });
         const data = await res.json();
-        if (data.success) {
+        if (data.success && data.booking) {
+          if (typeof window !== "undefined") {
+            try {
+              const raw = localStorage.getItem("vvotel_client_bookings");
+              const list = raw ? JSON.parse(raw) : [];
+              list.unshift(data.booking);
+              localStorage.setItem("vvotel_client_bookings", JSON.stringify(list));
+            } catch (e) {}
+          }
           setIsNewBookingModalOpen(false);
           await fetchBookings(false);
         }
@@ -448,13 +656,19 @@ export default function AdminPage() {
         });
 
         const data = await res.json();
-        if (data.success) {
+        if (data.success && data.booking) {
+          if (typeof window !== "undefined") {
+            try {
+              const raw = localStorage.getItem("vvotel_client_bookings");
+              const list = raw ? JSON.parse(raw) : [];
+              list.unshift(data.booking);
+              localStorage.setItem("vvotel_client_bookings", JSON.stringify(list));
+            } catch (e) {}
+          }
           setIsNewBookingModalOpen(false);
           await fetchBookings(false);
-          if (data.booking) {
-            setReceiptBooking(data.booking);
-            setReceiptOpen(true);
-          }
+          setReceiptBooking(data.booking);
+          setReceiptOpen(true);
         }
       }
     } catch (err) {
@@ -533,8 +747,6 @@ export default function AdminPage() {
     .reduce((acc, b) => acc + (b.totalAmountUSD || 0), 0);
   const totalRevenueKHR = totalRevenueUSD * 4100;
 
-  const todayCheckIns = bookings.filter((b) => b.checkIn === todayStr);
-  const todayCheckOuts = bookings.filter((b) => b.checkOut === todayStr);
   const inHouseGuests = bookings.filter(
     (b) => b.stayStatus === "CHECKED_IN" || b.stayStatus === "SEATED"
   );
@@ -573,145 +785,182 @@ export default function AdminPage() {
 
   if (isCheckingAuth) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-4 font-siemreap">
         <div className="flex flex-col items-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#0c2340] border-2 border-amber-300 flex items-center justify-center text-amber-300 font-black text-2xl shadow-lg animate-pulse">
+          <div className="w-14 h-14 rounded-2xl bg-[#0c2340] border-2 border-amber-300 flex items-center justify-center text-amber-300 font-mool text-2xl shadow-lg animate-pulse">
             V
           </div>
-          <span className="text-xs font-bold text-gray-600">កំពុងផ្ទៀងផ្ទាត់សិទ្ធិគ្រប់គ្រង...</span>
+          <span className="text-sm font-semibold text-gray-600">កំពុងផ្ទៀងផ្ទាត់សិទ្ធិគ្រប់គ្រង...</span>
         </div>
       </div>
     );
   }
 
   // =========================================================================
-  // VIEW 1: EXECUTIVE FULL-SCREEN RESPONSIVE SECURITY GATE / LOGIN PORTAL
+  // VIEW 1: EXECUTIVE SECURITY GATE / LOGIN PORTAL
+  // Exactly 50% / 50% Equal Split Layout on Desktop & Auto-size responsive
+  // Using Khmer Mool for main titles, Khmer OS Siemreap for body, with Language Switcher!
   // =========================================================================
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#FAF7F2] font-sans antialiased overflow-x-hidden">
-        {/* Left Hero Panel (Takes 60% on desktop, stacks gracefully on tablet/mobile) */}
-        <div className="lg:w-7/12 xl:w-3/5 min-h-[460px] lg:min-h-screen relative p-8 sm:p-12 lg:p-16 flex flex-col justify-between overflow-hidden bg-[#0c2340] text-white shadow-2xl">
+      <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#FAF7F2] font-siemreap antialiased overflow-x-hidden">
+        {/* Left Information Panel: EXACTLY 50% (w-full lg:w-1/2) */}
+        <div className="w-full lg:w-1/2 min-h-[480px] lg:min-h-screen relative p-8 sm:p-12 lg:p-14 xl:p-16 flex flex-col justify-between overflow-hidden bg-[#0c2340] text-white shadow-2xl">
           {/* Subtle Ambient Golden Gradients */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-700/25 via-[#0c2340] to-[#061424] pointer-events-none" />
           <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Top Branding */}
+          {/* Top Brand Header */}
           <div className="relative z-10 space-y-4">
             <div className="flex items-center space-x-3.5">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#12335e] to-[#0c2340] border-2 border-amber-300/80 flex items-center justify-center text-amber-300 font-black text-3xl shadow-xl shadow-amber-950/20">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#12335e] to-[#0c2340] border-2 border-amber-300/80 flex items-center justify-center text-amber-300 font-mool text-3xl shadow-xl shadow-amber-950/20 shrink-0">
                 V
               </div>
               <div>
-                <span className="text-[11px] font-black uppercase tracking-widest text-amber-300 block">
-                  Five-Star Luxury Riverfront Hotel
+                <span className="text-[11px] font-bold uppercase tracking-widest text-amber-300 block font-siemreap">
+                  {t.hotelTagline}
                 </span>
-                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                  VVotel Kampong Cham
+                <h1 className="text-xl sm:text-2xl font-mool text-white tracking-normal mt-0.5">
+                  {t.hotelName}
                 </h1>
-                <p className="text-xs text-amber-100/70">
-                  សណ្ឋាគារ វឌ្ឍនៈ កំពង់ចាម • ប្រព័ន្ធគ្រប់គ្រងផ្ទៃក្នុងកណ្តាល
+                <p className="text-xs text-amber-100/70 font-siemreap mt-0.5">
+                  {t.portalSubtitle}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Center Showcase Details */}
-          <div className="relative z-10 py-10 lg:py-0 space-y-6 max-w-xl">
+          <div className="relative z-10 py-8 lg:py-6 space-y-5 max-w-xl">
             {/* Live Cambodia Clock Card */}
-            <div className="inline-flex items-center space-x-2.5 bg-white/10 backdrop-blur-md border border-amber-300/30 px-4 py-2 rounded-2xl text-xs text-amber-200">
+            <div className="inline-flex items-center space-x-2.5 bg-white/10 backdrop-blur-md border border-amber-300/30 px-4 py-2 rounded-2xl text-xs text-amber-200 font-siemreap">
               <Clock className="w-4 h-4 text-amber-300 shrink-0" />
-              <span>ម៉ោងនៅកំពង់ចាម: <strong>{currentTimeStr || "Loading..."}</strong></span>
+              <span>{t.liveClockLabel} <strong>{currentTimeStr || "Loading..."}</strong></span>
             </div>
 
-            <h2 className="text-2xl sm:text-4xl font-black leading-tight text-white tracking-tight">
-              ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ និងភោជនីយដ្ឋានកណ្តាល
-              <span className="text-amber-300 block mt-1 font-serif italic text-xl sm:text-2xl">
-                Accor PMS Hub & Real-time Bot Alerts
+            <h2 className="text-2xl sm:text-3xl font-mool leading-relaxed text-white">
+              {t.showcaseTitle}
+              <span className="text-amber-300 block font-serif italic text-base sm:text-lg mt-1 font-normal tracking-wide">
+                {t.showcaseSubtitle}
               </span>
             </h2>
 
             {/* 4 Feature Badges Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 font-siemreap">
               <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 flex items-start space-x-3 backdrop-blur-sm">
                 <Send className="w-5 h-5 text-sky-400 shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs font-bold text-white">Telegram Bot Real-Time</div>
-                  <div className="text-[11px] text-gray-300 mt-0.5">Alerts រាល់ការកក់បន្ទប់ និងតុអាហារ</div>
+                  <div className="text-xs font-bold text-white">{t.feat1Title}</div>
+                  <div className="text-[11px] text-gray-300 mt-0.5">{t.feat1Desc}</div>
                 </div>
               </div>
 
               <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 flex items-start space-x-3 backdrop-blur-sm">
                 <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs font-bold text-white">Payment Gateway 3DS</div>
-                  <div className="text-[11px] text-gray-300 mt-0.5">Bakong KHQR & 3D Secure Card</div>
+                  <div className="text-xs font-bold text-white">{t.feat2Title}</div>
+                  <div className="text-[11px] text-gray-300 mt-0.5">{t.feat2Desc}</div>
                 </div>
               </div>
 
               <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 flex items-start space-x-3 backdrop-blur-sm">
                 <Building className="w-5 h-5 text-amber-300 shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs font-bold text-white">ALL Accor PMS Sync</div>
-                  <div className="text-[11px] text-gray-300 mt-0.5">ភ្ជាប់ផ្ទាល់ទៅកាន់ប្រព័ន្ធកណ្តាល</div>
+                  <div className="text-xs font-bold text-white">{t.feat3Title}</div>
+                  <div className="text-[11px] text-gray-300 mt-0.5">{t.feat3Desc}</div>
                 </div>
               </div>
 
               <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 flex items-start space-x-3 backdrop-blur-sm">
                 <Printer className="w-5 h-5 text-purple-300 shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-xs font-bold text-white">Dual Print Engine</div>
-                  <div className="text-[11px] text-gray-300 mt-0.5">POS 80mm & A4 Tax Invoice</div>
+                  <div className="text-xs font-bold text-white">{t.feat4Title}</div>
+                  <div className="text-[11px] text-gray-300 mt-0.5">{t.feat4Desc}</div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom Security Status */}
-          <div className="relative z-10 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between text-[11px] text-gray-300 gap-2">
+          {/* Bottom Footer Info */}
+          <div className="relative z-10 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between text-[11px] text-gray-300 gap-2 font-siemreap">
             <span className="flex items-center space-x-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span className="text-emerald-300 font-bold">Cloud PMS Live: 100% Active</span>
+              <span className="text-emerald-300 font-bold">{t.liveStatus}</span>
             </span>
-            <span>អាសយដ្ឋាន: អគារលេខ ២០៥២, ផ្លូវព្រះមុនីវង្ស, ភូមិ៧, កំពង់ចាម</span>
+            <span>{t.addressLabel}</span>
           </div>
         </div>
 
-        {/* Right Security Login Portal Panel (Auto size responsive screen) */}
-        <div className="lg:w-5/12 xl:w-2/5 p-6 sm:p-10 lg:p-12 xl:p-16 flex flex-col justify-center items-center bg-[#FAF7F2] w-full">
-          <div className="w-full max-w-md bg-white border border-amber-200/90 rounded-3xl p-6 sm:p-10 shadow-xl shadow-amber-950/5 relative overflow-hidden">
+        {/* Right Login Panel: EXACTLY 50% (w-full lg:w-1/2) with Language Switcher */}
+        <div className="w-full lg:w-1/2 min-h-screen p-6 sm:p-10 lg:p-12 xl:p-16 flex flex-col justify-between items-center bg-[#FAF7F2]">
+          {/* Top Bar with Language Switcher */}
+          <div className="w-full max-w-lg flex items-center justify-between pb-4">
+            <div className="flex items-center space-x-1.5 text-xs text-gray-500 font-siemreap">
+              <Lock className="w-3.5 h-3.5 text-amber-700" />
+              <span>{t.authorizedManager}</span>
+            </div>
+
+            {/* Language Switcher Buttons */}
+            <div className="bg-white border border-amber-200/90 rounded-xl p-1 flex items-center space-x-1 shadow-sm font-siemreap text-xs">
+              <button
+                type="button"
+                onClick={() => switchLanguage("km")}
+                className={`px-3 py-1 rounded-lg font-bold transition flex items-center space-x-1 ${
+                  lang === "km"
+                    ? "bg-[#0c2340] text-amber-300 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <span>🇰🇭 ខ្មែរ (KM)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => switchLanguage("en")}
+                className={`px-3 py-1 rounded-lg font-bold transition flex items-center space-x-1 ${
+                  lang === "en"
+                    ? "bg-[#0c2340] text-amber-300 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <span>🇬🇧 English (EN)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Center Login Card: Beautifully proportioned with Khmer Mool & Siemreap */}
+          <div className="w-full max-w-lg bg-white border border-amber-200/90 rounded-3xl p-8 sm:p-10 shadow-xl shadow-amber-950/5 relative overflow-hidden font-siemreap my-auto">
             {/* Top Decorative Gold Accent Line */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600" />
 
             {/* Header */}
-            <div className="text-center space-y-2 pt-2">
-              <div className="w-14 h-14 rounded-2xl bg-[#0c2340] border-2 border-amber-300 flex items-center justify-center text-amber-300 font-black text-2xl shadow-md mx-auto">
+            <div className="text-center space-y-2.5 pt-2">
+              <div className="w-14 h-14 rounded-2xl bg-[#0c2340] border-2 border-amber-300 flex items-center justify-center text-amber-300 font-mool text-2xl shadow-md mx-auto">
                 V
               </div>
-              <span className="text-[11px] font-black tracking-widest uppercase text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 inline-block">
-                Hotel Executive Security Gate
+              <span className="text-[11px] font-bold tracking-widest uppercase text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 inline-block font-siemreap">
+                VVotel Executive Security Portal
               </span>
-              <h2 className="text-2xl font-black text-[#0c2340] tracking-tight">
-                ផ្ទាំងគ្រប់គ្រងសណ្ឋាគារ
+              <h2 className="text-xl sm:text-2xl font-mool text-[#0c2340] tracking-normal">
+                {t.securityGateTitle}
               </h2>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                សូមបញ្ចូលលេខកូដសម្ងាត់អ្នកគ្រប់គ្រងដើម្បីចូលប្រើប្រាស់
+              <p className="text-xs text-gray-500 leading-relaxed font-siemreap">
+                {t.securityNotice}
               </p>
             </div>
 
-            {/* Error Notice */}
+            {/* Error Message */}
             {passcodeError && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center space-x-2 text-xs text-red-700 font-bold animate-in fade-in">
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center space-x-2 text-xs text-red-700 font-bold animate-in fade-in font-siemreap">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{passcodeError}</span>
               </div>
             )}
 
             {/* Login Form */}
-            <form onSubmit={handleLogin} className="mt-6 space-y-4">
+            <form onSubmit={handleLogin} className="mt-6 space-y-4 font-siemreap">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                  លេខកូដសម្ងាត់អ្នកគ្រប់គ្រង (Admin Passcode / PIN):
+                  {t.passcodeLabel}
                 </label>
                 <div className="relative">
                   <input
@@ -723,7 +972,7 @@ export default function AdminPage() {
                       setPasscode(e.target.value);
                       if (passcodeError) setPasscodeError("");
                     }}
-                    placeholder="បញ្ចូលលេខសម្ងាត់ (ឧ. 2052)"
+                    placeholder={t.passcodePlaceholder}
                     className="w-full bg-[#FAF8F4] border border-amber-200 rounded-2xl pl-10 pr-11 py-3.5 text-sm font-mono text-gray-900 focus:outline-none focus:border-amber-500 focus:bg-white transition shadow-inner"
                   />
                   <Key className="w-4 h-4 text-gray-400 absolute left-3.5 top-4" />
@@ -731,7 +980,7 @@ export default function AdminPage() {
                     type="button"
                     onClick={() => setShowPasscode(!showPasscode)}
                     className="absolute right-3.5 top-4 text-gray-400 hover:text-gray-700 transition"
-                    title={showPasscode ? "លាក់លេខកូដ" : "បង្ហាញលេខកូដ"}
+                    title={showPasscode ? "Hide" : "Show"}
                   >
                     {showPasscode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -739,19 +988,19 @@ export default function AdminPage() {
 
                 {/* Quick Fill Passcode Buttons */}
                 <div className="flex items-center justify-between text-xs text-gray-600 mt-2.5">
-                  <span className="text-[11px] text-gray-500">ចុចជ្រើសលេខកូដរហ័ស:</span>
-                  <div className="flex items-center space-x-1.5">
+                  <span className="text-[11px] text-gray-500">{t.quickCodeHint}</span>
+                  <div className="flex items-center space-x-1.5 font-mono">
                     <button
                       type="button"
                       onClick={() => setPasscode("2052")}
-                      className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-[11px] font-mono font-bold transition shadow-2xs"
+                      className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-[11px] font-bold transition shadow-2xs"
                     >
                       PIN: 2052
                     </button>
                     <button
                       type="button"
                       onClick={() => setPasscode("vvotel2026")}
-                      className="px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-300 rounded-lg text-[11px] font-mono font-bold transition shadow-2xs"
+                      className="px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-300 rounded-lg text-[11px] font-bold transition shadow-2xs"
                     >
                       vvotel2026
                     </button>
@@ -769,17 +1018,17 @@ export default function AdminPage() {
                   className="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500 cursor-pointer"
                 />
                 <label htmlFor="rememberLogin" className="text-xs text-gray-600 cursor-pointer select-none">
-                  ចងចាំការចូលប្រើលើឧបករណ៍នេះ (Remember Session)
+                  {t.rememberSession}
                 </label>
               </div>
 
               {/* Enter Button */}
               <button
                 type="submit"
-                className="w-full mt-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white font-extrabold text-sm py-3.5 px-4 rounded-2xl shadow-md shadow-amber-900/10 hover:shadow-lg transition-all flex items-center justify-center space-x-2"
+                className="w-full mt-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-md shadow-amber-900/10 hover:shadow-lg transition-all flex items-center justify-center space-x-2"
               >
                 <LogIn className="w-4 h-4" />
-                <span>ចូលផ្ទាំងគ្រប់គ្រង (ENTER ADMIN PMS)</span>
+                <span>{t.enterAdminBtn}</span>
               </button>
             </form>
 
@@ -787,12 +1036,17 @@ export default function AdminPage() {
             <div className="mt-6 pt-4 border-t border-amber-100 text-center">
               <Link
                 href="/"
-                className="text-xs text-gray-500 hover:text-amber-800 font-bold transition inline-flex items-center space-x-1"
+                className="text-xs text-gray-500 hover:text-amber-800 font-bold transition inline-flex items-center space-x-1 font-siemreap"
               >
                 <Home className="w-3.5 h-3.5" />
-                <span>ត្រឡប់ទៅគេហទំព័រ VVotel</span>
+                <span>{t.backToHome}</span>
               </Link>
             </div>
+          </div>
+
+          {/* Bottom Copyright */}
+          <div className="w-full max-w-lg text-center pt-4 text-[11px] text-gray-400 font-siemreap">
+            © 2026 Vattanac Hotel (VVotel) Kampong Cham • ALL Accor PMS Sync
           </div>
         </div>
       </div>
@@ -801,40 +1055,66 @@ export default function AdminPage() {
 
   // =========================================================================
   // VIEW 2: AUTHENTICATED LUXURY PMS DASHBOARD
-  // Full-width fluid responsive design with Warm Egg-Cream & Pure White
+  // Full fluid width, Khmer Mool headings, Khmer OS Siemreap body & Language Switcher!
   // =========================================================================
   return (
-    <div className="min-h-screen w-full bg-[#FAF7F2] text-gray-900 flex flex-col font-sans antialiased overflow-x-hidden">
-      {/* Top Navigation Bar: Full Width & Clean */}
+    <div className="min-h-screen w-full bg-[#FAF7F2] text-gray-900 flex flex-col font-siemreap antialiased overflow-x-hidden">
+      {/* Top Navigation Bar */}
       <header className="bg-white/95 backdrop-blur-md border-b border-amber-200/80 sticky top-0 z-30 px-4 sm:px-6 lg:px-8 xl:px-12 py-3 shadow-sm">
         <div className="w-full flex flex-wrap items-center justify-between gap-4">
           {/* Brand & Live Clock */}
           <div className="flex items-center space-x-3.5">
-            <div className="w-10 h-10 rounded-xl bg-[#0c2340] border border-amber-300 flex items-center justify-center text-amber-300 font-black text-xl shadow-sm shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#0c2340] border border-amber-300 flex items-center justify-center text-amber-300 font-mool text-xl shadow-sm shrink-0">
               V
             </div>
             <div>
               <div className="flex items-center space-x-2 flex-wrap">
-                <span className="font-extrabold text-lg text-[#0c2340] tracking-tight">
+                <span className="font-mool text-base sm:text-lg text-[#0c2340] tracking-normal">
                   VVotel PMS Admin Portal
                 </span>
-                <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-siemreap">
                   Live System
                 </span>
-                <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  Authorized Manager
+                <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full font-siemreap">
+                  {t.authorizedManager}
                 </span>
               </div>
-              <p className="text-[11px] text-gray-500 flex items-center space-x-2 mt-0.5">
-                <span>សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម</span>
+              <p className="text-[11px] text-gray-500 flex items-center space-x-2 mt-0.5 font-siemreap">
+                <span>{t.hotelName}</span>
                 <span>•</span>
                 <span className="font-mono font-bold text-amber-800">{currentTimeStr}</span>
               </p>
             </div>
           </div>
 
-          {/* Action Toolbar */}
-          <div className="flex items-center flex-wrap gap-2">
+          {/* Action Toolbar with Language Switcher */}
+          <div className="flex items-center flex-wrap gap-2 font-siemreap">
+            {/* Language Switcher */}
+            <div className="bg-white border border-amber-200 rounded-xl p-1 flex items-center space-x-1 shadow-2xs text-xs">
+              <button
+                type="button"
+                onClick={() => switchLanguage("km")}
+                className={`px-2.5 py-1.5 rounded-lg font-bold transition ${
+                  lang === "km"
+                    ? "bg-[#0c2340] text-amber-300 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                🇰🇭 ខ្មែរ
+              </button>
+              <button
+                type="button"
+                onClick={() => switchLanguage("en")}
+                className={`px-2.5 py-1.5 rounded-lg font-bold transition ${
+                  lang === "en"
+                    ? "bg-[#0c2340] text-amber-300 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                🇬🇧 EN
+              </button>
+            </div>
+
             {/* Audio Alert Toggle */}
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
@@ -843,10 +1123,10 @@ export default function AdminPage() {
                   ? "bg-amber-50 text-amber-900 border-amber-300"
                   : "bg-gray-100 text-gray-500 border-gray-300"
               }`}
-              title={soundEnabled ? "សំឡេង Alert កំពុងបើក (ចុចដើម្បីបិទ)" : "សំឡេង Alert កំពុងបិទ (ចុចដើម្បីបើក)"}
+              title={soundEnabled ? "Mute" : "Unmute"}
             >
               {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-amber-600" /> : <VolumeX className="w-3.5 h-3.5" />}
-              <span className="hidden sm:inline">{soundEnabled ? "សំឡេង Alert: បើក" : "សំឡេង: បិទ"}</span>
+              <span className="hidden sm:inline">{soundEnabled ? t.soundOn : t.soundOff}</span>
             </button>
 
             {/* Telegram Bot Alert Test */}
@@ -854,10 +1134,9 @@ export default function AdminPage() {
               onClick={handleTestTelegram}
               disabled={telegramStatus.loading}
               className="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition disabled:opacity-50"
-              title="ផ្ញើសារ Alert សាកល្បងទៅកាន់ Telegram Bot @vvotel_bot"
             >
               <Send className={`w-3.5 h-3.5 ${telegramStatus.loading ? "animate-spin" : ""}`} />
-              <span>{telegramStatus.loading ? "កំពុងផ្ញើ..." : "ផ្ញើ Alert ទៅ @vvotel_bot"}</span>
+              <span>{telegramStatus.loading ? t.sendingAlert : t.sendTestAlert}</span>
             </button>
 
             {/* Direct Link to Telegram Bot */}
@@ -876,19 +1155,19 @@ export default function AdminPage() {
               onClick={() => fetchBookings(false)}
               disabled={loading}
               className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 text-xs font-bold p-2 sm:px-3 sm:py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
-              title="ទាញទិន្នន័យថ្មី"
+              title={t.refreshData}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-amber-600" : ""}`} />
-              <span className="hidden sm:inline">ទាញទិន្នន័យ</span>
+              <span className="hidden sm:inline">{t.refreshData}</span>
             </button>
 
             {/* Add Walk-in */}
             <button
               onClick={() => setIsNewBookingModalOpen(true)}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-black px-3.5 py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition"
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition"
             >
               <Plus className="w-4 h-4" />
-              <span>កក់ផ្ទាល់ / Walk-in</span>
+              <span>{t.walkInBtn}</span>
             </button>
 
             {/* Accor PMS link */}
@@ -898,54 +1177,58 @@ export default function AdminPage() {
               rel="noopener noreferrer"
               className="bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition"
             >
-              <span>ALL Accor PMS</span>
+              <span>{t.accorPmsBtn}</span>
               <ExternalLink className="w-3 h-3 text-purple-600" />
             </a>
 
-            {/* Website Link */}
+            {/* Public Website */}
             <Link
               href="/"
               className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 text-xs font-bold p-2 sm:px-3 sm:py-2 rounded-xl flex items-center space-x-1 transition"
-              title="ត្រឡប់ទៅកាន់គេហទំព័រ"
             >
               <Home className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">គេហទំព័រដើម</span>
+              <span className="hidden sm:inline">{t.homeBtn}</span>
             </Link>
 
             {/* Logout Button */}
             <button
               onClick={handleLogout}
               className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1 transition"
-              title="ចាកចេញពីប្រព័ន្ធគ្រប់គ្រង (Sign Out)"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">ចាកចេញ</span>
+              <span className="hidden sm:inline">{t.logoutBtn}</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Fluid Content Area (Expanded to full screen with balanced gutters) */}
-      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 flex-1 space-y-6">
-        {/* Real-time Dynamic Booking Alert Banner (Pops up when a new room or dining booking arrives) */}
+      {/* Main Fluid Content Area */}
+      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 flex-1 space-y-6 font-siemreap">
+        {/* Real-time Dynamic Booking Alert Banner */}
         {newBookingAlert && (
-          <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 text-white p-4 rounded-2xl shadow-lg border border-amber-300 flex items-center justify-between animate-in slide-in-from-top-3 duration-300">
+          <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 text-white p-4 rounded-2xl shadow-lg border border-amber-300 flex items-center justify-between animate-in slide-in-from-top-3 duration-300 font-siemreap">
             <div className="flex items-center space-x-3.5">
-              <div className="w-10 h-10 rounded-xl bg-white text-amber-700 flex items-center justify-center font-black shadow-md shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-white text-amber-700 flex items-center justify-center font-bold shadow-md shrink-0">
                 <Bell className="w-5 h-5 animate-bounce" />
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
-                    {newBookingAlert.category === "DINING" ? "🍽️ ការកក់តុអាហារថ្មី" : "🛏️ ការកក់បន្ទប់ថ្មី"}
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+                    {newBookingAlert.category === "DINING"
+                      ? (lang === "km" ? "🍽️ ការកក់តុអាហារថ្មី" : "🍽️ New Dining Booking")
+                      : (lang === "km" ? "🛏️ ការកក់បន្ទប់ថ្មី" : "🛏️ New Room Booking")}
                   </span>
                   <span className="font-mono text-xs opacity-90">{newBookingAlert.id}</span>
                 </div>
-                <h4 className="font-extrabold text-sm sm:text-base mt-0.5">
-                  ភ្ញៀវ <strong>{newBookingAlert.guestName}</strong> បានកក់ <strong>{newBookingAlert.title}</strong>
+                <h4 className="font-bold text-sm sm:text-base mt-0.5">
+                  {lang === "km"
+                    ? `ភ្ញៀវ ${newBookingAlert.guestName} បានកក់ ${newBookingAlert.title}`
+                    : `Guest ${newBookingAlert.guestName} reserved ${newBookingAlert.title}`}
                 </h4>
                 <p className="text-[11px] text-amber-100">
-                  ទិន្នន័យត្រូវបានបញ្ជូនទៅកាន់ Telegram Bot (@vvotel_bot) និងបាន Update លើផ្ទាំងគ្រប់គ្រងរួចរាល់!
+                  {lang === "km"
+                    ? "ទិន្នន័យត្រូវបានបញ្ជូនទៅកាន់ Telegram Bot (@vvotel_bot) និងបាន Update លើផ្ទាំងគ្រប់គ្រងរួចរាល់!"
+                    : "Notification dispatched to Telegram Bot (@vvotel_bot) & updated on PMS!"}
                 </p>
               </div>
             </div>
@@ -958,10 +1241,10 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Telegram Test Alert Feedback Toast */}
+        {/* Telegram Test Alert Toast */}
         {telegramStatus.message && (
           <div
-            className={`p-4 rounded-2xl border flex items-center justify-between text-xs sm:text-sm font-bold shadow-md animate-in fade-in slide-in-from-top-2 ${
+            className={`p-4 rounded-2xl border flex items-center justify-between text-xs sm:text-sm font-bold shadow-md animate-in fade-in slide-in-from-top-2 font-siemreap ${
               telegramStatus.success
                 ? "bg-emerald-50 border-emerald-300 text-emerald-900"
                 : "bg-red-50 border-red-300 text-red-900"
@@ -980,29 +1263,29 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Executive KPI Metric Cards (Responsive Grid filling full screen width) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 xl:gap-5">
+        {/* Executive KPI Metric Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 xl:gap-5 font-siemreap">
           {/* Card 1: Total Bookings */}
           <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
             <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
-              <span>ការកក់សរុប</span>
+              <span>{t.totalBookings}</span>
               <Calendar className="w-4 h-4 text-amber-600" />
             </div>
             <div className="mt-2.5">
-              <span className="text-2xl sm:text-3xl font-black text-[#0c2340]">{bookings.length}</span>
-              <span className="text-xs text-gray-500 ml-1">កក់</span>
+              <span className="text-2xl sm:text-3xl font-bold text-[#0c2340] font-mono">{bookings.length}</span>
+              <span className="text-xs text-gray-500 ml-1">{lang === "km" ? "កក់" : "units"}</span>
             </div>
-            <span className="text-[10px] text-emerald-700 mt-1 font-semibold">ទិន្នន័យកត់ត្រា 100%</span>
+            <span className="text-[10px] text-emerald-700 mt-1 font-semibold">{t.liveStatus}</span>
           </div>
 
           {/* Card 2: Total Revenue USD */}
           <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
             <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
-              <span>ចំណូលសរុប (USD)</span>
+              <span>{t.totalRevenue}</span>
               <CreditCard className="w-4 h-4 text-emerald-600" />
             </div>
             <div className="mt-2.5">
-              <span className="text-2xl sm:text-3xl font-black text-emerald-700">
+              <span className="text-2xl sm:text-3xl font-bold text-emerald-700 font-mono">
                 ${totalRevenueUSD.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
@@ -1014,12 +1297,12 @@ export default function AdminPage() {
           {/* Card 3: Room Bookings */}
           <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
             <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
-              <span>បន្ទប់ស្នាក់នៅ</span>
+              <span>{t.roomBookings}</span>
               <BedDouble className="w-4 h-4 text-sky-600" />
             </div>
             <div className="mt-2.5">
-              <span className="text-2xl sm:text-3xl font-black text-sky-900">{roomBookings.length}</span>
-              <span className="text-xs text-gray-500 ml-1">បន្ទប់</span>
+              <span className="text-2xl sm:text-3xl font-bold text-sky-900 font-mono">{roomBookings.length}</span>
+              <span className="text-xs text-gray-500 ml-1">{lang === "km" ? "បន្ទប់" : "rooms"}</span>
             </div>
             <span className="text-[10px] text-sky-700 mt-1 font-semibold">Accommodation</span>
           </div>
@@ -1027,12 +1310,12 @@ export default function AdminPage() {
           {/* Card 4: Dining & Table Orders */}
           <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
             <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
-              <span>កក់តុអាហារ</span>
+              <span>{t.diningBookings}</span>
               <Utensils className="w-4 h-4 text-amber-700" />
             </div>
             <div className="mt-2.5">
-              <span className="text-2xl sm:text-3xl font-black text-amber-900">{diningBookings.length}</span>
-              <span className="text-xs text-gray-500 ml-1">តុ</span>
+              <span className="text-2xl sm:text-3xl font-bold text-amber-900 font-mono">{diningBookings.length}</span>
+              <span className="text-xs text-gray-500 ml-1">{lang === "km" ? "តុ" : "tables"}</span>
             </div>
             <span className="text-[10px] text-amber-700 mt-1 font-semibold">Dining & Bar</span>
           </div>
@@ -1040,12 +1323,12 @@ export default function AdminPage() {
           {/* Card 5: In-House & Seated */}
           <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
             <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
-              <span>កំពុងស្នាក់នៅ/តុ</span>
+              <span>{t.inHouseGuests}</span>
               <Users className="w-4 h-4 text-purple-600" />
             </div>
             <div className="mt-2.5">
-              <span className="text-2xl sm:text-3xl font-black text-purple-900">{inHouseGuests.length}</span>
-              <span className="text-xs text-gray-500 ml-1">ភ្ញៀវ</span>
+              <span className="text-2xl sm:text-3xl font-bold text-purple-900 font-mono">{inHouseGuests.length}</span>
+              <span className="text-xs text-gray-500 ml-1">{lang === "km" ? "ភ្ញៀវ" : "guests"}</span>
             </div>
             <span className="text-[10px] text-purple-700 mt-1 font-semibold">Active In-House</span>
           </div>
@@ -1053,19 +1336,19 @@ export default function AdminPage() {
           {/* Card 6: Telegram Bot Status */}
           <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
             <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
-              <span>Telegram Bot</span>
+              <span>{t.botStatus}</span>
               <Send className="w-4 h-4 text-sky-600" />
             </div>
             <div className="mt-2.5 flex items-center space-x-2">
               <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xl sm:text-2xl font-black text-[#0c2340]">Active</span>
+              <span className="text-xl sm:text-2xl font-bold text-[#0c2340]">Active</span>
             </div>
             <span className="text-[10px] text-sky-700 mt-1 font-mono">@vvotel_bot</span>
           </div>
         </div>
 
         {/* Search, Filter Toolbar & Export */}
-        <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 font-siemreap">
           {/* Search Bar */}
           <div className="relative flex-1 min-w-[240px]">
             <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
@@ -1073,7 +1356,7 @@ export default function AdminPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="ស្វែងរកតាម ឈ្មោះភ្ញៀវ, លេខកូដកក់, លេខទូរស័ព្ទ, លេខបន្ទប់ ឬតុ..."
+              placeholder={t.searchPlaceholder}
               className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl pl-10 pr-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-amber-500 focus:bg-white transition"
             />
           </div>
@@ -1081,9 +1364,9 @@ export default function AdminPage() {
           {/* Category Tabs: All, Rooms, Dining */}
           <div className="flex items-center flex-wrap gap-1 bg-[#FAF8F4] p-1 rounded-xl border border-amber-200/60 text-xs">
             {[
-              { id: "ALL", label: "ទាំងអស់" },
-              { id: "ROOM", label: "🛏️ បន្ទប់" },
-              { id: "DINING", label: "🍽️ តុអាហារ" },
+              { id: "ALL", label: t.tabAll },
+              { id: "ROOM", label: t.tabRooms },
+              { id: "DINING", label: t.tabDining },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -1102,11 +1385,11 @@ export default function AdminPage() {
           {/* Status Tabs */}
           <div className="flex items-center flex-wrap gap-1 bg-[#FAF8F4] p-1 rounded-xl border border-amber-200/60 text-xs">
             {[
-              { id: "ALL", label: "គ្រប់ស្ថានភាព" },
-              { id: "CONFIRMED", label: "បានកក់" },
-              { id: "IN_HOUSE", label: "កំពុងស្នាក់នៅ/តុ" },
-              { id: "CHECKED_OUT", label: "បានចេញ/ចប់" },
-              { id: "PAID", label: "បង់រួច" },
+              { id: "ALL", label: t.statusAll },
+              { id: "CONFIRMED", label: t.statusConfirmed },
+              { id: "IN_HOUSE", label: t.statusInHouse },
+              { id: "CHECKED_OUT", label: t.statusCheckedOut },
+              { id: "PAID", label: t.statusPaid },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -1127,17 +1410,17 @@ export default function AdminPage() {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-xs text-gray-800 focus:outline-none focus:border-amber-500 cursor-pointer"
+              className="bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-xs text-gray-800 focus:outline-none focus:border-amber-500 cursor-pointer font-siemreap"
             >
-              <option value="ALL">គ្រប់កាលបរិច្ឆេទ</option>
-              <option value="TODAY_IN">ចូលថ្ងៃនេះ</option>
-              <option value="TODAY_OUT">ចេញថ្ងៃនេះ</option>
+              <option value="ALL">{t.dateAll}</option>
+              <option value="TODAY_IN">{t.dateTodayIn}</option>
+              <option value="TODAY_OUT">{t.dateTodayOut}</option>
             </select>
 
             <button
               onClick={exportToCSV}
-              className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
-              title="នាំចេញទិន្នន័យជាឯកសារ Excel / CSV"
+              className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm font-siemreap"
+              title="Export CSV"
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
               <span>CSV</span>
@@ -1145,45 +1428,45 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Live Booking Table in Crisp Pure White & Egg-Cream Header */}
-        <div className="bg-white border border-amber-200/80 rounded-2xl shadow-sm overflow-hidden">
+        {/* Master Booking Table */}
+        <div className="bg-white border border-amber-200/80 rounded-2xl shadow-sm overflow-hidden font-siemreap">
           <div className="p-4 border-b border-amber-200/60 bg-[#FAF8F4] flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center space-x-2">
               <Building className="w-4 h-4 text-amber-700" />
-              <h3 className="font-extrabold text-sm sm:text-base text-[#0c2340]">
-                តារាងគ្រប់គ្រងការកក់បន្ទប់ និងតុអាហារ ({filteredBookings.length})
+              <h3 className="font-mool text-sm sm:text-base text-[#0c2340]">
+                {t.tableHeading} ({filteredBookings.length})
               </h3>
             </div>
-            <span className="text-xs text-gray-500">
-              ម៉ោង Check-in: <strong className="text-amber-800">14:00</strong> | ម៉ោង Check-out: <strong className="text-amber-800">12:00</strong>
+            <span className="text-xs text-gray-500 font-siemreap">
+              Check-in: <strong className="text-amber-800">14:00</strong> | Check-out: <strong className="text-amber-800">12:00</strong>
             </span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-gray-700">
-              <thead className="bg-[#F6F2E9] text-gray-700 font-extrabold uppercase tracking-wider text-[11px] border-b border-amber-200/70">
+              <thead className="bg-[#F6F2E9] text-gray-700 font-bold uppercase tracking-wider text-[11px] border-b border-amber-200/70">
                 <tr>
-                  <th className="py-4 px-4 sm:px-5">កូដកក់ / ប្រភេទ</th>
-                  <th className="py-4 px-4 sm:px-5">ឈ្មោះភ្ញៀវ & ទំនាក់ទំនង</th>
-                  <th className="py-4 px-4 sm:px-5">បន្ទប់ / ភោជនីយដ្ឋាន</th>
-                  <th className="py-4 px-4 sm:px-5">កាលបរិច្ឆេទ & ពេលវេលា</th>
-                  <th className="py-4 px-4 sm:px-5">ទឹកប្រាក់ & វិធីទូទាត់</th>
-                  <th className="py-4 px-4 sm:px-5">ស្ថានភាព</th>
-                  <th className="py-4 px-4 sm:px-5 text-right">សកម្មភាពគ្រប់គ្រង</th>
+                  <th className="py-4 px-4 sm:px-5">{t.thRef}</th>
+                  <th className="py-4 px-4 sm:px-5">{t.thGuest}</th>
+                  <th className="py-4 px-4 sm:px-5">{t.thRoomVenue}</th>
+                  <th className="py-4 px-4 sm:px-5">{t.thSchedule}</th>
+                  <th className="py-4 px-4 sm:px-5">{t.thFinance}</th>
+                  <th className="py-4 px-4 sm:px-5">{t.thStatus}</th>
+                  <th className="py-4 px-4 sm:px-5 text-right">{t.thAction}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 font-siemreap">
                 {loading ? (
                   <tr>
                     <td colSpan={7} className="text-center py-12 text-gray-500">
                       <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-600" />
-                      <span>កំពុងទាញទិន្នន័យពីប្រព័ន្ធកណ្តាល...</span>
+                      <span>Loading bookings...</span>
                     </td>
                   </tr>
                 ) : filteredBookings.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="text-center py-12 text-gray-400">
-                      មិនមានទិន្នន័យត្រូវគ្នានឹងការស្វែងរកឡើយ
+                      {lang === "km" ? "មិនមានទិន្នន័យត្រូវគ្នានឹងការស្វែងរកឡើយ" : "No matching bookings found"}
                     </td>
                   </tr>
                 ) : (
@@ -1195,21 +1478,21 @@ export default function AdminPage() {
                         <td className="py-4 px-4 sm:px-5">
                           <div className="flex items-center space-x-1.5 mb-1">
                             {isDin ? (
-                              <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-black uppercase px-2 py-0.5 rounded-full flex items-center space-x-1">
+                              <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full flex items-center space-x-1">
                                 <Utensils className="w-2.5 h-2.5" />
-                                <span>កក់តុអាហារ</span>
+                                <span>{lang === "km" ? "កក់តុអាហារ" : "Dining"}</span>
                               </span>
                             ) : (
-                              <span className="bg-sky-100 text-sky-900 border border-sky-300 text-[9px] font-black uppercase px-2 py-0.5 rounded-full flex items-center space-x-1">
+                              <span className="bg-sky-100 text-sky-900 border border-sky-300 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full flex items-center space-x-1">
                                 <BedDouble className="w-2.5 h-2.5" />
-                                <span>កក់បន្ទប់</span>
+                                <span>{lang === "km" ? "កក់បន្ទប់" : "Room"}</span>
                               </span>
                             )}
                           </div>
                           <span className="font-mono font-bold text-amber-900 block text-xs">
                             {b.id}
                           </span>
-                          <span className="text-[10px] text-gray-500 block mt-0.5">
+                          <span className="text-[10px] text-gray-500 block mt-0.5 font-mono">
                             {new Date(b.createdAt).toLocaleDateString("en-GB", {
                               day: "2-digit",
                               month: "short",
@@ -1220,7 +1503,7 @@ export default function AdminPage() {
 
                         {/* Guest Info */}
                         <td className="py-4 px-4 sm:px-5">
-                          <span className="font-extrabold text-[#0c2340] text-sm block">
+                          <span className="font-bold text-[#0c2340] text-sm block">
                             {b.guestName}
                           </span>
                           <div className="flex items-center space-x-2 text-[11px] text-gray-500 mt-0.5">
@@ -1235,39 +1518,39 @@ export default function AdminPage() {
 
                         {/* Room or Dining Venue Info */}
                         <td className="py-4 px-4 sm:px-5">
-                          <span className="font-bold text-gray-900 block text-xs truncate max-w-[220px]" title={b.roomNameKm || b.roomNameEn}>
-                            {b.roomNameKm || b.roomNameEn || b.roomType}
+                          <span className="font-semibold text-gray-900 block text-xs truncate max-w-[220px]" title={lang === "km" ? (b.roomNameKm || b.roomNameEn) : (b.roomNameEn || b.roomNameKm)}>
+                            {lang === "km" ? (b.roomNameKm || b.roomNameEn || b.roomType) : (b.roomNameEn || b.roomNameKm || b.roomType)}
                           </span>
                           <div className="flex items-center space-x-2 mt-1 text-[10px]">
                             {b.roomNumber ? (
                               <span className="bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded font-mono font-bold">
-                                {isDin ? b.roomNumber : `បន្ទប់: ${b.roomNumber}`}
+                                {isDin ? b.roomNumber : (lang === "km" ? `បន្ទប់: ${b.roomNumber}` : `Room: ${b.roomNumber}`)}
                               </span>
                             ) : (
-                              <span className="text-gray-400 italic">មិនទាន់កំណត់</span>
+                              <span className="text-gray-400 italic">{lang === "km" ? "មិនទាន់កំណត់" : "Unassigned"}</span>
                             )}
                             <span className="text-gray-500">
-                              {isDin ? `${b.adults} នាក់` : `(${b.adults} ធំ, ${b.children} ក្មេង)`}
+                              {isDin ? `${b.adults} Pax` : `(${b.adults}A, ${b.children}C)`}
                             </span>
                           </div>
                         </td>
 
-                        {/* Dates & Schedule */}
+                        {/* Schedule & Dates */}
                         <td className="py-4 px-4 sm:px-5">
                           {isDin ? (
                             <div>
-                              <div className="font-bold text-gray-900">{b.checkIn}</div>
+                              <div className="font-bold text-gray-900 font-mono">{b.checkIn}</div>
                               <span className="text-[10px] text-amber-800 font-bold block mt-0.5">
-                                ម៉ោងកក់: {b.checkInTime || b.reservationTime || "19:00"}
+                                {lang === "km" ? "ម៉ោងកក់:" : "Time:"} {b.checkInTime || b.reservationTime || "19:00"}
                               </span>
                             </div>
                           ) : (
                             <div>
-                              <div className="font-semibold text-gray-900">
+                              <div className="font-semibold text-gray-900 font-mono">
                                 {b.checkIn} → {b.checkOut}
                               </div>
                               <span className="text-[10px] text-gray-500 block mt-0.5">
-                                {b.nights} យប់ • In 14:00 / Out 12:00
+                                {b.nights} {lang === "km" ? "យប់" : "Nights"} • In 14:00 / Out 12:00
                               </span>
                             </div>
                           )}
@@ -1277,21 +1560,21 @@ export default function AdminPage() {
                         <td className="py-4 px-4 sm:px-5">
                           {isDin ? (
                             <div>
-                              <span className="font-bold text-gray-900 block text-xs">
-                                កក់តុជាមុន (Table Reserve)
+                              <span className="font-semibold text-gray-900 block text-xs">
+                                {lang === "km" ? "កក់តុជាមុន" : "Table Reservation"}
                               </span>
                               <span className="text-[10px] text-emerald-700 font-semibold block mt-0.5">
-                                ធានាកក់រួចរាល់
+                                {lang === "km" ? "ធានាកក់រួចរាល់" : "Guaranteed"}
                               </span>
                             </div>
                           ) : (
                             <div>
-                              <span className="font-black text-emerald-700 block font-mono text-sm">
+                              <span className="font-bold text-emerald-700 block font-mono text-sm">
                                 ${(b.totalAmountUSD || 0).toFixed(2)}
                               </span>
                               <div className="flex items-center space-x-1.5 mt-0.5">
                                 <span
-                                  className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
+                                  className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
                                     b.paymentMethod === "KHQR_BAKONG"
                                       ? "bg-red-50 text-red-700 border border-red-200"
                                       : b.paymentMethod.includes("CARD")
@@ -1306,17 +1589,17 @@ export default function AdminPage() {
                                     : "Pay at Hotel"}
                                 </span>
                                 <span className="text-[10px] text-gray-500">
-                                  {b.paymentStatus === "PAID" ? "✅ បង់រួច" : "⏳ ធានាកក់"}
+                                  {b.paymentStatus === "PAID" ? "✅ Paid" : "⏳ Guaranteed"}
                                 </span>
                               </div>
                             </div>
                           )}
                         </td>
 
-                        {/* Stay / Dining Status */}
+                        {/* Status */}
                         <td className="py-4 px-4 sm:px-5">
                           <span
-                            className={`text-[10px] font-black px-2.5 py-1 rounded-full border inline-flex items-center space-x-1 ${
+                            className={`text-[10px] font-bold px-2.5 py-1 rounded-full border inline-flex items-center space-x-1 ${
                               b.stayStatus === "CHECKED_IN" || b.stayStatus === "SEATED"
                                 ? "bg-amber-100 text-amber-900 border-amber-300"
                                 : b.stayStatus === "CHECKED_OUT" || b.stayStatus === "COMPLETED"
@@ -1328,24 +1611,24 @@ export default function AdminPage() {
                           >
                             <span>
                               {b.stayStatus === "CHECKED_IN"
-                                ? "🛎️ កំពុងស្នាក់នៅ"
+                                ? t.statusInHouseText
                                 : b.stayStatus === "SEATED"
-                                ? "🍽️ កំពុងទទួលទាន"
+                                ? t.statusSeatedText
                                 : b.stayStatus === "CHECKED_OUT"
-                                ? "🚪 បានចេញ (Checked Out)"
+                                ? t.statusCheckedOutText
                                 : b.stayStatus === "COMPLETED"
-                                ? "🎉 រួចរាល់ (Completed)"
+                                ? t.statusCompletedText
                                 : b.stayStatus === "CANCELLED"
-                                ? "❌ បានលុបចោល"
-                                : "✅ បានកក់ (Confirmed)"}
+                                ? t.statusCancelledText
+                                : t.statusConfirmedText}
                             </span>
                           </span>
                         </td>
 
-                        {/* Management Actions */}
+                        {/* Actions */}
                         <td className="py-4 px-4 sm:px-5 text-right">
-                          <div className="flex items-center justify-end space-x-1.5">
-                            {/* Room Check-In or Dining Seat */}
+                          <div className="flex items-center justify-end space-x-1.5 font-siemreap">
+                            {/* Check-In or Seat */}
                             {b.stayStatus !== "CHECKED_IN" &&
                               b.stayStatus !== "SEATED" &&
                               b.stayStatus !== "CHECKED_OUT" &&
@@ -1356,20 +1639,18 @@ export default function AdminPage() {
                                     setAssignedRoomNumber(b.roomNumber || "");
                                   }}
                                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition shadow-sm"
-                                  title={isDin ? "ទទួលភ្ញៀវចូលតុ" : "ចុះឈ្មោះភ្ញៀវចូលស្នាក់នៅ (Standard Check-in 14:00)"}
                                 >
-                                  {isDin ? "ទទួលតុ" : "Check-In"}
+                                  {isDin ? t.btnSeat : t.btnCheckIn}
                                 </button>
                               )}
 
-                            {/* Room Check-Out or Dining Complete */}
+                            {/* Check-Out or Complete */}
                             {(b.stayStatus === "CHECKED_IN" || b.stayStatus === "SEATED") && (
                               <button
                                 onClick={() => handleCheckOut(b.id, isDin)}
                                 className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition shadow-sm"
-                                title={isDin ? "បញ្ចប់ការទទួលទាន" : "ចុះឈ្មោះភ្ញៀវចេញ (Standard Check-out 12:00)"}
                               >
-                                {isDin ? "បញ្ចប់" : "Check-Out"}
+                                {isDin ? t.btnComplete : t.btnCheckOut}
                               </button>
                             )}
 
@@ -1381,7 +1662,7 @@ export default function AdminPage() {
                                 setReceiptOpen(true);
                               }}
                               className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 p-1.5 rounded-lg transition"
-                              title="បោះពុម្ពវិក្កយបត្រ 80mm POS Thermal Receipt"
+                              title="POS 80mm Receipt"
                             >
                               <Printer className="w-3.5 h-3.5" />
                             </button>
@@ -1394,7 +1675,7 @@ export default function AdminPage() {
                                 setReceiptOpen(true);
                               }}
                               className="bg-white hover:bg-amber-50 text-[#0c2340] border border-gray-300 px-2 py-1.5 rounded-lg text-[10px] font-bold transition shadow-sm"
-                              title="បោះពុម្ពវិក្កយបត្រពន្ធផ្លូវការ A4 Tax Invoice"
+                              title="A4 Tax Invoice"
                             >
                               A4
                             </button>
@@ -1412,15 +1693,15 @@ export default function AdminPage() {
 
       {/* ======================= MODAL 1: CHECK-IN / SEAT GUEST ======================= */}
       {checkInModalBooking && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-siemreap">
           <div className="bg-white border border-amber-200 rounded-3xl max-w-md w-full p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div className="flex items-center space-x-2">
                 <Key className="w-5 h-5 text-amber-600" />
-                <h3 className="font-extrabold text-[#0c2340] text-base">
+                <h3 className="font-mool text-[#0c2340] text-sm sm:text-base">
                   {checkInModalBooking.bookingCategory === "DINING" || checkInModalBooking.id.startsWith("DIN")
-                    ? "ទទួលភ្ញៀវចូលតុ & កំណត់លេខតុ"
-                    : "Check-In ភ្ញៀវ & កំណត់លេខបន្ទប់"}
+                    ? (lang === "km" ? "ទទួលភ្ញៀវចូលតុ & កំណត់លេខតុ" : "Seat Guest & Assign Table")
+                    : (lang === "km" ? "Check-In ភ្ញៀវ & កំណត់លេខបន្ទប់" : "Check-In Guest & Assign Room")}
                 </h3>
               </div>
               <button
@@ -1434,7 +1715,7 @@ export default function AdminPage() {
             <form onSubmit={handleConfirmCheckIn} className="mt-4 space-y-4">
               <div className="bg-[#FAF8F4] p-3.5 rounded-2xl border border-amber-200/80 text-xs space-y-1.5">
                 <p className="text-gray-500">
-                  លេខកូដកក់: <strong className="text-amber-800">{checkInModalBooking.id}</strong>
+                  Ref: <strong className="text-amber-800 font-mono">{checkInModalBooking.id}</strong>
                 </p>
                 <p className="text-[#0c2340] font-bold text-sm">
                   {checkInModalBooking.guestName} ({checkInModalBooking.phone})
@@ -1447,15 +1728,15 @@ export default function AdminPage() {
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1.5">
                   {checkInModalBooking.bookingCategory === "DINING" || checkInModalBooking.id.startsWith("DIN")
-                    ? "លេខតុជាក់ស្តែង (Table Number):"
-                    : "លេខបន្ទប់ជាក់ស្តែង (Room Number):"}
+                    ? (lang === "km" ? "លេខតុជាក់ស្តែង (Table Number):" : "Actual Table Number:")
+                    : (lang === "km" ? "លេខបន្ទប់ជាក់ស្តែង (Room Number):" : "Actual Room Number:")}
                 </label>
                 <input
                   type="text"
                   required
                   value={assignedRoomNumber}
                   onChange={(e) => setAssignedRoomNumber(e.target.value)}
-                  placeholder="ឧទាហរណ៍: 201, Table 5, Mekong Suite..."
+                  placeholder="e.g. 201, Table 5, Mekong Suite..."
                   className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3.5 py-2.5 text-gray-900 text-sm font-mono focus:outline-none focus:border-amber-500 focus:bg-white"
                 />
               </div>
@@ -1466,13 +1747,13 @@ export default function AdminPage() {
                   onClick={() => setCheckInModalBooking(null)}
                   className="w-1/2 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition"
                 >
-                  បោះបង់
+                  {lang === "km" ? "បោះបង់" : "Cancel"}
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow transition"
+                  className="w-1/2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition"
                 >
-                  បញ្ជាក់ Check-In ឥឡូវ
+                  {lang === "km" ? "បញ្ជាក់ Check-In ឥឡូវ" : "Confirm Now"}
                 </button>
               </div>
             </form>
@@ -1482,13 +1763,13 @@ export default function AdminPage() {
 
       {/* ======================= MODAL 2: WALK-IN / NEW BOOKING ======================= */}
       {isNewBookingModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto font-siemreap">
           <div className="bg-white border border-amber-200 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl my-auto">
             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div className="flex items-center space-x-2">
                 <Plus className="w-5 h-5 text-amber-600" />
-                <h3 className="font-extrabold text-[#0c2340] text-base">
-                  បង្កើតការកក់ថ្មី (Walk-in / Phone Reservation)
+                <h3 className="font-mool text-[#0c2340] text-sm sm:text-base">
+                  {lang === "km" ? "បង្កើតការកក់ថ្មី (Walk-in / Phone Reservation)" : "New Reservation (Walk-in / Phone)"}
                 </h3>
               </div>
               <button
@@ -1502,7 +1783,9 @@ export default function AdminPage() {
             <form onSubmit={handleCreateWalkInBooking} className="mt-4 space-y-3.5 text-xs">
               {/* Category selector */}
               <div>
-                <label className="block text-gray-700 font-bold mb-1">ប្រភេទនៃការកក់</label>
+                <label className="block text-gray-700 font-bold mb-1">
+                  {lang === "km" ? "ប្រភេទនៃការកក់" : "Reservation Type"}
+                </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -1514,7 +1797,7 @@ export default function AdminPage() {
                     }`}
                   >
                     <BedDouble className="w-4 h-4" />
-                    <span>កក់បន្ទប់ស្នាក់នៅ</span>
+                    <span>{lang === "km" ? "កក់បន្ទប់ស្នាក់នៅ" : "Room Stay"}</span>
                   </button>
                   <button
                     type="button"
@@ -1526,32 +1809,36 @@ export default function AdminPage() {
                     }`}
                   >
                     <Utensils className="w-4 h-4" />
-                    <span>កក់តុអាហារ</span>
+                    <span>{lang === "km" ? "កក់តុអាហារ" : "Dining Table"}</span>
                   </button>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-gray-700 font-bold mb-1">ឈ្មោះភ្ញៀវ *</label>
+                  <label className="block text-gray-700 font-bold mb-1">
+                    {lang === "km" ? "ឈ្មោះភ្ញៀវ *" : "Guest Name *"}
+                  </label>
                   <input
                     type="text"
                     required
                     value={newBookingData.guestName}
                     onChange={(e) => setNewBookingData({ ...newBookingData, guestName: e.target.value })}
-                    placeholder="ឧ. Sokha Heng"
+                    placeholder="e.g. Sokha Heng"
                     className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-bold mb-1">លេខទូរស័ព្ទ *</label>
+                  <label className="block text-gray-700 font-bold mb-1">
+                    {lang === "km" ? "លេខទូរស័ព្ទ *" : "Phone Number *"}
+                  </label>
                   <input
                     type="text"
                     required
                     value={newBookingData.phone}
                     onChange={(e) => setNewBookingData({ ...newBookingData, phone: e.target.value })}
                     placeholder="+855 12 888 999"
-                    className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
+                    className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white font-mono"
                   />
                 </div>
               </div>
@@ -1560,7 +1847,9 @@ export default function AdminPage() {
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-gray-700 font-bold mb-1">ប្រភេទបន្ទប់</label>
+                      <label className="block text-gray-700 font-bold mb-1">
+                        {lang === "km" ? "ប្រភេទបន្ទប់" : "Room Type"}
+                      </label>
                       <select
                         value={newBookingData.roomType}
                         onChange={(e) => {
@@ -1577,7 +1866,7 @@ export default function AdminPage() {
                             totalAmountUSD: prices[type] || 125,
                           });
                         }}
-                        className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white cursor-pointer"
+                        className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white cursor-pointer font-siemreap"
                       >
                         <option value="standard-city">បន្ទប់ស្តង់ដារ ទេសភាពទីក្រុង ($85/យប់)</option>
                         <option value="superior-river">បន្ទប់ស៊ុភើរៀ ទេសភាពទន្លេ ($125/យប់)</option>
@@ -1586,7 +1875,9 @@ export default function AdminPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-gray-700 font-bold mb-1">តម្លៃសរុប (USD)</label>
+                      <label className="block text-gray-700 font-bold mb-1">
+                        {lang === "km" ? "តម្លៃសរុប (USD)" : "Total (USD)"}
+                      </label>
                       <input
                         type="number"
                         value={newBookingData.totalAmountUSD}
@@ -1598,23 +1889,23 @@ export default function AdminPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-gray-700 font-bold mb-1">កាលបរិច្ឆេទ Check-in (14:00)</label>
+                      <label className="block text-gray-700 font-bold mb-1">Check-in (14:00)</label>
                       <input
                         type="date"
                         required
                         value={newBookingData.checkIn}
                         onChange={(e) => setNewBookingData({ ...newBookingData, checkIn: e.target.value })}
-                        className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
+                        className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white font-mono"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-700 font-bold mb-1">កាលបរិច្ឆេទ Check-out (12:00)</label>
+                      <label className="block text-gray-700 font-bold mb-1">Check-out (12:00)</label>
                       <input
                         type="date"
                         required
                         value={newBookingData.checkOut}
                         onChange={(e) => setNewBookingData({ ...newBookingData, checkOut: e.target.value })}
-                        className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
+                        className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white font-mono"
                       />
                     </div>
                   </div>
@@ -1622,34 +1913,40 @@ export default function AdminPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-gray-700 font-bold mb-1">កាលបរិច្ឆេទទទួលទាន</label>
+                    <label className="block text-gray-700 font-bold mb-1">
+                      {lang === "km" ? "កាលបរិច្ឆេទទទួលទាន" : "Dining Date"}
+                    </label>
                     <input
                       type="date"
                       required
                       value={newBookingData.checkIn}
                       onChange={(e) => setNewBookingData({ ...newBookingData, checkIn: e.target.value })}
-                      className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
+                      className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white font-mono"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 font-bold mb-1">ម៉ោងកក់</label>
+                    <label className="block text-gray-700 font-bold mb-1">
+                      {lang === "km" ? "ម៉ោងកក់" : "Time"}
+                    </label>
                     <input
                       type="time"
                       required
                       value={newBookingData.reservationTime}
                       onChange={(e) => setNewBookingData({ ...newBookingData, reservationTime: e.target.value })}
-                      className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
+                      className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white font-mono"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 font-bold mb-1">ចំនួនភ្ញៀវ (Pax)</label>
+                    <label className="block text-gray-700 font-bold mb-1">
+                      {lang === "km" ? "ចំនួនភ្ញៀវ (Pax)" : "Guests (Pax)"}
+                    </label>
                     <input
                       type="number"
                       min={1}
                       max={20}
                       value={newBookingData.adults}
                       onChange={(e) => setNewBookingData({ ...newBookingData, adults: Number(e.target.value) })}
-                      className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
+                      className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white font-mono"
                     />
                   </div>
                 </div>
@@ -1661,13 +1958,13 @@ export default function AdminPage() {
                   onClick={() => setIsNewBookingModalOpen(false)}
                   className="w-1/2 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
                 >
-                  បោះបង់
+                  {lang === "km" ? "បោះបង់" : "Cancel"}
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black rounded-xl shadow transition"
+                  className="w-1/2 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl shadow transition"
                 >
-                  រក្សាទុក & ផ្ញើ Alert ទៅ Bot
+                  {lang === "km" ? "រក្សាទុក & Alert ទៅ Bot" : "Save & Alert Bot"}
                 </button>
               </div>
             </form>
