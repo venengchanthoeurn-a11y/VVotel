@@ -48,13 +48,43 @@ export interface BookingRecord {
   reservationTime?: string;
 }
 
-const BOOKINGS_FILE = path.join(process.cwd(), "data", "bookings.json");
+import os from "os";
+
+declare global {
+  var _vvotelBookingsCache: BookingRecord[] | undefined;
+}
+
+const SEED_BOOKINGS_FILE = path.join(process.cwd(), "data", "bookings.json");
+const TMP_BOOKINGS_FILE = path.join(os.tmpdir(), "vvotel_bookings.json");
 
 export function getAllBookings(): BookingRecord[] {
+  if (globalThis._vvotelBookingsCache && globalThis._vvotelBookingsCache.length > 0) {
+    return globalThis._vvotelBookingsCache;
+  }
+
+  // 1. Try tmp file
   try {
-    if (fs.existsSync(BOOKINGS_FILE)) {
-      const content = fs.readFileSync(BOOKINGS_FILE, "utf-8");
-      return JSON.parse(content);
+    if (fs.existsSync(TMP_BOOKINGS_FILE)) {
+      const content = fs.readFileSync(TMP_BOOKINGS_FILE, "utf-8");
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        globalThis._vvotelBookingsCache = parsed;
+        return parsed;
+      }
+    }
+  } catch (e) {
+    // fallback
+  }
+
+  // 2. Try seed file in data/bookings.json
+  try {
+    if (fs.existsSync(SEED_BOOKINGS_FILE)) {
+      const content = fs.readFileSync(SEED_BOOKINGS_FILE, "utf-8");
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed)) {
+        globalThis._vvotelBookingsCache = parsed;
+        return parsed;
+      }
     }
   } catch (error) {
     console.error("Failed to read bookings.json:", error);
@@ -63,12 +93,24 @@ export function getAllBookings(): BookingRecord[] {
 }
 
 export function saveAllBookings(bookings: BookingRecord[]) {
+  globalThis._vvotelBookingsCache = bookings;
+
+  // 1. Write to tmp directory (always writable on Vercel serverless)
   try {
-    const dir = path.dirname(BOOKINGS_FILE);
+    const tmpDir = path.dirname(TMP_BOOKINGS_FILE);
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+    fs.writeFileSync(TMP_BOOKINGS_FILE, JSON.stringify(bookings, null, 2), "utf-8");
+  } catch (e) {
+    console.warn("Failed to write to tmp bookings file:", e);
+  }
+
+  // 2. Write to project data/ if writable
+  try {
+    const dir = path.dirname(SEED_BOOKINGS_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2), "utf-8");
+    fs.writeFileSync(SEED_BOOKINGS_FILE, JSON.stringify(bookings, null, 2), "utf-8");
   } catch (error) {
-    console.error("Failed to save bookings.json:", error);
+    // Normal on Vercel read-only Lambda
   }
 }
 

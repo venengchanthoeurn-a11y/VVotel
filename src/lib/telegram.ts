@@ -7,7 +7,14 @@ export const TELEGRAM_BOT_TOKEN =
 export const TELEGRAM_BOT_USERNAME = "vvotel_bot";
 export const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://vvhotel.vercel.app";
 
-const CHATS_FILE = path.join(process.cwd(), "data", "telegram_chats.json");
+import os from "os";
+
+declare global {
+  var _vvotelTelegramStorage: TelegramStorage | undefined;
+}
+
+const SEED_CHATS_FILE = path.join(process.cwd(), "data", "telegram_chats.json");
+const TMP_CHATS_FILE = path.join(os.tmpdir(), "vvotel_telegram_chats.json");
 
 interface TelegramStorage {
   chatIds: (string | number)[];
@@ -16,25 +23,50 @@ interface TelegramStorage {
 }
 
 export const getStorage = (): TelegramStorage => {
+  if (globalThis._vvotelTelegramStorage) {
+    return globalThis._vvotelTelegramStorage;
+  }
   try {
-    if (fs.existsSync(CHATS_FILE)) {
-      const raw = fs.readFileSync(CHATS_FILE, "utf-8");
-      return JSON.parse(raw);
+    if (fs.existsSync(TMP_CHATS_FILE)) {
+      const raw = fs.readFileSync(TMP_CHATS_FILE, "utf-8");
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.chatIds)) {
+        globalThis._vvotelTelegramStorage = parsed;
+        return parsed;
+      }
+    }
+  } catch (e) {}
+
+  try {
+    if (fs.existsSync(SEED_CHATS_FILE)) {
+      const raw = fs.readFileSync(SEED_CHATS_FILE, "utf-8");
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.chatIds)) {
+        globalThis._vvotelTelegramStorage = parsed;
+        return parsed;
+      }
     }
   } catch (e) {
     console.error("Error reading telegram_chats.json", e);
   }
-  return { chatIds: [683808125], lastUpdateId: 0, updatedAt: new Date().toISOString() };
+  const defaultStorage: TelegramStorage = { chatIds: [683808125], lastUpdateId: 0, updatedAt: new Date().toISOString() };
+  globalThis._vvotelTelegramStorage = defaultStorage;
+  return defaultStorage;
 };
 
 export const saveStorage = (data: TelegramStorage) => {
+  globalThis._vvotelTelegramStorage = data;
   try {
-    const dir = path.dirname(CHATS_FILE);
+    const tmpDir = path.dirname(TMP_CHATS_FILE);
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+    fs.writeFileSync(TMP_CHATS_FILE, JSON.stringify(data, null, 2), "utf-8");
+  } catch (e) {}
+
+  try {
+    const dir = path.dirname(SEED_CHATS_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(CHATS_FILE, JSON.stringify(data, null, 2), "utf-8");
-  } catch (e) {
-    console.error("Error saving telegram_chats.json", e);
-  }
+    fs.writeFileSync(SEED_CHATS_FILE, JSON.stringify(data, null, 2), "utf-8");
+  } catch (e) {}
 };
 
 /**
