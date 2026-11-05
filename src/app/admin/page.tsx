@@ -22,6 +22,8 @@ import {
   Mail,
   Home,
   FileSpreadsheet,
+  FileText,
+  Download,
   BedDouble,
   LogOut,
   LogIn,
@@ -119,6 +121,16 @@ const ADMIN_I18N = {
     btnSeat: "ទទួលតុ",
     btnCheckOut: "Check-Out",
     btnComplete: "បញ្ចប់",
+    reportsBtn: "📑 របាយការណ៍រដ្ឋបាល",
+    reportModalTitle: "ប្រព័ន្ធផលិតរបាយការណ៍រដ្ឋបាលផ្លូវការ",
+    reportModalSubtitle: "ទម្រង់រដ្ឋបាលកម្ពុជា • គាំទ្រ Word (.docx), Excel (.xlsx), និង PDF",
+    reportWordTitle: "របាយការណ៍រដ្ឋបាល Word (.docx)",
+    reportWordDesc: "ក្បាលលិខិតជាតិផ្លូវការ, ពុម្ភអក្សរ Khmer Mool & Siemreap, តារាងទិន្នន័យ, និងប្រអប់ហត្ថលេខា/ត្រា។",
+    reportExcelTitle: "របាយការណ៍ទិន្នន័យ Excel (.xlsx)",
+    reportExcelDesc: "បញ្ជីការកក់ពេញលេញ, រូបមន្តផលបូកចំណូលស្វ័យប្រវត្តិ, បំប្លែងរូបិយប័ណ្ណ $ និង ៛, រចនាប័ទ្មពណ៌រដ្ឋបាល។",
+    reportPdfTitle: "របាយការណ៍បោះពុម្ព PDF ផ្លូវការ",
+    reportPdfDesc: "ទម្រង់ក្រដាស A4 រដ្ឋបាលពេញលេញ, មានក្បាលលិខិតរដ្ឋបាល, អាចបើកមើល និងបោះពុម្ព Save as PDF បានភ្លាមៗ។",
+    viewPrintPdfBtn: "មើល & បោះពុម្ពជា PDF",
   },
   en: {
     hotelName: "Vattanac Hotel (VVotel) Kampong Cham",
@@ -193,6 +205,16 @@ const ADMIN_I18N = {
     btnSeat: "Seat Table",
     btnCheckOut: "Check-Out",
     btnComplete: "Complete",
+    reportsBtn: "📑 Administrative Reports",
+    reportModalTitle: "Official Administrative Reporting Suite",
+    reportModalSubtitle: "Cambodian Administrative Format • Word (.docx), Excel (.xlsx), and PDF",
+    reportWordTitle: "Official Word Report (.docx)",
+    reportWordDesc: "National Kingdom header, Khmer Mool & Siemreap typography, full data tables & official stamp blocks.",
+    reportExcelTitle: "Executive Excel Spreadsheet (.xlsx)",
+    reportExcelDesc: "Complete transaction registry, automated revenue formulas, dual currency ($ & ៛) & executive styling.",
+    reportPdfTitle: "Official A4 Printable PDF",
+    reportPdfDesc: "Standard administrative paper layout with ministerial headers, print-ready and direct PDF export.",
+    viewPrintPdfBtn: "View & Print Official PDF",
   },
 };
 
@@ -281,6 +303,7 @@ export default function AdminPage() {
 
   // New Walk-in Booking modal state
   const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState<boolean>(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
   const [newBookingData, setNewBookingData] = useState({
     bookingCategory: "ROOM" as "ROOM" | "DINING",
     guestName: "",
@@ -831,19 +854,24 @@ export default function AdminPage() {
           </div>
 
           {/* Center Showcase Details */}
-          <div className="relative z-10 py-8 lg:py-6 space-y-5 max-w-xl">
+          <div className="relative z-10 py-8 lg:py-6 space-y-5 max-w-2xl w-full">
             {/* Live Cambodia Clock Card */}
             <div className="inline-flex items-center space-x-2.5 bg-white/10 backdrop-blur-md border border-amber-300/30 px-4 py-2 rounded-2xl text-xs text-amber-200 font-siemreap">
               <Clock className="w-4 h-4 text-amber-300 shrink-0" />
               <span>{t.liveClockLabel} <strong>{currentTimeStr || "Loading..."}</strong></span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-mool leading-relaxed text-white">
-              {t.showcaseTitle}
-              <span className="text-amber-300 block font-serif italic text-base sm:text-lg mt-1 font-normal tracking-wide">
+            <div className="w-full overflow-hidden">
+              <h2
+                className="text-sm sm:text-base md:text-lg lg:text-[18px] xl:text-[21px] 2xl:text-[23px] font-mool text-white tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-normal"
+                title={t.showcaseTitle}
+              >
+                {t.showcaseTitle}
+              </h2>
+              <p className="text-amber-300 font-serif italic text-xs sm:text-sm md:text-base mt-1.5 font-normal tracking-wide whitespace-nowrap overflow-hidden text-ellipsis">
                 {t.showcaseSubtitle}
-              </span>
-            </h2>
+              </p>
+            </div>
 
             {/* 4 Feature Badges Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 font-siemreap">
@@ -1150,6 +1178,15 @@ export default function AdminPage() {
               <ExternalLink className="w-3 h-3" />
             </a>
 
+            {/* Executive Administrative Reports Suite */}
+            <button
+              onClick={() => setIsReportModalOpen(true)}
+              className="bg-[#0c2340] hover:bg-[#12335e] text-amber-300 border border-amber-300/60 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition"
+            >
+              <FileText className="w-3.5 h-3.5 text-amber-300" />
+              <span>{t.reportsBtn}</span>
+            </button>
+
             {/* Refresh */}
             <button
               onClick={() => fetchBookings(false)}
@@ -1417,14 +1454,47 @@ export default function AdminPage() {
               <option value="TODAY_OUT">{t.dateTodayOut}</option>
             </select>
 
-            <button
-              onClick={exportToCSV}
-              className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm font-siemreap"
-              title="Export CSV"
-            >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-              <span>CSV</span>
-            </button>
+            {/* Executive Administrative Export Buttons */}
+            <div className="flex items-center space-x-1 font-siemreap">
+              <a
+                href="/api/reports?format=docx"
+                download
+                className="bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 text-xs font-bold px-2.5 py-2 rounded-xl flex items-center space-x-1 transition shadow-2xs"
+                title="ទាញយករបាយការណ៍ Word (.docx)"
+              >
+                <FileText className="w-3.5 h-3.5 text-blue-600" />
+                <span>Word</span>
+              </a>
+
+              <a
+                href="/api/reports?format=excel"
+                download
+                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-bold px-2.5 py-2 rounded-xl flex items-center space-x-1 transition shadow-2xs"
+                title="ទាញយករបាយការណ៍ Excel (.xlsx)"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Excel</span>
+              </a>
+
+              <a
+                href="/api/reports?format=html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-300 text-xs font-bold px-2.5 py-2 rounded-xl flex items-center space-x-1 transition shadow-2xs"
+                title="បើកមើល / បោះពុម្ព PDF"
+              >
+                <Printer className="w-3.5 h-3.5 text-purple-600" />
+                <span>PDF</span>
+              </a>
+
+              <button
+                onClick={exportToCSV}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs font-bold px-2 py-2 rounded-xl flex items-center space-x-1 transition shadow-2xs"
+                title="Export CSV"
+              >
+                <span>CSV</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1968,6 +2038,159 @@ export default function AdminPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================= EXECUTIVE ADMINISTRATIVE REPORT MODAL ======================= */}
+      {isReportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto font-siemreap">
+          <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-amber-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="p-6 bg-gradient-to-r from-[#0c2340] to-[#12335e] text-white relative">
+              <button
+                onClick={() => setIsReportModalOpen(false)}
+                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-300 flex items-center justify-center text-amber-300 font-mool text-2xl">
+                  V
+                </div>
+                <div>
+                  <h3 className="font-mool text-base sm:text-lg text-amber-300">
+                    {t.reportModalTitle}
+                  </h3>
+                  <p className="text-xs text-amber-100/80 mt-0.5">
+                    {t.reportModalSubtitle}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {/* National Banner & Administrative Context */}
+              <div className="p-4 bg-amber-50/50 border border-amber-200/80 rounded-2xl text-center space-y-1">
+                <span className="font-mool text-sm text-[#0c2340] block">ព្រះរាជាណាចក្រកម្ពុជា • ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
+                <span className="text-xs text-gray-600 block">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ</span>
+                <span className="text-[11px] text-amber-800 font-mono font-bold block pt-1">
+                  លេខកូដឯកសារ: ០២៤/២៦ វវ.កច • ម៉ោងធ្វើបច្ចុប្បន្នភាព: {currentTimeStr}
+                </span>
+              </div>
+
+              {/* Real-time Metrics Snapshot */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                  <span className="text-[11px] text-blue-700 font-bold block">ការកក់សរុប</span>
+                  <span className="text-xl font-bold text-blue-950 font-mono">{bookings.length}</span>
+                  <span className="text-[10px] text-gray-500 block">បន្ទប់ {roomBookings.length} | តុ {diningBookings.length}</span>
+                </div>
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                  <span className="text-[11px] text-emerald-700 font-bold block">កំពុងស្នាក់នៅ</span>
+                  <span className="text-xl font-bold text-emerald-950 font-mono">{inHouseGuests.length}</span>
+                  <span className="text-[10px] text-gray-500 block">In-House</span>
+                </div>
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <span className="text-[11px] text-amber-700 font-bold block">ចំណូលសរុប ($)</span>
+                  <span className="text-xl font-bold text-amber-950 font-mono">${totalRevenueUSD.toFixed(2)}</span>
+                  <span className="text-[10px] text-gray-500 block">USD</span>
+                </div>
+                <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl">
+                  <span className="text-[11px] text-purple-700 font-bold block">ចំណូលសរុប (៛)</span>
+                  <span className="text-base sm:text-lg font-bold text-purple-950 font-mono">{Math.round(totalRevenueUSD * 4100).toLocaleString()} ៛</span>
+                  <span className="text-[10px] text-gray-500 block">KHR</span>
+                </div>
+              </div>
+
+              {/* 3 Executive Download Options */}
+              <div className="space-y-3">
+                {/* 1. Word Document */}
+                <div className="p-4 bg-white border-2 border-blue-200 hover:border-blue-400 rounded-2xl transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold shrink-0 mt-0.5">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-mool text-sm text-[#0c2340]">{t.reportWordTitle}</h4>
+                      <p className="text-xs text-gray-600 mt-0.5">{t.reportWordDesc}</p>
+                    </div>
+                  </div>
+                  <a
+                    href="/api/reports?format=docx"
+                    download
+                    className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition shrink-0"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Word (.docx)</span>
+                  </a>
+                </div>
+
+                {/* 2. Excel Spreadsheet */}
+                <div className="p-4 bg-white border-2 border-emerald-200 hover:border-emerald-400 rounded-2xl transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shrink-0 mt-0.5">
+                      <FileSpreadsheet className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-mool text-sm text-[#0c2340]">{t.reportExcelTitle}</h4>
+                      <p className="text-xs text-gray-600 mt-0.5">{t.reportExcelDesc}</p>
+                    </div>
+                  </div>
+                  <a
+                    href="/api/reports?format=excel"
+                    download
+                    className="w-full sm:w-auto px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition shrink-0"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Excel (.xlsx)</span>
+                  </a>
+                </div>
+
+                {/* 3. Official Printable PDF */}
+                <div className="p-4 bg-white border-2 border-rose-200 hover:border-rose-400 rounded-2xl transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold shrink-0 mt-0.5">
+                      <Printer className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-mool text-sm text-[#0c2340]">{t.reportPdfTitle}</h4>
+                      <p className="text-xs text-gray-600 mt-0.5">{t.reportPdfDesc}</p>
+                    </div>
+                  </div>
+                  <a
+                    href="/api/reports?format=html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition shrink-0"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>{t.viewPrintPdfBtn}</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Bot Alert Note */}
+              <div className="p-3.5 bg-sky-50 border border-sky-200 rounded-2xl flex items-start space-x-2.5 text-xs text-sky-900">
+                <Send className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
+                <div className="leading-relaxed">
+                  <strong>ជំនួយការ Telegram Bot (@vvotel_bot):</strong> លោកអ្នកអាចទាញយករបាយការណ៍ទាំងនេះដោយផ្ទាល់ក្នុង Telegram គ្រប់ពេលវេលា ដោយគ្រាន់តែវាយពាក្យបញ្ជា <code className="bg-sky-100 text-sky-800 px-1 py-0.5 rounded font-mono font-bold">/report</code> ឬចុចលើប៊ូតុង <strong>📑 របាយការណ៍រដ្ឋបាល</strong>!
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsReportModalOpen(false)}
+                className="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl text-xs transition"
+              >
+                {lang === "km" ? "បិទផ្ទាំង" : "Close"}
+              </button>
+            </div>
           </div>
         </div>
       )}

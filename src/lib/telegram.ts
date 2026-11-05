@@ -1,6 +1,12 @@
 import fs from "fs";
 import path from "path";
 import { getAllBookings } from "./bookings";
+import {
+  generateOfficialDocx,
+  generateOfficialExcel,
+  getOfficialKhmerDate,
+  computeReportMetrics,
+} from "./reports";
 
 export const TELEGRAM_BOT_TOKEN =
   process.env.TELEGRAM_BOT_TOKEN || "9278143321:AAE73YdgWRNZQzwjBUZ1v7Lt4MdXmhGNImk";
@@ -156,6 +162,43 @@ export async function sendTelegramPhoto(
 }
 
 /**
+ * Send documents (e.g. DOCX, XLSX, PDF) via Telegram Bot API
+ */
+export async function sendTelegramDocument(
+  chatId: string | number,
+  buffer: Buffer,
+  filename: string,
+  caption: string,
+  options: {
+    parse_mode?: "HTML" | "Markdown";
+    reply_markup?: any;
+  } = {}
+) {
+  try {
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`;
+    const formData = new FormData();
+    formData.append("chat_id", String(chatId));
+    formData.append("document", new Blob([new Uint8Array(buffer)]), filename);
+    formData.append("caption", caption);
+    if (options.parse_mode) {
+      formData.append("parse_mode", options.parse_mode);
+    }
+    if (options.reply_markup) {
+      formData.append("reply_markup", JSON.stringify(options.reply_markup));
+    }
+
+    const res = await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
+    return await res.json();
+  } catch (err) {
+    console.error(`Failed to send Telegram document to ${chatId}:`, err);
+    return { ok: false, error: err };
+  }
+}
+
+/**
  * Answer an incoming callback query to remove Telegram's loading spinner
  */
 export async function answerCallbackQuery(callbackQueryId: string, text?: string) {
@@ -192,6 +235,7 @@ export async function configureTelegramBot(domain: string = APP_BASE_URL) {
           { command: "admin", description: "📊 ផ្ទាំងគ្រប់គ្រងសណ្ឋាគារ (Admin Portal)" },
           { command: "rooms", description: "🛏️ បន្ទប់ស្នាក់នៅ និងតម្លៃ (Rooms & Rates)" },
           { command: "booking", description: "🛎️ កក់បន្ទប់តាម Online WebApp" },
+          { command: "report", description: "📑 របាយការណ៍រដ្ឋបាល Word, Excel, PDF (Reports)" },
           { command: "guide", description: "🗺️ មគ្គុទ្ទេសក៍ទេសចរណ៍ខេត្តកំពង់ចាម" },
           { command: "contact", description: "📞 ទំនាក់ទំនង & ទីតាំងសណ្ឋាគារ" },
         ],
@@ -236,6 +280,7 @@ export async function sendTelegramMainMenu(chatId: string | number, name: string
 • <b>ប្រព័ន្ធកណ្តាល ALL Accor PMS:</b> គ្រប់គ្រងការកក់បន្ទប់ និងទិន្នន័យ
 • <b>ប្រព័ន្ធកក់បន្ទប់ផ្ទាល់:</b> កក់បន្ទប់ភ្លាមៗតាមទូរស័ព្ទដៃ
 • <b>ការទូទាត់កម្រិតខ្ពស់:</b> គាំទ្រ Bakong KHQR និងកាត 3D Secure
+• <b>របាយការណ៍រដ្ឋបាលផ្លូវការ:</b> ផលិតរបាយការណ៍ Word (.docx), Excel (.xlsx), PDF
 • <b>ការជូនដំណឹងស្វ័យប្រវត្ត:</b> Alert ភ្លាមៗរាល់ពេលភ្ញៀវកក់ ឬបាញ់លុយចូល
 
 សូមជ្រើសរើសមុខងារដែលលោកអ្នកត្រូវការខាងក្រោម៖
@@ -247,6 +292,12 @@ export async function sendTelegramMainMenu(chatId: string | number, name: string
         {
           text: "🛎️ កក់បន្ទប់ភ្លាមៗ (Book Now WebApp)",
           web_app: { url: APP_BASE_URL },
+        },
+      ],
+      [
+        {
+          text: "📑 របាយការណ៍រដ្ឋបាលផ្លូវការ (Administrative Reports)",
+          callback_data: "cmd_report",
         },
       ],
       [
@@ -283,6 +334,144 @@ export async function sendTelegramMainMenu(chatId: string | number, name: string
   };
 
   return sendTelegramPhoto(chatId, VVOTEL_LOGO_URL, text, { reply_markup });
+}
+
+/**
+ * Send Administrative Report Menu
+ */
+export async function sendTelegramReportMenu(chatId: string | number) {
+  registerChatId(chatId);
+  const bookings = getAllBookings();
+  const dateInfo = getOfficialKhmerDate();
+  const metrics = computeReportMetrics(bookings);
+
+  const text = `
+📑 <b>របាយការណ៍រដ្ឋបាលផ្លូវការ • VVOTEL KAMPONG CHAM</b>
+<i>Official Administrative Reports Suite • Central PMS Hub</i>
+━━━━━━━━━━━━━━━━━━━━━━
+🏛️ <b>ព្រះរាជាណាចក្រកម្ពុជា • ជាតិ សាសនា ព្រះមហាក្សត្រ</b>
+🏢 <b>សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម | ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ</b>
+📅 <b>កាលបរិច្ឆេទ:</b> ${dateInfo.fullSolarDate}
+
+📊 <b>ស្ថិតិសង្ខេបប្រតិបត្តិការ៖</b>
+• ចំនួនការកក់សរុប: <b>${metrics.totalBookings}</b> (បន្ទប់: ${metrics.roomBookings} | តុ: ${metrics.diningBookings})
+• ភ្ញៀវកំពុងស្នាក់នៅ (In-House): <b>${metrics.inHouseCount} នាក់</b>
+• ចំណូលសរុប (USD): <b>$${metrics.totalPaidUSD.toFixed(2)}</b>
+• ចំណូលសរុប (KHR): <b>${metrics.totalPaidKHR.toLocaleString()} ៛</b>
+
+🎯 <b>ទម្រង់របាយការណ៍រដ្ឋបាលស្តង់ដារកម្ពុជា៖</b>
+លោកអ្នកអាចទាញយករបាយការណ៍រដ្ឋបាលជាឯកសារ Word (.docx), Excel (.xlsx), ឬមើល និងបោះពុម្ពជា PDF តាមប៊ូតុងខាងក្រោម៖
+`;
+
+  const reply_markup = {
+    inline_keyboard: [
+      [
+        {
+          text: "📄 ទាញយក Word (.docx)",
+          callback_data: "cmd_report_docx",
+        },
+        {
+          text: "📊 ទាញយក Excel (.xlsx)",
+          callback_data: "cmd_report_excel",
+        },
+      ],
+      [
+        {
+          text: "📕 បើកមើល / បោះពុម្ព PDF ផ្លូវការ",
+          url: `${APP_BASE_URL}/api/reports?format=html`,
+        },
+      ],
+      [
+        {
+          text: "🔄 ត្រឡប់ទៅម៉ឺនុយមេ (Main Menu)",
+          callback_data: "cmd_main",
+        },
+      ],
+    ],
+  };
+
+  return sendTelegramMessage(chatId, text, { reply_markup });
+}
+
+/**
+ * Generate and deliver official DOCX Administrative Report
+ */
+export async function sendTelegramReportDocx(chatId: string | number) {
+  try {
+    await sendTelegramMessage(
+      chatId,
+      "⏳ <i>កំពុងរៀបចំផលិតរបាយការណ៍រដ្ឋបាលជាទម្រង់ Microsoft Word (.docx) តាមបទដ្ឋានផ្លូវការកម្ពុជា...</i>"
+    );
+    const bookings = getAllBookings();
+    const dateInfo = getOfficialKhmerDate();
+    const buffer = await generateOfficialDocx(bookings);
+    const filename = `VVotel_Official_Administrative_Report_${dateInfo.isoDate}.docx`;
+    const caption = `
+📄 <b>របាយការណ៍បូកសរុបប្រតិបត្តិការ (Word Document • .docx)</b>
+<i>សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ទម្រង់រដ្ឋបាលស្តង់ដារកម្ពុជា</i>
+━━━━━━━━━━━━━━━━━━━━━━
+• <b>ពុម្ភអក្សរ:</b> Khmer Mool (ក្បាលលិខិត) & Khmer OS Siemreap (តួអត្ថបទ)
+• <b>កាលបរិច្ឆេទ:</b> ${dateInfo.standardHeaderDate}
+• <b>ចំនួនប្រតិបត្តិការ:</b> ${bookings.length} ការកក់
+• <b>ទម្រង់ឯកសារ:</b> Microsoft Word (.docx) មានតារាងទិន្នន័យ ស្ថិតិ និងប្រអប់ហត្ថលេខា/ត្រាពេញលេញ។
+`;
+    return await sendTelegramDocument(chatId, buffer, filename, caption, {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "📊 ទាញយក Excel (.xlsx)", callback_data: "cmd_report_excel" },
+            { text: "🔄 ត្រឡប់ទៅម៉ឺនុយរបាយការណ៍", callback_data: "cmd_report" },
+          ],
+        ],
+      },
+    });
+  } catch (err) {
+    console.error("Error sending docx report to telegram:", err);
+    return await sendTelegramMessage(
+      chatId,
+      "❌ មានបញ្ហាក្នុងការបង្កើតរបាយការណ៍ Word សូមសាកល្បងម្តងទៀត។"
+    );
+  }
+}
+
+/**
+ * Generate and deliver official Excel (.xlsx) Administrative Report
+ */
+export async function sendTelegramReportExcel(chatId: string | number) {
+  try {
+    await sendTelegramMessage(
+      chatId,
+      "⏳ <i>កំពុងរៀបចំផលិតរបាយការណ៍រដ្ឋបាលជាទម្រង់ Microsoft Excel (.xlsx) ជាមួយរូបមន្ត និងតារាងទិន្នន័យ...</i>"
+    );
+    const bookings = getAllBookings();
+    const dateInfo = getOfficialKhmerDate();
+    const buffer = await generateOfficialExcel(bookings);
+    const filename = `VVotel_Official_Executive_Report_${dateInfo.isoDate}.xlsx`;
+    const caption = `
+📊 <b>របាយការណ៍បូកសរុបប្រតិបត្តិការ (Excel Workbook • .xlsx)</b>
+<i>សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • តារាងទិន្នន័យ និងចំណូល</i>
+━━━━━━━━━━━━━━━━━━━━━━
+• <b>កាលបរិច្ឆេទ:</b> ${dateInfo.standardHeaderDate}
+• <b>ចំនួនប្រតិបត្តិការ:</b> ${bookings.length} ការកក់
+• <b>លក្ខណៈពិសេស:</b> តារាងព័ត៌មានលម្អិត, ការគណនាផលបូកចំណូលសរុប USD ($) និង KHR (៛) ដោយស្វ័យប្រវត្តិ។
+`;
+    return await sendTelegramDocument(chatId, buffer, filename, caption, {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "📄 ទាញយក Word (.docx)", callback_data: "cmd_report_docx" },
+            { text: "🔄 ត្រឡប់ទៅម៉ឺនុយរបាយការណ៍", callback_data: "cmd_report" },
+          ],
+        ],
+      },
+    });
+  } catch (err) {
+    console.error("Error sending excel report to telegram:", err);
+    return await sendTelegramMessage(
+      chatId,
+      "❌ មានបញ្ហាក្នុងការបង្កើតរបាយការណ៍ Excel សូមសាកល្បងម្តងទៀត។"
+    );
+  }
 }
 
 /**
@@ -634,6 +823,16 @@ export async function handleTelegramUpdate(update: any) {
         return await sendTelegramContactInfo(chatId);
       }
 
+      if (
+        text === "/report" ||
+        text.toLowerCase() === "report" ||
+        text === "/reports" ||
+        text.toLowerCase() === "reports" ||
+        text === "/export"
+      ) {
+        return await sendTelegramReportMenu(chatId);
+      }
+
       // Check if user entered a booking code like VVT-KC-...
       if (text.toUpperCase().includes("VVT") || /^\d{6}$/.test(text)) {
         return await sendTelegramBookingLookup(chatId, text);
@@ -657,6 +856,12 @@ export async function handleTelegramUpdate(update: any) {
       switch (data) {
         case "cmd_main":
           return await sendTelegramMainMenu(chatId, cb.from?.first_name || "Guest");
+        case "cmd_report":
+          return await sendTelegramReportMenu(chatId);
+        case "cmd_report_docx":
+          return await sendTelegramReportDocx(chatId);
+        case "cmd_report_excel":
+          return await sendTelegramReportExcel(chatId);
         case "cmd_pms":
           return await sendTelegramPmsBridge(chatId);
         case "cmd_admin":
