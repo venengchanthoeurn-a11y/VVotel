@@ -153,15 +153,15 @@ export const Header: React.FC = () => {
                 <span>{t("destinationGuide")}</span>
               </a>
 
-              {/* Accor PMS Deep Link */}
+              {/* Accor PMS Telegram Bot Link */}
               <a
-                href="https://all.accor.com/booking/en/accor/hotel/A611"
+                href="https://t.me/vvotel_bot?start=accor_pms"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-2.5 py-1.5 rounded-lg text-purple-900 bg-purple-50 hover:bg-purple-100 transition font-extrabold text-xs border border-purple-200"
-                title="ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS (Hotel A611)"
+                title="ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS តាម Telegram Bot (@vvotel_bot)"
               >
-                ALL Accor
+                ALL Accor PMS
               </a>
 
               {/* Admin Portal Link */}

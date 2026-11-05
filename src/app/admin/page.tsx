@@ -397,16 +397,16 @@ export default function AdminPage() {
               <span>កក់ផ្ទាល់ / Walk-in</span>
             </button>
 
-            {/* Accor PMS Central deep link */}
+            {/* Accor PMS Central Link -> Telegram Bot */}
             <a
-              href="https://all.accor.com/booking/en/accor/hotel/A611"
+              href="https://t.me/vvotel_bot?start=accor_pms"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-purple-900/60 hover:bg-purple-800 text-purple-200 border border-purple-500/40 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition"
-              title="ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS Hotel A611"
+              title="ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS តាម Telegram Bot (@vvotel_bot)"
             >
               <span>ALL Accor PMS</span>
-              <ExternalLink className="w-3 h-3" />
+              <Send className="w-3 h-3 text-vvotel-gold" />
             </a>
 
             {/* Return to main website */}

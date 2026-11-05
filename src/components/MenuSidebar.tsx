@@ -259,9 +259,9 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
             <span>{t("services")}</span>
           </a>
 
-          {/* Accor PMS Direct Link */}
+          {/* Accor PMS Direct Link -> Telegram Bot */}
           <a
-            href="https://all.accor.com/booking/en/accor/hotel/A611"
+            href="https://t.me/vvotel_bot?start=accor_pms"
             target="_blank"
             rel="noopener noreferrer"
             onClick={onClose}
@@ -271,7 +271,7 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
               <Building className="w-4 h-4 text-vvotel-gold" />
               <span>{lang === "km" ? "ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS" : "ALL Accor Central PMS"}</span>
             </div>
-            <ExternalLink className="w-3.5 h-3.5 text-purple-300" />
+            <Send className="w-3.5 h-3.5 text-purple-300" />
           </a>
 
           {/* Admin Hotel Management */}

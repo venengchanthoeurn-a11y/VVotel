@@ -177,42 +177,9 @@ export const BookingBar: React.FC = () => {
   const totalAmountUSD = subtotalBeforeDiscount - discountAmount;
   const totalAmountKHR = Math.round(totalAmountUSD * 4100);
 
-  // Construct Accor/VVotel PMS Central Deep Link (Exact like reference website)
+  // Construct Accor/VVotel PMS Central Link to Telegram Bot (@vvotel_bot)
   const buildCentralPmsUrl = () => {
-    const compositionStrings = rooms
-      .slice(0, roomCount)
-      .map((r) => {
-        let comp = `${r.adults}`;
-        if (r.children > 0) {
-          comp += `:${r.childAges.slice(0, r.children).join(",")}`;
-        }
-        return comp;
-      })
-      .join(";");
-
-    const baseUrl = `https://all.accor.com/booking/${lang === "km" ? "en" : lang}/accor/hotel/A611`;
-    const params = new URLSearchParams({
-      dateIn: checkIn,
-      nights: nights.toString(),
-      compositions: compositionStrings,
-      stayplus: "false",
-      snu: "false",
-      accessibleRooms: "false",
-      hideWDR: "false",
-      productCode: "null",
-      hideHotelDetails: "true",
-      utm_campaign: "vvotel_kampongcham_search",
-      utm_medium: "vvotel_regional_websites",
-      utm_source: "hotelwebsite_KAMPONGCHAM",
-      basketId: `vvt-${Date.now()}`,
-    });
-
-    if (loyaltyNumber) params.append("loyaltyNumber", loyaltyNumber.replace(/\s+/g, ""));
-    if (clientCode) params.append("clientCode", clientCode);
-    if (accessCode) params.append("accessCode", accessCode);
-    if (preferentialCode) params.append("preferentialCode", preferentialCode);
-
-    return `${baseUrl}?${params.toString()}`;
+    return `https://t.me/vvotel_bot?start=accor_pms`;
   };
 
   // Direct room selection event listener from AccommodationSection cards
@@ -507,17 +474,17 @@ export const BookingBar: React.FC = () => {
             </div>
 
             <div className="flex items-center flex-wrap gap-2.5">
-              {/* Accor PMS Central Link */}
+              {/* Accor PMS Central Link -> Telegram Bot */}
               <a
-                href={`https://all.accor.com/booking/en/accor/hotel/A611?dateIn=${checkIn}&nights=${nights}&compositions=${rooms.slice(0, roomCount).map((r) => `${r.adults}${r.children ? `-${r.childAges.join("-")}` : ""}`).join(".")}${loyaltyNumber ? `&loyaltyNumber=${loyaltyNumber}` : ""}${clientCode ? `&clientCode=${clientCode}` : ""}${preferentialCode ? `&preferentialCode=${preferentialCode}` : ""}&utm_campaign=vvotel_kampongcham_search`}
+                href="https://t.me/vvotel_bot?start=accor_pms"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-500/50 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
-                title="ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS (Hotel A611)"
+                title="ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS តាម Telegram Bot (@vvotel_bot)"
               >
                 <Building className="w-3.5 h-3.5 text-vvotel-gold" />
                 <span>{lang === "km" ? "ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS" : "ALL Accor PMS"}</span>
-                <ExternalLink className="w-3 h-3 text-purple-300" />
+                <Send className="w-3 h-3 text-purple-300" />
               </a>
 
               {/* Admin Portal Button */}
@@ -874,33 +841,34 @@ export const BookingBar: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Option 2: Connect to Central Accor / VVotel PMS URL */}
-                    <div className="p-6 rounded-2xl border-2 border-gray-200 bg-gray-50/60 hover:bg-gray-100 transition flex flex-col justify-between space-y-4">
+                    {/* Option 2: Connect to Central Accor / VVotel PMS via Telegram Bot */}
+                    <div className="p-6 rounded-2xl border-2 border-purple-200 bg-purple-50/40 hover:bg-purple-50 transition flex flex-col justify-between space-y-4">
                       <div className="space-y-2">
-                        <div className="w-10 h-10 rounded-xl bg-gray-800 text-white flex items-center justify-center font-bold">
-                          <Building className="w-5 h-5" />
+                        <div className="w-10 h-10 rounded-xl bg-purple-900 text-white flex items-center justify-center font-bold shadow">
+                          <Send className="w-5 h-5 text-vvotel-gold" />
                         </div>
                         <h4 className="font-extrabold text-base text-gray-900">
-                          {lang === "km" ? "ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS" : "ALL - Accor Central PMS Portal"}
+                          {lang === "km" ? "ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS" : "ALL - Accor Central PMS Bot Hub"}
                         </h4>
                         <p className="text-xs text-gray-600 leading-relaxed">
                           {lang === "km"
-                            ? "បញ្ជូនទិន្នន័យកាលបរិច្ឆេទ បន្ទប់ និងកូដសមាជិកទៅកាន់ប្រព័ន្ធកណ្តាល all.accor.com ដូចគេហទំព័រដើម Novotel ទាំងស្រុង។"
-                            : "Deep-link directly to Accor's central multi-property reservation engine with prefilled compositions, dateIn, nights, and loyalty codes."}
+                            ? "ភ្ជាប់ទិន្នន័យកក់បន្ទប់ទៅកាន់ប្រព័ន្ធកណ្តាលតាមរយៈ Telegram Bot ផ្លូវការ (@vvotel_bot) គ្រប់គ្រងទិន្នន័យផ្ទាល់ និងទទួលបាន Alert ភ្លាមៗ។"
+                            : "Directly connect reservation data through the official Telegram PMS Bot (@vvotel_bot) for real-time room inventory and staff alerts."}
                         </p>
-                        <div className="text-[11px] font-mono bg-white p-2 rounded border border-gray-200 text-gray-500 break-all">
-                          all.accor.com/booking/hotel/A611?dateIn={checkIn}&nights={nights}...
+                        <div className="text-[11px] font-mono bg-white p-2 rounded border border-purple-200 text-purple-800 break-all flex items-center space-x-1.5">
+                          <Send className="w-3 h-3 text-sky-500 shrink-0" />
+                          <span>t.me/vvotel_bot?start=accor_pms</span>
                         </div>
                       </div>
 
                       <a
-                        href={buildCentralPmsUrl()}
+                        href="https://t.me/vvotel_bot?start=accor_pms"
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full bg-gray-900 hover:bg-black text-white font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center space-x-1.5 shadow"
+                        className="w-full bg-purple-900 hover:bg-purple-950 text-white font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center space-x-1.5 shadow"
                       >
-                        <span>{lang === "km" ? "បើកប្រព័ន្ធ ALL Accor PMS" : "Open Accor PMS Engine"}</span>
-                        <ExternalLink className="w-4 h-4" />
+                        <Send className="w-4 h-4 text-vvotel-gold" />
+                        <span>{lang === "km" ? "ភ្ជាប់ទៅកាន់ Telegram Bot (@vvotel_bot)" : "Open PMS via Telegram Bot"}</span>
                       </a>
                     </div>
                   </div>

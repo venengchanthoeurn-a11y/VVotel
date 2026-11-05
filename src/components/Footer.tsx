@@ -116,12 +116,12 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="https://all.accor.com/booking/en/accor/hotel/A611"
+                  href="https://t.me/vvotel_bot?start=accor_pms"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-vvotel-gold transition text-purple-300 font-bold"
                 >
-                  {lang === "km" ? "ប្រព័ន្ធកណ្តាល ALL Accor PMS (Hotel A611)" : "ALL Accor Central PMS (Hotel A611)"}
+                  {lang === "km" ? "ប្រព័ន្ធកណ្តាល ALL Accor PMS (Telegram Bot)" : "ALL Accor Central PMS (Telegram Bot)"}
                 </a>
               </li>
               <li>
