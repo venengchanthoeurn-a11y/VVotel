@@ -83,6 +83,46 @@ export async function sendTelegramMessage(
   }
 }
 
+export const VVOTEL_LOGO_URL = "https://vvhotel.vercel.app/icons/icon-512.png";
+export const HOTEL_FACADE_URL = "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80";
+
+/**
+ * Helper to send photo with caption via Telegram Bot API
+ */
+export async function sendTelegramPhoto(
+  chatId: string | number,
+  photoUrl: string,
+  caption: string,
+  options: {
+    parse_mode?: "HTML" | "Markdown";
+    reply_markup?: any;
+  } = {}
+) {
+  try {
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        photo: photoUrl,
+        caption,
+        parse_mode: options.parse_mode || "HTML",
+        reply_markup: options.reply_markup,
+      }),
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      console.warn("sendTelegramPhoto fallback to sendMessage:", data.description);
+      return await sendTelegramMessage(chatId, caption, options);
+    }
+    return data;
+  } catch (err) {
+    console.error(`Failed to send Telegram photo to ${chatId}:`, err);
+    return await sendTelegramMessage(chatId, caption, options);
+  }
+}
+
 /**
  * Answer an incoming callback query to remove Telegram's loading spinner
  */
@@ -210,7 +250,7 @@ export async function sendTelegramMainMenu(chatId: string | number, name: string
     ],
   };
 
-  return sendTelegramMessage(chatId, text, { reply_markup });
+  return sendTelegramPhoto(chatId, VVOTEL_LOGO_URL, text, { reply_markup });
 }
 
 /**
@@ -441,8 +481,8 @@ https://vvhotel.vercel.app
       ],
       [
         {
-          text: "📞 ទូរស័ព្ទទៅកាន់សណ្ឋាគារឥឡូវនេះ",
-          url: "tel:+85542982999",
+          text: "🌐 ចូលទៅកាន់គេហទំព័រផ្លូវការ",
+          url: APP_BASE_URL,
         },
       ],
       [
@@ -678,8 +718,12 @@ ${booking.specialRequests ? `📝 <b>សំណូមពរពិសេស:</b> <
       ],
       [
         {
-          text: "📞 ទាក់ទងភ្ញៀវតាមទូរស័ព្ទ",
-          url: `tel:${booking.phone || "+85542982999"}`,
+          text: "🛎️ បើកមើលលើ Website",
+          url: APP_BASE_URL,
+        },
+        {
+          text: "🔄 ម៉ឺនុយមេ (Main Menu)",
+          callback_data: "cmd_main",
         },
       ],
     ],
@@ -689,7 +733,7 @@ ${booking.specialRequests ? `📝 <b>សំណូមពរពិសេស:</b> <
   for (const chatId of targetChats) {
     if (!chatId) continue;
     try {
-      const res = await sendTelegramMessage(chatId, html, { reply_markup });
+      const res = await sendTelegramPhoto(chatId, VVOTEL_LOGO_URL, html, { reply_markup });
       if (res && res.ok) delivered++;
     } catch (e) {
       console.error(`Failed to dispatch alert to chat ${chatId}:`, e);

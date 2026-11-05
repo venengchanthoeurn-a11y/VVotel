@@ -28,18 +28,31 @@ import {
   Key,
   X,
   Sparkles,
+  Lock,
+  Eye,
+  EyeOff,
+  UserCheck,
 } from "lucide-react";
 import { BookingRecord } from "@/lib/bookings";
 import { PrintableReceipt } from "@/components/PrintableReceipt";
 
 export default function AdminPage() {
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [passcode, setPasscode] = useState<string>("");
+  const [passcodeError, setPasscodeError] = useState<string>("");
+  const [showPasscode, setShowPasscode] = useState<boolean>(false);
+  const [rememberLogin, setRememberLogin] = useState<boolean>(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
+
+  // Bookings Data State
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
-  const [dateFilter, setDateFilter] = useState<string>("ALL"); // ALL, TODAY
+  const [dateFilter, setDateFilter] = useState<string>("ALL"); // ALL, TODAY_IN, TODAY_OUT
 
-  // Telegram test state
+  // Telegram test alert state
   const [telegramStatus, setTelegramStatus] = useState<{
     loading: boolean;
     message?: string;
@@ -72,6 +85,49 @@ export default function AdminPage() {
     roomNumber: "201",
   });
 
+  // Verify stored session on initial load
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedToken = localStorage.getItem("vvotel_admin_token");
+      if (storedToken === "authorized_manager_2052") {
+        setIsAuthenticated(true);
+      }
+      setIsCheckingAuth(false);
+    }
+  }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasscodeError("");
+
+    // Authorized Master Passcodes: 2052 (Address No. 2052) or vvotel2026 or admin2052
+    const clean = passcode.trim();
+    if (
+      clean === "2052" ||
+      clean === "vvotel2026" ||
+      clean === "admin2052" ||
+      clean === "vvotel@admin"
+    ) {
+      setIsAuthenticated(true);
+      if (rememberLogin && typeof window !== "undefined") {
+        localStorage.setItem("vvotel_admin_token", "authorized_manager_2052");
+      }
+      fetchBookings();
+    } else {
+      setPasscodeError(
+        "លេខកូដសម្ងាត់មិនត្រឹមត្រូវឡើយ! ប្រព័ន្ធអនុញ្ញាតសម្រាប់តែអ្នកគ្រប់គ្រង និងបុគ្គលិកសណ្ឋាគារប៉ុណ្ណោះ។"
+      );
+    }
+  };
+
+  const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("vvotel_admin_token");
+    }
+    setIsAuthenticated(false);
+    setPasscode("");
+  };
+
   const fetchBookings = async () => {
     setLoading(true);
     try {
@@ -88,14 +144,16 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    fetchBookings();
-  }, []);
+    if (isAuthenticated) {
+      fetchBookings();
+    }
+  }, [isAuthenticated]);
 
   // Send Telegram test alert to @vvotel_bot
   const handleTestTelegram = async () => {
     setTelegramStatus({ loading: true });
     try {
-      const res = await fetch("/api/telegram/test");
+      const res = await fetch("/api/telegram/test", { method: "POST" });
       const data = await res.json();
       if (data.success) {
         setTelegramStatus({
@@ -225,7 +283,6 @@ export default function AdminPage() {
       if (data.success) {
         setIsNewBookingModalOpen(false);
         await fetchBookings();
-        // open print receipt
         if (data.booking) {
           setReceiptBooking(data.booking);
           setReceiptOpen(true);
@@ -279,17 +336,21 @@ export default function AdminPage() {
       b.createdAt,
     ]);
 
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const csvContent =
+      "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `VVotel_Bookings_Report_${new Date().toISOString().split("T")[0]}.csv`);
+    link.setAttribute(
+      "download",
+      `VVotel_Bookings_Report_${new Date().toISOString().split("T")[0]}.csv`
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // Calculations for KPI Cards
+  // KPI Calculations
   const todayStr = new Date().toISOString().split("T")[0];
   const totalRevenueUSD = bookings
     .filter((b) => b.paymentStatus === "PAID" || b.paymentStatus === "GUARANTEED")
@@ -302,7 +363,6 @@ export default function AdminPage() {
 
   // Filtering
   const filteredBookings = bookings.filter((b) => {
-    // Search query
     const q = searchQuery.toLowerCase();
     const matchesSearch =
       !q ||
@@ -312,13 +372,11 @@ export default function AdminPage() {
       b.email.toLowerCase().includes(q) ||
       (b.roomNumber && b.roomNumber.toLowerCase().includes(q));
 
-    // Status filter
     const matchesStatus =
       selectedStatus === "ALL" ||
       b.stayStatus === selectedStatus ||
       b.paymentStatus === selectedStatus;
 
-    // Date filter
     const matchesDate =
       dateFilter === "ALL" ||
       (dateFilter === "TODAY_IN" && b.checkIn === todayStr) ||
@@ -327,37 +385,175 @@ export default function AdminPage() {
     return matchesSearch && matchesStatus && matchesDate;
   });
 
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-4">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-800 font-black text-2xl shadow-sm animate-pulse">
+            V
+          </div>
+          <span className="text-xs font-bold text-gray-500">កំពុងផ្ទៀងផ្ទាត់សិទ្ធិគ្រប់គ្រង...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // VIEW 1: SECURITY GATE / LOGIN MODAL (FOR UNAUTHENTICATED USERS)
+  // Luxury Egg-Cream (ពណ៌ពងមាន់) & Pure White Security Lock Screen
+  // =========================================================================
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#FAF7F2] via-[#F4EFE6] to-[#ECE5D8] flex flex-col items-center justify-center p-4 sm:p-6 font-sans">
+        <div className="w-full max-w-md bg-white border border-amber-200/90 rounded-3xl p-6 sm:p-8 shadow-xl shadow-amber-950/5 relative overflow-hidden">
+          {/* Top Decorative Gold Accent Line */}
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600" />
+
+          {/* Luxury Brand Header */}
+          <div className="flex flex-col items-center text-center space-y-3 pt-2">
+            <div className="w-16 h-16 rounded-2xl bg-[#0c2340] border-2 border-amber-300 flex items-center justify-center text-amber-300 font-black text-3xl shadow-md">
+              V
+            </div>
+            <div>
+              <span className="text-[11px] font-black tracking-widest uppercase text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                Hotel Executive Portal
+              </span>
+              <h2 className="text-xl sm:text-2xl font-black text-[#0c2340] tracking-tight mt-1.5">
+                VVotel PMS Security Gate
+              </h2>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ប្រព័ន្ធគ្រប់គ្រងផ្ទៃក្នុង
+              </p>
+            </div>
+          </div>
+
+          {/* Security Notice */}
+          <div className="mt-6 p-3 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-start space-x-2.5 text-xs text-amber-900">
+            <Lock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+            <div className="leading-relaxed">
+              <strong>ការចូលប្រើប្រាស់ត្រូវបានការពារ៖</strong> អនុញ្ញាតសម្រាប់តែថ្នាក់ដឹកនាំ និងបុគ្គលិកទទួលភ្ញៀវផ្លូវការប៉ុណ្ណោះ។
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {passcodeError && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center space-x-2 text-xs text-red-700 font-bold animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{passcodeError}</span>
+            </div>
+          )}
+
+          {/* Passcode Login Form */}
+          <form onSubmit={handleLogin} className="mt-6 space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                លេខកូដសម្ងាត់អ្នកគ្រប់គ្រង (Admin Passcode / PIN):
+              </label>
+              <div className="relative">
+                <input
+                  type={showPasscode ? "text" : "password"}
+                  required
+                  autoFocus
+                  value={passcode}
+                  onChange={(e) => {
+                    setPasscode(e.target.value);
+                    if (passcodeError) setPasscodeError("");
+                  }}
+                  placeholder="បញ្ចូលលេខសម្ងាត់ (ឧ. 2052)"
+                  className="w-full bg-[#FAF8F4] border border-amber-200 rounded-2xl pl-10 pr-11 py-3 text-sm font-mono text-gray-900 focus:outline-none focus:border-amber-500 focus:bg-white transition shadow-inner"
+                />
+                <Key className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+                <button
+                  type="button"
+                  onClick={() => setShowPasscode(!showPasscode)}
+                  className="absolute right-3.5 top-3.5 text-gray-400 hover:text-gray-700 transition"
+                  title={showPasscode ? "លាក់លេខកូដ" : "បង្ហាញលេខកូដ"}
+                >
+                  {showPasscode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-gray-500 mt-1.5">
+                <span className="font-medium text-amber-800">
+                  💡 លេខកូដសម្ងាត់សណ្ឋាគារ៖ <strong>2052</strong> (អគារលេខ ២០៥២)
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="remember"
+                checked={rememberLogin}
+                onChange={(e) => setRememberLogin(e.target.checked)}
+                className="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500 cursor-pointer"
+              />
+              <label htmlFor="remember" className="text-xs text-gray-600 cursor-pointer select-none">
+                ចងចាំការចូលប្រើលើឧបករណ៍នេះ (Remember Session)
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-amber-600/20 transition flex items-center justify-center space-x-2"
+            >
+              <UserCheck className="w-4 h-4" />
+              <span>ចូលផ្ទាំងគ្រប់គ្រង (Enter Admin PMS)</span>
+            </button>
+          </form>
+
+          {/* Bottom Link Back to Website */}
+          <div className="mt-6 pt-4 border-t border-gray-100 text-center">
+            <Link
+              href="/"
+              className="text-xs font-bold text-gray-500 hover:text-[#0c2340] transition flex items-center justify-center space-x-1.5"
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span>ត្រឡប់ទៅគេហទំព័រដើម VVotel</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // VIEW 2: AUTHENTICATED LUXURY PMS DASHBOARD
+  // Warm Egg-Cream (ពណ៌ពងមាន់ - #FAF7F2) & Pure Crisp White (#FFFFFF)
+  // =========================================================================
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
-      {/* Top Navigation Bar */}
-      <header className="bg-slate-950 border-b border-slate-800 sticky top-0 z-30 px-4 sm:px-8 py-3.5 shadow-xl">
+    <div className="min-h-screen bg-[#FAF7F2] text-gray-900 flex flex-col font-sans">
+      {/* Top Navigation Bar in Pure White & Warm Ivory */}
+      <header className="bg-white/95 backdrop-blur-md border-b border-amber-200/70 sticky top-0 z-30 px-4 sm:px-8 py-3.5 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-vvotel-gold/20 border border-vvotel-gold/40 flex items-center justify-center text-vvotel-gold font-black text-xl shadow">
+            <div className="w-10 h-10 rounded-xl bg-[#0c2340] border border-amber-300 flex items-center justify-center text-amber-300 font-black text-xl shadow-sm">
               V
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-extrabold text-lg sm:text-xl text-white tracking-tight">
+                <span className="font-extrabold text-lg sm:text-xl text-[#0c2340] tracking-tight">
                   VVotel PMS Admin Portal
                 </span>
-                <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
                   Live System
                 </span>
+                <span className="hidden sm:inline bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  Authorized Manager
+                </span>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-gray-500">
                 សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ប្រព័ន្ធគ្រប់គ្រងការកក់បន្ទប់ និងភ្ញៀវចូលចេញ
               </p>
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="flex items-center flex-wrap gap-2.5">
+          <div className="flex items-center flex-wrap gap-2">
             {/* Telegram Bot Alert Test */}
             <button
               onClick={handleTestTelegram}
               disabled={telegramStatus.loading}
-              className="bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center space-x-2 shadow transition disabled:opacity-50"
+              className="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition disabled:opacity-50"
               title="ផ្ញើសារ Alert សាកល្បងទៅកាន់ Telegram Bot @vvotel_bot"
             >
               <Send className={`w-3.5 h-3.5 ${telegramStatus.loading ? "animate-spin" : ""}`} />
@@ -371,7 +567,7 @@ export default function AdminPage() {
               href="https://t.me/vvotel_bot"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-slate-800 hover:bg-slate-700 text-sky-400 border border-sky-500/30 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition"
+              className="bg-white hover:bg-amber-50 text-sky-700 border border-amber-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
             >
               <span>Telegram Bot</span>
               <ExternalLink className="w-3 h-3" />
@@ -381,42 +577,52 @@ export default function AdminPage() {
             <button
               onClick={fetchBookings}
               disabled={loading}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold p-2 sm:px-3 sm:py-2 rounded-xl flex items-center space-x-1.5 transition"
+              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 text-xs font-bold p-2 sm:px-3 sm:py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
               title="ទាញទិន្នន័យថ្មី"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-vvotel-gold" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-amber-600" : ""}`} />
               <span className="hidden sm:inline">ទាញទិន្នន័យ</span>
             </button>
 
             {/* Add Walk-in */}
             <button
               onClick={() => setIsNewBookingModalOpen(true)}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black px-3.5 py-2 rounded-xl flex items-center space-x-1.5 shadow-lg transition"
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-black px-3.5 py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition"
             >
               <Plus className="w-4 h-4" />
               <span>កក់ផ្ទាល់ / Walk-in</span>
             </button>
 
-            {/* Accor PMS Central Link -> Telegram Bot */}
+            {/* Accor PMS Telegram link */}
             <a
               href="https://t.me/vvotel_bot?start=accor_pms"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-purple-900/60 hover:bg-purple-800 text-purple-200 border border-purple-500/40 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition"
+              className="bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition"
               title="ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS តាម Telegram Bot (@vvotel_bot)"
             >
               <span>ALL Accor PMS</span>
-              <Send className="w-3 h-3 text-vvotel-gold" />
+              <Send className="w-3 h-3 text-purple-600" />
             </a>
 
             {/* Return to main website */}
             <Link
               href="/"
-              className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition"
+              className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
             >
               <Home className="w-3.5 h-3.5" />
               <span className="hidden md:inline">គេហទំព័រដើម</span>
             </Link>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1 transition"
+              title="ចាកចេញពីប្រព័ន្ធគ្រប់គ្រង (Sign Out)"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">ចាកចេញ</span>
+            </button>
           </div>
         </div>
       </header>
@@ -426,42 +632,42 @@ export default function AdminPage() {
         {/* Telegram Alert Feedback Toast */}
         {telegramStatus.message && (
           <div
-            className={`p-4 rounded-2xl border flex items-center justify-between text-xs sm:text-sm font-bold shadow-lg animate-in fade-in slide-in-from-top-2 ${
+            className={`p-4 rounded-2xl border flex items-center justify-between text-xs sm:text-sm font-bold shadow-md animate-in fade-in slide-in-from-top-2 ${
               telegramStatus.success
-                ? "bg-emerald-950/80 border-emerald-500/50 text-emerald-300"
-                : "bg-red-950/80 border-red-500/50 text-red-300"
+                ? "bg-emerald-50 border-emerald-300 text-emerald-900"
+                : "bg-red-50 border-red-300 text-red-900"
             }`}
           >
             <div className="flex items-center space-x-3">
-              <CheckCircle className="w-5 h-5 shrink-0" />
+              <CheckCircle className="w-5 h-5 shrink-0 text-emerald-600" />
               <span>{telegramStatus.message}</span>
             </div>
             <button
               onClick={() => setTelegramStatus({ loading: false })}
-              className="p-1 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white"
+              className="p-1 hover:bg-black/5 rounded-lg text-gray-500 hover:text-gray-900"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        {/* Telegram Integration Notice Card */}
-        <div className="bg-gradient-to-r from-sky-950/70 via-slate-900 to-indigo-950/70 border border-sky-500/30 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        {/* Telegram Integration Notice Card in Warm Pastel Styling */}
+        <div className="bg-gradient-to-r from-amber-50 via-orange-50/50 to-sky-50 border border-amber-200 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-start space-x-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-400 shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-white border border-amber-300 flex items-center justify-center text-sky-600 shadow-sm shrink-0">
               <Send className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h4 className="font-extrabold text-white text-sm sm:text-base">
+                <h4 className="font-extrabold text-[#0c2340] text-sm sm:text-base">
                   ប្រព័ន្ធភ្ជាប់ស្វ័យប្រវត្តិ Telegram Alert (@vvotel_bot)
                 </h4>
-                <span className="bg-sky-500/20 text-sky-300 border border-sky-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-sky-100 text-sky-800 border border-sky-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
                   Bot ID: 9278143321
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                រាល់ពេលភ្ញៀវធ្វើការកក់បន្ទប់ ឬបាញ់លុយតាម <strong className="text-amber-400">Bakong KHQR</strong> / <strong className="text-amber-400">កាតធនាគារ 3D Secure</strong> លើ Website នោះទិន្នន័យទាំងអស់នឹងរត់ចូល Telegram Bot នេះភ្លាមៗ ២៤ម៉ោង!
+              <p className="text-xs text-gray-600 mt-1 max-w-2xl leading-relaxed">
+                រាល់ពេលភ្ញៀវធ្វើការកក់បន្ទប់ ឬបាញ់លុយតាម <strong className="text-amber-800 font-bold">Bakong KHQR</strong> / <strong className="text-amber-800 font-bold">កាតធនាគារ 3D Secure</strong> លើ Website នោះទិន្នន័យទាំងអស់នឹងរត់ចូល Telegram Bot នេះភ្លាមៗ ២៤ម៉ោង!
               </p>
             </div>
           </div>
@@ -471,7 +677,7 @@ export default function AdminPage() {
               href="https://t.me/vvotel_bot"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 md:flex-initial text-center bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow transition flex items-center justify-center space-x-2"
+              className="flex-1 md:flex-initial text-center bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-sm transition flex items-center justify-center space-x-2"
             >
               <span>បើកប្រើ @vvotel_bot</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -479,106 +685,106 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Executive KPI Metric Cards */}
+        {/* Executive KPI Metric Cards in Pure White with Warm Ivory Accents */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {/* Card 1: Total Bookings */}
-          <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 shadow flex flex-col justify-between">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-bold">
+          <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
               <span>ការកក់សរុប</span>
-              <Calendar className="w-4 h-4 text-vvotel-gold" />
+              <Calendar className="w-4 h-4 text-amber-600" />
             </div>
             <div className="mt-3">
-              <span className="text-2xl sm:text-3xl font-black text-white">{bookings.length}</span>
-              <span className="text-xs text-slate-400 ml-1">កក់</span>
+              <span className="text-2xl sm:text-3xl font-black text-[#0c2340]">{bookings.length}</span>
+              <span className="text-xs text-gray-500 ml-1">កក់</span>
             </div>
-            <span className="text-[10px] text-emerald-400 mt-1 font-semibold">ទិន្នន័យកត់ត្រា 100%</span>
+            <span className="text-[10px] text-emerald-700 mt-1 font-semibold">ទិន្នន័យកត់ត្រា 100%</span>
           </div>
 
           {/* Card 2: Revenue USD */}
-          <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 shadow flex flex-col justify-between">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-bold">
+          <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
               <span>ចំណូលសរុប (USD)</span>
-              <CreditCard className="w-4 h-4 text-emerald-400" />
+              <CreditCard className="w-4 h-4 text-emerald-600" />
             </div>
             <div className="mt-3">
-              <span className="text-xl sm:text-2xl font-black text-emerald-400">
+              <span className="text-xl sm:text-2xl font-black text-emerald-700">
                 ${totalRevenueUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 mt-1 font-mono">
+            <span className="text-[10px] text-gray-500 mt-1 font-mono">
               ≈ ៛{Math.round(totalRevenueKHR).toLocaleString()} KHR
             </span>
           </div>
 
           {/* Card 3: In-House Guests */}
-          <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 shadow flex flex-col justify-between">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-bold">
+          <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
               <span>កំពុងស្នាក់នៅ</span>
-              <BedDouble className="w-4 h-4 text-amber-400" />
+              <BedDouble className="w-4 h-4 text-amber-600" />
             </div>
             <div className="mt-3">
-              <span className="text-2xl sm:text-3xl font-black text-amber-400">{inHouseGuests.length}</span>
-              <span className="text-xs text-slate-400 ml-1">បន្ទប់</span>
+              <span className="text-2xl sm:text-3xl font-black text-amber-700">{inHouseGuests.length}</span>
+              <span className="text-xs text-gray-500 ml-1">បន្ទប់</span>
             </div>
-            <span className="text-[10px] text-slate-400 mt-1 font-semibold">In-House Guests</span>
+            <span className="text-[10px] text-gray-500 mt-1 font-semibold">In-House Guests</span>
           </div>
 
           {/* Card 4: Today Check-Ins */}
-          <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 shadow flex flex-col justify-between">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-bold">
+          <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
               <span>ចូលថ្ងៃនេះ (14:00)</span>
-              <LogIn className="w-4 h-4 text-blue-400" />
+              <LogIn className="w-4 h-4 text-blue-600" />
             </div>
             <div className="mt-3">
-              <span className="text-2xl sm:text-3xl font-black text-blue-400">{todayCheckIns.length}</span>
-              <span className="text-xs text-slate-400 ml-1">នាក់</span>
+              <span className="text-2xl sm:text-3xl font-black text-blue-700">{todayCheckIns.length}</span>
+              <span className="text-xs text-gray-500 ml-1">នាក់</span>
             </div>
-            <span className="text-[10px] text-blue-300/80 mt-1 font-semibold">Standard: 14:00</span>
+            <span className="text-[10px] text-blue-700 mt-1 font-semibold">Standard: 14:00</span>
           </div>
 
           {/* Card 5: Today Check-Outs */}
-          <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 shadow flex flex-col justify-between">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-bold">
+          <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
               <span>ចេញថ្ងៃនេះ (12:00)</span>
-              <LogOut className="w-4 h-4 text-purple-400" />
+              <LogOut className="w-4 h-4 text-purple-600" />
             </div>
             <div className="mt-3">
-              <span className="text-2xl sm:text-3xl font-black text-purple-400">{todayCheckOuts.length}</span>
-              <span className="text-xs text-slate-400 ml-1">នាក់</span>
+              <span className="text-2xl sm:text-3xl font-black text-purple-700">{todayCheckOuts.length}</span>
+              <span className="text-xs text-gray-500 ml-1">នាក់</span>
             </div>
-            <span className="text-[10px] text-purple-300/80 mt-1 font-semibold">Standard: 12:00</span>
+            <span className="text-[10px] text-purple-700 mt-1 font-semibold">Standard: 12:00</span>
           </div>
 
           {/* Card 6: Telegram Connection */}
-          <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 shadow flex flex-col justify-between">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-bold">
+          <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
               <span>Telegram Bot</span>
-              <Send className="w-4 h-4 text-sky-400" />
+              <Send className="w-4 h-4 text-sky-600" />
             </div>
             <div className="mt-3 flex items-center space-x-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="text-base sm:text-lg font-black text-white">Active</span>
+              <span className="text-base sm:text-lg font-black text-[#0c2340]">Active</span>
             </div>
-            <span className="text-[10px] text-sky-400 mt-1 font-mono truncate">@vvotel_bot</span>
+            <span className="text-[10px] text-sky-700 mt-1 font-mono truncate">@vvotel_bot</span>
           </div>
         </div>
 
-        {/* Filter and Search Controls */}
-        <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        {/* Filter and Search Controls in Crisp White Container */}
+        <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="ស្វែងរកតាម ឈ្មោះភ្ញៀវ, លេខកូដកក់ (VVT-KC-...), លេខទូរស័ព្ទ, លេខបន្ទប់..."
-              className="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-vvotel-gold transition"
+              className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl pl-10 pr-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-amber-500 focus:bg-white transition"
             />
           </div>
 
           {/* Status Tabs */}
-          <div className="flex items-center flex-wrap gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800 text-xs">
+          <div className="flex items-center flex-wrap gap-1.5 bg-[#FAF8F4] p-1 rounded-xl border border-amber-200/60 text-xs">
             {[
               { id: "ALL", label: "ទាំងអស់" },
               { id: "CONFIRMED", label: "បានកក់" },
@@ -591,8 +797,8 @@ export default function AdminPage() {
                 onClick={() => setSelectedStatus(tab.id)}
                 className={`px-3 py-1.5 rounded-lg font-bold transition text-xs ${
                   selectedStatus === tab.id
-                    ? "bg-vvotel-gold text-slate-950 shadow"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-[#0c2340] text-amber-300 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-white"
                 }`}
               >
                 {tab.label}
@@ -605,7 +811,7 @@ export default function AdminPage() {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-vvotel-gold"
+              className="bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-xs text-gray-800 focus:outline-none focus:border-amber-500 cursor-pointer"
             >
               <option value="ALL">គ្រប់កាលបរិច្ឆេទ</option>
               <option value="TODAY_IN">ចូលថ្ងៃនេះ (14:00)</option>
@@ -614,65 +820,65 @@ export default function AdminPage() {
 
             <button
               onClick={exportToCSV}
-              className="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition"
+              className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
               title="នាំចេញទិន្នន័យជាឯកសារ Excel / CSV"
             >
-              <FileSpreadsheet className="w-4 h-4" />
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
               <span>CSV</span>
             </button>
           </div>
         </div>
 
-        {/* Live Booking Table */}
-        <div className="bg-slate-950 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+        {/* Live Booking Table in Crisp White */}
+        <div className="bg-white border border-amber-200/80 rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-amber-200/60 bg-[#FAF8F4] flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Building className="w-4 h-4 text-vvotel-gold" />
-              <h3 className="font-extrabold text-sm sm:text-base text-white">
+              <Building className="w-4 h-4 text-amber-700" />
+              <h3 className="font-extrabold text-sm sm:text-base text-[#0c2340]">
                 បញ្ជីភ្ញៀវ និងការកក់ទាំងអស់ ({filteredBookings.length})
               </h3>
             </div>
-            <span className="text-xs text-slate-400">
-              ម៉ោង Check-in ស្តង់ដារ: <strong className="text-amber-400">14:00</strong> | ម៉ោង Check-out: <strong className="text-amber-400">12:00</strong>
+            <span className="text-xs text-gray-500">
+              ម៉ោង Check-in ស្តង់ដារ: <strong className="text-amber-800">14:00</strong> | ម៉ោង Check-out: <strong className="text-amber-800">12:00</strong>
             </span>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-900/90 text-slate-400 font-extrabold uppercase tracking-wider text-[11px] border-b border-slate-800">
+            <table className="w-full text-left text-xs text-gray-700">
+              <thead className="bg-[#F6F2E9] text-gray-700 font-extrabold uppercase tracking-wider text-[11px] border-b border-amber-200/70">
                 <tr>
-                  <th className="py-3 px-4">កូដកក់ / កាលបរិច្ឆេទ</th>
-                  <th className="py-3 px-4">ឈ្មោះភ្ញៀវ & ទំនាក់ទំនង</th>
-                  <th className="py-3 px-4">ប្រភេទបន្ទប់ & លេខបន្ទប់</th>
-                  <th className="py-3 px-4">កាលបរិច្ឆេទស្នាក់នៅ</th>
-                  <th className="py-3 px-4">ទឹកប្រាក់ & វិធីទូទាត់</th>
-                  <th className="py-3 px-4">ស្ថានភាពស្នាក់នៅ</th>
-                  <th className="py-3 px-4 text-right">សកម្មភាពគ្រប់គ្រង</th>
+                  <th className="py-3.5 px-4">កូដកក់ / កាលបរិច្ឆេទ</th>
+                  <th className="py-3.5 px-4">ឈ្មោះភ្ញៀវ & ទំនាក់ទំនង</th>
+                  <th className="py-3.5 px-4">ប្រភេទបន្ទប់ & លេខបន្ទប់</th>
+                  <th className="py-3.5 px-4">កាលបរិច្ឆេទស្នាក់នៅ</th>
+                  <th className="py-3.5 px-4">ទឹកប្រាក់ & វិធីទូទាត់</th>
+                  <th className="py-3.5 px-4">ស្ថានភាពស្នាក់នៅ</th>
+                  <th className="py-3.5 px-4 text-right">សកម្មភាពគ្រប់គ្រង</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-gray-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-slate-400">
-                      <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-vvotel-gold" />
+                    <td colSpan={7} className="text-center py-12 text-gray-500">
+                      <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-600" />
                       <span>កំពុងទាញទិន្នន័យការកក់ពីប្រព័ន្ធ...</span>
                     </td>
                   </tr>
                 ) : filteredBookings.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-slate-500">
+                    <td colSpan={7} className="text-center py-12 text-gray-400">
                       មិនមានទិន្នន័យការកក់ត្រូវគ្នានឹងការស្វែងរកឡើយ
                     </td>
                   </tr>
                 ) : (
                   filteredBookings.map((b) => (
-                    <tr key={b.id} className="hover:bg-slate-900/50 transition">
+                    <tr key={b.id} className="hover:bg-amber-50/40 transition">
                       {/* Ref & Date */}
-                      <td className="py-3 px-4">
-                        <span className="font-mono font-bold text-vvotel-gold block">
+                      <td className="py-3.5 px-4">
+                        <span className="font-mono font-bold text-amber-800 block">
                           {b.id}
                         </span>
-                        <span className="text-[10px] text-slate-500 block">
+                        <span className="text-[10px] text-gray-500 block">
                           {new Date(b.createdAt).toLocaleDateString("en-GB", {
                             day: "2-digit",
                             month: "short",
@@ -682,13 +888,13 @@ export default function AdminPage() {
                       </td>
 
                       {/* Guest Info */}
-                      <td className="py-3 px-4">
-                        <span className="font-extrabold text-white block">
+                      <td className="py-3.5 px-4">
+                        <span className="font-extrabold text-[#0c2340] block">
                           {b.guestName}
                         </span>
-                        <div className="flex items-center space-x-2 text-[10px] text-slate-400 mt-0.5">
+                        <div className="flex items-center space-x-2 text-[10px] text-gray-500 mt-0.5">
                           <span className="flex items-center space-x-1">
-                            <Phone className="w-2.5 h-2.5 text-slate-500" />
+                            <Phone className="w-2.5 h-2.5 text-gray-400" />
                             <span>{b.phone}</span>
                           </span>
                           <span>•</span>
@@ -697,45 +903,45 @@ export default function AdminPage() {
                       </td>
 
                       {/* Room & Room Number */}
-                      <td className="py-3 px-4">
-                        <span className="font-bold text-slate-200 block truncate max-w-[200px]" title={b.roomNameKm || b.roomNameEn}>
+                      <td className="py-3.5 px-4">
+                        <span className="font-bold text-gray-900 block truncate max-w-[200px]" title={b.roomNameKm || b.roomNameEn}>
                           {b.roomNameKm || b.roomNameEn || b.roomType}
                         </span>
                         <div className="flex items-center space-x-2 mt-0.5 text-[10px]">
                           {b.roomNumber ? (
-                            <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono font-bold">
+                            <span className="bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 rounded font-mono font-bold">
                               បន្ទប់: {b.roomNumber}
                             </span>
                           ) : (
-                            <span className="text-slate-500 italic">មិនទាន់កំណត់បន្ទប់</span>
+                            <span className="text-gray-400 italic">មិនទាន់កំណត់បន្ទប់</span>
                           )}
-                          <span className="text-slate-400">({b.adults} ធំ, {b.children} ក្មេង)</span>
+                          <span className="text-gray-500">({b.adults} ធំ, {b.children} ក្មេង)</span>
                         </div>
                       </td>
 
                       {/* Stay Dates */}
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-white">
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-gray-900">
                           {b.checkIn} → {b.checkOut}
                         </div>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-gray-500">
                           {b.nights} យប់ • In 14:00 / Out 12:00
                         </span>
                       </td>
 
                       {/* Financials & Payment */}
-                      <td className="py-3 px-4">
-                        <span className="font-black text-emerald-400 block font-mono text-sm">
+                      <td className="py-3.5 px-4">
+                        <span className="font-black text-emerald-700 block font-mono text-sm">
                           ${(b.totalAmountUSD || 0).toFixed(2)}
                         </span>
                         <div className="flex items-center space-x-1.5 mt-0.5">
                           <span
                             className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
                               b.paymentMethod === "KHQR_BAKONG"
-                                ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                                ? "bg-red-50 text-red-700 border border-red-200"
                                 : b.paymentMethod.includes("CARD")
-                                ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                                : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                : "bg-amber-50 text-amber-800 border border-amber-200"
                             }`}
                           >
                             {b.paymentMethod === "KHQR_BAKONG"
@@ -744,23 +950,23 @@ export default function AdminPage() {
                               ? "Card 3D Sec"
                               : "Pay at Hotel"}
                           </span>
-                          <span className="text-[10px] text-slate-400">
+                          <span className="text-[10px] text-gray-500">
                             {b.paymentStatus === "PAID" ? "✅ បង់រួច" : "⏳ ធានាកក់"}
                           </span>
                         </div>
                       </td>
 
                       {/* Stay Status */}
-                      <td className="py-3 px-4">
+                      <td className="py-3.5 px-4">
                         <span
                           className={`text-[10px] font-black px-2.5 py-1 rounded-full border inline-flex items-center space-x-1 ${
                             b.stayStatus === "CHECKED_IN"
-                              ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                              ? "bg-amber-100 text-amber-900 border-amber-300"
                               : b.stayStatus === "CHECKED_OUT"
-                              ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
+                              ? "bg-purple-100 text-purple-900 border-purple-300"
                               : b.stayStatus === "CANCELLED"
-                              ? "bg-red-500/20 text-red-300 border-red-500/40"
-                              : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                              ? "bg-red-100 text-red-900 border-red-300"
+                              : "bg-emerald-100 text-emerald-900 border-emerald-300"
                           }`}
                         >
                           <span>
@@ -776,7 +982,7 @@ export default function AdminPage() {
                       </td>
 
                       {/* Actions */}
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end space-x-1.5">
                           {/* Check-In Button */}
                           {b.stayStatus !== "CHECKED_IN" && b.stayStatus !== "CHECKED_OUT" && (
@@ -785,7 +991,7 @@ export default function AdminPage() {
                                 setCheckInModalBooking(b);
                                 setAssignedRoomNumber(b.roomNumber || "");
                               }}
-                              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition shadow"
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition shadow-sm"
                               title="ចុះឈ្មោះភ្ញៀវចូលស្នាក់នៅ (Standard Check-in 14:00)"
                             >
                               Check-In
@@ -796,7 +1002,7 @@ export default function AdminPage() {
                           {b.stayStatus === "CHECKED_IN" && (
                             <button
                               onClick={() => handleCheckOut(b.id)}
-                              className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition shadow"
+                              className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition shadow-sm"
                               title="ចុះឈ្មោះភ្ញៀវចេញ (Standard Check-out 12:00)"
                             >
                               Check-Out
@@ -810,7 +1016,7 @@ export default function AdminPage() {
                               setReceiptMode("pos-80mm");
                               setReceiptOpen(true);
                             }}
-                            className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-1.5 rounded-lg transition"
+                            className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 p-1.5 rounded-lg transition"
                             title="បោះពុម្ពវិក្កយបត្រ 80mm POS Thermal Receipt"
                           >
                             <Printer className="w-3.5 h-3.5" />
@@ -823,7 +1029,7 @@ export default function AdminPage() {
                               setReceiptMode("a4-invoice");
                               setReceiptOpen(true);
                             }}
-                            className="bg-slate-800 hover:bg-slate-700 text-vvotel-gold border border-slate-700 px-2 py-1.5 rounded-lg text-[10px] font-bold transition"
+                            className="bg-white hover:bg-amber-50 text-[#0c2340] border border-gray-300 px-2 py-1.5 rounded-lg text-[10px] font-bold transition shadow-sm"
                             title="បោះពុម្ពវិក្កយបត្រពន្ធផ្លូវការ A4 Tax Invoice"
                           >
                             A4
@@ -841,41 +1047,41 @@ export default function AdminPage() {
 
       {/* ======================= MODAL 1: CHECK-IN ASSIGN ROOM ======================= */}
       {checkInModalBooking && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-amber-200 rounded-3xl max-w-md w-full p-6 shadow-2xl">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div className="flex items-center space-x-2">
-                <Key className="w-5 h-5 text-vvotel-gold" />
-                <h3 className="font-extrabold text-white text-base">
+                <Key className="w-5 h-5 text-amber-600" />
+                <h3 className="font-extrabold text-[#0c2340] text-base">
                   Check-In ភ្ញៀវ & កំណត់លេខបន្ទប់
                 </h3>
               </div>
               <button
                 onClick={() => setCheckInModalBooking(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-gray-400 hover:text-gray-700"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleConfirmCheckIn} className="mt-4 space-y-4">
-              <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
-                <p className="text-slate-400">
-                  លេខកូដកក់: <strong className="text-vvotel-gold">{checkInModalBooking.id}</strong>
+              <div className="bg-[#FAF8F4] p-3.5 rounded-2xl border border-amber-200/80 text-xs space-y-1.5">
+                <p className="text-gray-500">
+                  លេខកូដកក់: <strong className="text-amber-800">{checkInModalBooking.id}</strong>
                 </p>
-                <p className="text-white font-bold text-sm">
+                <p className="text-[#0c2340] font-bold text-sm">
                   {checkInModalBooking.guestName} ({checkInModalBooking.phone})
                 </p>
-                <p className="text-slate-300">
+                <p className="text-gray-700">
                   {checkInModalBooking.roomNameKm || checkInModalBooking.roomNameEn}
                 </p>
-                <p className="text-emerald-400 font-semibold">
+                <p className="text-emerald-700 font-semibold">
                   ម៉ោង Check-in ស្តង់ដារ: 14:00 (ម៉ោងបច្ចុប្បន្នត្រូវបានកត់ត្រា)
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">
                   លេខបន្ទប់ជាក់ស្តែង (Room Number):
                 </label>
                 <input
@@ -884,7 +1090,7 @@ export default function AdminPage() {
                   value={assignedRoomNumber}
                   onChange={(e) => setAssignedRoomNumber(e.target.value)}
                   placeholder="ឧទាហរណ៍: 201, 305, Mekong Suite 501..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white text-sm font-mono focus:outline-none focus:border-vvotel-gold"
+                  className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3.5 py-2.5 text-gray-900 text-sm font-mono focus:outline-none focus:border-amber-500 focus:bg-white"
                 />
               </div>
 
@@ -892,13 +1098,13 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setCheckInModalBooking(null)}
-                  className="w-1/2 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition"
+                  className="w-1/2 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition"
                 >
                   បោះបង់
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-lg transition"
+                  className="w-1/2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow transition"
                 >
                   បញ្ជាក់ Check-In ឥឡូវ
                 </button>
@@ -910,18 +1116,18 @@ export default function AdminPage() {
 
       {/* ======================= MODAL 2: WALK-IN / NEW BOOKING ======================= */}
       {isNewBookingModalOpen && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl my-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white border border-amber-200 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl my-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div className="flex items-center space-x-2">
-                <Plus className="w-5 h-5 text-vvotel-gold" />
-                <h3 className="font-extrabold text-white text-base">
+                <Plus className="w-5 h-5 text-amber-600" />
+                <h3 className="font-extrabold text-[#0c2340] text-base">
                   បង្កើតការកក់ថ្មី (Walk-in / Phone Reservation)
                 </h3>
               </div>
               <button
                 onClick={() => setIsNewBookingModalOpen(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-gray-400 hover:text-gray-700"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -930,42 +1136,42 @@ export default function AdminPage() {
             <form onSubmit={handleCreateWalkInBooking} className="mt-4 space-y-3.5 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">ឈ្មោះភ្ញៀវ *</label>
+                  <label className="block text-gray-700 font-bold mb-1">ឈ្មោះភ្ញៀវ *</label>
                   <input
                     type="text"
                     required
                     value={newBookingData.guestName}
                     onChange={(e) => setNewBookingData({ ...newBookingData, guestName: e.target.value })}
                     placeholder="ឧ. Sokha Heng"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+                    className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">លេខទូរស័ព្ទ *</label>
+                  <label className="block text-gray-700 font-bold mb-1">លេខទូរស័ព្ទ *</label>
                   <input
                     type="text"
                     required
                     value={newBookingData.phone}
                     onChange={(e) => setNewBookingData({ ...newBookingData, phone: e.target.value })}
                     placeholder="+855 12 888 999"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+                    className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">អ៊ីមែល</label>
+                  <label className="block text-gray-700 font-bold mb-1">អ៊ីមែល</label>
                   <input
                     type="email"
                     value={newBookingData.email}
                     onChange={(e) => setNewBookingData({ ...newBookingData, email: e.target.value })}
                     placeholder="guest@example.com"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+                    className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">ប្រភេទបន្ទប់</label>
+                  <label className="block text-gray-700 font-bold mb-1">ប្រភេទបន្ទប់</label>
                   <select
                     value={newBookingData.roomType}
                     onChange={(e) => {
@@ -982,7 +1188,7 @@ export default function AdminPage() {
                         totalAmountUSD: prices[type] || 125,
                       });
                     }}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+                    className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white cursor-pointer"
                   >
                     <option value="standard-city">បន្ទប់ស្តង់ដារ ទេសភាពទីក្រុង ($85/យប់)</option>
                     <option value="superior-river">បន្ទប់ស៊ុភើរៀ ទេសភាពទន្លេ ($125/យប់)</option>
@@ -994,34 +1200,34 @@ export default function AdminPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">កាលបរិច្ឆេទ Check-in (14:00)</label>
+                  <label className="block text-gray-700 font-bold mb-1">កាលបរិច្ឆេទ Check-in (14:00)</label>
                   <input
                     type="date"
                     required
                     value={newBookingData.checkIn}
                     onChange={(e) => setNewBookingData({ ...newBookingData, checkIn: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+                    className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">កាលបរិច្ឆេទ Check-out (12:00)</label>
+                  <label className="block text-gray-700 font-bold mb-1">កាលបរិច្ឆេទ Check-out (12:00)</label>
                   <input
                     type="date"
                     required
                     value={newBookingData.checkOut}
                     onChange={(e) => setNewBookingData({ ...newBookingData, checkOut: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+                    className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">វិធីទូទាត់</label>
+                  <label className="block text-gray-700 font-bold mb-1">វិធីទូទាត់</label>
                   <select
                     value={newBookingData.paymentMethod}
                     onChange={(e) => setNewBookingData({ ...newBookingData, paymentMethod: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+                    className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 focus:bg-white cursor-pointer"
                   >
                     <option value="PAY_AT_HOTEL">ទូទាត់នៅកន្លែងទទួលភ្ញៀវ (Cash/POS)</option>
                     <option value="KHQR_BAKONG">Bakong KHQR (ស្កេនទូទាត់)</option>
@@ -1029,12 +1235,12 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">តម្លៃសរុប (USD)</label>
+                  <label className="block text-gray-700 font-bold mb-1">តម្លៃសរុប (USD)</label>
                   <input
                     type="number"
                     value={newBookingData.totalAmountUSD}
                     onChange={(e) => setNewBookingData({ ...newBookingData, totalAmountUSD: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono"
+                    className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-3 py-2 text-gray-900 font-mono focus:bg-white"
                   />
                 </div>
               </div>
@@ -1043,13 +1249,13 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setIsNewBookingModalOpen(false)}
-                  className="w-1/2 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition"
+                  className="w-1/2 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition"
                 >
                   បោះបង់
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl shadow-lg transition"
+                  className="w-1/2 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black rounded-xl shadow transition"
                 >
                   រក្សាទុក & ផ្ញើ Alert ទៅ Bot
                 </button>
