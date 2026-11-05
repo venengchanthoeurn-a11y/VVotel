@@ -95,7 +95,7 @@ export default function HomePage() {
               <span>{t("heroTitle")} • KAMPONG CHAM, CAMBODIA</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight drop-shadow-md">
+            <h1 className="text-[clamp(1.15rem,2.8vw,2.3rem)] font-black tracking-tight text-white leading-normal drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis max-w-full mx-auto px-2">
               {t("heroSubtitle")}
             </h1>
 

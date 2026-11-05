@@ -131,12 +131,12 @@ export const SpecialOffersSection: React.FC = () => {
       <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-20 space-y-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
-          <div className="space-y-3 max-w-3xl">
+          <div className="space-y-3 max-w-4xl w-full">
             <div className="inline-flex items-center space-x-2 bg-vvotel-gold/20 text-vvotel-gold border border-vvotel-gold/40 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-4 h-4 text-vvotel-gold" />
               <span>{lang === "km" ? "ការផ្តល់ជូនពិសេស & ប្រូម៉ូសិន" : "Exclusive Special Offers"}</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+            <h2 className="text-[clamp(1.15rem,2.6vw,2.2rem)] font-black text-white tracking-tight whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
               {lang === "km"
                 ? "កញ្ចប់ដំណើរកម្សាន្ត និងតម្លៃពិសេសសម្រាប់អ្នក"
                 : "Curated Packages & Exceptional Savings"}

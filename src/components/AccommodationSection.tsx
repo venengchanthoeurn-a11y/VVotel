@@ -230,7 +230,15 @@ export const AccommodationSection: React.FC = () => {
   const [activeModalRoom, setActiveModalRoom] = useState<RoomItem | null>(null);
 
   const handleBookRoom = (room: RoomItem) => {
-    // Scroll smoothly to booking bar
+    // 1. Dispatch custom event to select room and open booking modal directly
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("open-booking-for-room", {
+          detail: { roomId: room.id, roomName: room.name.km, price: room.pricePerNightUSD },
+        })
+      );
+    }
+    // 2. Scroll smoothly to booking bar
     const bookingBar = document.getElementById("booking-bar");
     if (bookingBar) {
       bookingBar.scrollIntoView({ behavior: "smooth" });
@@ -242,12 +250,12 @@ export const AccommodationSection: React.FC = () => {
       <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-20 space-y-12">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-200 pb-8">
-          <div className="space-y-3 max-w-3xl">
+          <div className="space-y-3 max-w-4xl w-full">
             <div className="inline-flex items-center space-x-2 bg-amber-100 text-vvotel-navy px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
               <BedDouble className="w-4 h-4 text-vvotel-gold" />
               <span>{lang === "km" ? "បន្ទប់ និងបន្ទប់ស្វ៊ីតប្រណីត" : "Luxury Rooms & Suites"}</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-vvotel-navy tracking-tight">
+            <h2 className="text-[clamp(1.15rem,2.6vw,2.2rem)] font-black text-vvotel-navy tracking-tight whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
               {lang === "km"
                 ? "សម្រាកលំហែកាយជាមួយបន្ទប់ប្រណីតមាត់ទន្លេមេគង្គ"
                 : "Sleep in Sublime Riverside Serenity"}

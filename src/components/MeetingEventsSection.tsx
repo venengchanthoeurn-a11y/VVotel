@@ -122,12 +122,12 @@ export const MeetingEventsSection: React.FC = () => {
       <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-20 space-y-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-200 pb-8">
-          <div className="space-y-3 max-w-3xl">
+          <div className="space-y-3 max-w-4xl w-full">
             <div className="inline-flex items-center space-x-2 bg-vvotel-navy text-vvotel-gold px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
               <Presentation className="w-4 h-4 text-vvotel-gold" />
               <span>{lang === "km" ? "កន្លែងរៀបចំកិច្ចប្រជុំ & ព្រឹត្តិការណ៍" : "Meetings & Celebrations"}</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-vvotel-navy tracking-tight">
+            <h2 className="text-[clamp(1.15rem,2.6vw,2.2rem)] font-black text-vvotel-navy tracking-tight whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
               {lang === "km"
                 ? "ទីកន្លែងដ៏ល្អឥតខ្ចោះសម្រាប់សន្និសីទ និងអាពាហ៍ពិពាហ៍"
                 : "Inspiring Spaces for Gatherings of Grandeur"}
