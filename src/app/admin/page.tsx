@@ -2073,12 +2073,25 @@ export default function AdminPage() {
             {/* Modal Content */}
             <div className="p-6 space-y-6">
               {/* National Banner & Administrative Context */}
-              <div className="p-4 bg-amber-50/50 border border-amber-200/80 rounded-2xl text-center space-y-1">
-                <span className="font-mool text-sm text-[#0c2340] block">ព្រះរាជាណាចក្រកម្ពុជា • ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
-                <span className="text-xs text-gray-600 block">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ</span>
-                <span className="text-[11px] text-amber-800 font-mono font-bold block pt-1">
-                  លេខកូដឯកសារ: ០២៤/២៦ វវ.កច • ម៉ោងធ្វើបច្ចុប្បន្នភាព: {currentTimeStr}
-                </span>
+              <div className="p-5 bg-gradient-to-b from-amber-50/80 to-white border border-amber-200/90 rounded-2xl space-y-3 shadow-xs">
+                {/* 1. Kingdom Motto: TOP CENTER */}
+                <div className="text-center space-y-0.5">
+                  <h4 className="font-mool text-sm sm:text-base text-[#0c2340] tracking-wide">ព្រះរាជាណាចក្រកម្ពុជា</h4>
+                  <h5 className="font-mool text-xs sm:text-sm text-[#0c2340] tracking-wide">ជាតិ សាសនា ព្រះមហាក្សត្រ</h5>
+                  <div className="text-xs text-amber-800 font-serif tracking-[0.25em]">❖ ❖ ❖</div>
+                </div>
+
+                {/* 2. Hotel on Left & Date on Right on the SAME HORIZONTAL LINE */}
+                <div className="pt-2 border-t border-amber-200/60 flex items-start justify-between text-xs text-gray-700">
+                  <div className="text-left space-y-0.5">
+                    <span className="font-mool text-xs text-[#0c2340] block">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម</span>
+                    <span className="text-[11px] text-gray-600 block">ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ • លេខ: ០២៤/២៦ វវ.កច</span>
+                  </div>
+                  <div className="text-right pt-0.5">
+                    <span className="text-xs font-bold italic text-gray-800 block">កំពង់ចាម, ថ្ងៃទី០៥ ខែវិច្ឆិកា ឆ្នាំ២០២៦</span>
+                    <span className="text-[10px] text-amber-800 block font-mono">{currentTimeStr}</span>
+                  </div>
+                </div>
               </div>
 
               {/* Real-time Metrics Snapshot */}

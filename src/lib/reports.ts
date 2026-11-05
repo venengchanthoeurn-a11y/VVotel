@@ -101,7 +101,47 @@ export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<B
         },
         children: [
           // ==========================================
-          // TOP HEADER: KINGDOM MOTTO & HOTEL NAME
+          // 1. TOP HEADER: KINGDOM MOTTO CENTERED
+          // ==========================================
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: "ព្រះរាជាណាចក្រកម្ពុជា",
+                font: FONT_MOOL,
+                size: 26,
+                bold: true,
+                color: "0C2340",
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                text: "ជាតិ សាសនា ព្រះមហាក្សត្រ",
+                font: FONT_MOOL,
+                size: 23,
+                bold: true,
+                color: "0C2340",
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 180 },
+            children: [
+              new TextRun({
+                text: "❖ ❖ ❖",
+                font: FONT_BODY,
+                size: 18,
+                color: "8B5E3C",
+              }),
+            ],
+          }),
+
+          // ==========================================
+          // 2. HOTEL ON LEFT & DATE ON RIGHT (SAME LINE)
           // ==========================================
           new Table({
             width: { size: 100, type: WidthType.PERCENTAGE },
@@ -118,14 +158,14 @@ export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<B
                 children: [
                   // Left side: Hotel Organization & Reference
                   new TableCell({
-                    width: { size: 50, type: WidthType.PERCENTAGE },
+                    width: { size: 55, type: WidthType.PERCENTAGE },
                     children: [
                       new Paragraph({
                         children: [
                           new TextRun({
                             text: "សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម",
                             font: FONT_MOOL,
-                            size: 22,
+                            size: 21,
                             bold: true,
                           }),
                         ],
@@ -150,43 +190,10 @@ export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<B
                       }),
                     ],
                   }),
-                  // Right side: Kingdom Motto
+                  // Right side: Date aligned with hotel on same line
                   new TableCell({
-                    width: { size: 50, type: WidthType.PERCENTAGE },
+                    width: { size: 45, type: WidthType.PERCENTAGE },
                     children: [
-                      new Paragraph({
-                        alignment: AlignmentType.RIGHT,
-                        children: [
-                          new TextRun({
-                            text: "ព្រះរាជាណាចក្រកម្ពុជា",
-                            font: FONT_MOOL,
-                            size: 24,
-                            bold: true,
-                          }),
-                        ],
-                      }),
-                      new Paragraph({
-                        alignment: AlignmentType.RIGHT,
-                        children: [
-                          new TextRun({
-                            text: "ជាតិ សាសនា ព្រះមហាក្សត្រ",
-                            font: FONT_MOOL,
-                            size: 22,
-                            bold: true,
-                          }),
-                        ],
-                      }),
-                      new Paragraph({
-                        alignment: AlignmentType.RIGHT,
-                        children: [
-                          new TextRun({
-                            text: "--- ❖ ❖ ❖ ---",
-                            font: FONT_BODY,
-                            size: 18,
-                            color: "777777",
-                          }),
-                        ],
-                      }),
                       new Paragraph({
                         alignment: AlignmentType.RIGHT,
                         children: [
@@ -195,6 +202,7 @@ export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<B
                             font: FONT_BODY,
                             size: 20,
                             italics: true,
+                            bold: true,
                           }),
                         ],
                       }),
@@ -205,7 +213,7 @@ export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<B
             ],
           }),
 
-          new Paragraph({ spacing: { before: 240, after: 120 } }),
+          new Paragraph({ spacing: { before: 200, after: 120 } }),
 
           // ==========================================
           // REPORT TITLE
@@ -713,7 +721,7 @@ export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<B
                         alignment: AlignmentType.CENTER,
                         children: [
                           new TextRun({
-                            text: "អគ្គនាយកសណ្ឋាគារ វឌ្ឍនៈ (VVotel)",
+                            text: "អ្នកធ្វើតារាងរបាយការណ៍",
                             font: FONT_MOOL,
                             size: 20,
                             bold: true,
@@ -985,6 +993,38 @@ export async function generateOfficialExcel(bookings: BookingRecord[]): Promise<
     if (colNumber === 15) cell.numFmt = "#,##0 ៛";
   });
 
+  // Signatures Row in Excel
+  const sigRowIndex = currentRow + 2;
+  worksheet.mergeCells(`B${sigRowIndex}:E${sigRowIndex}`);
+  worksheet.getCell(`B${sigRowIndex}`).value = "បានឃើញ និងឯកភាព";
+  worksheet.getCell(`B${sigRowIndex}`).font = { name: "Khmer OS Siemreap", size: 10, bold: true };
+  worksheet.getCell(`B${sigRowIndex}`).alignment = { horizontal: "center" };
+
+  worksheet.mergeCells(`K${sigRowIndex}:N${sigRowIndex}`);
+  worksheet.getCell(`K${sigRowIndex}`).value = dateInfo.standardHeaderDate;
+  worksheet.getCell(`K${sigRowIndex}`).font = { name: "Khmer OS Siemreap", size: 10, italic: true };
+  worksheet.getCell(`K${sigRowIndex}`).alignment = { horizontal: "center" };
+
+  worksheet.mergeCells(`B${sigRowIndex + 1}:E${sigRowIndex + 1}`);
+  worksheet.getCell(`B${sigRowIndex + 1}`).value = "ប្រធានផ្នែកគណនេយ្យ និងហិរញ្ញវត្ថុ";
+  worksheet.getCell(`B${sigRowIndex + 1}`).font = { name: "Khmer OS Siemreap", size: 10, bold: true, color: { argb: "FF0C2340" } };
+  worksheet.getCell(`B${sigRowIndex + 1}`).alignment = { horizontal: "center" };
+
+  worksheet.mergeCells(`K${sigRowIndex + 1}:N${sigRowIndex + 1}`);
+  worksheet.getCell(`K${sigRowIndex + 1}`).value = "អ្នកធ្វើតារាងរបាយការណ៍";
+  worksheet.getCell(`K${sigRowIndex + 1}`).font = { name: "Khmer OS Siemreap", size: 10, bold: true, color: { argb: "FF0C2340" } };
+  worksheet.getCell(`K${sigRowIndex + 1}`).alignment = { horizontal: "center" };
+
+  worksheet.mergeCells(`B${sigRowIndex + 4}:E${sigRowIndex + 4}`);
+  worksheet.getCell(`B${sigRowIndex + 4}`).value = "( ហត្ថលេខា និងត្រា )";
+  worksheet.getCell(`B${sigRowIndex + 4}`).font = { name: "Khmer OS Siemreap", size: 9, italic: true, color: { argb: "FF888888" } };
+  worksheet.getCell(`B${sigRowIndex + 4}`).alignment = { horizontal: "center" };
+
+  worksheet.mergeCells(`K${sigRowIndex + 4}:N${sigRowIndex + 4}`);
+  worksheet.getCell(`K${sigRowIndex + 4}`).value = "( ហត្ថលេខា និងត្រា )";
+  worksheet.getCell(`K${sigRowIndex + 4}`).font = { name: "Khmer OS Siemreap", size: 9, italic: true, color: { argb: "FF888888" } };
+  worksheet.getCell(`K${sigRowIndex + 4}`).alignment = { horizontal: "center" };
+
   const buffer = await workbook.xlsx.writeBuffer();
   return Buffer.from(buffer);
 }
@@ -1094,21 +1134,25 @@ export function generateOfficialHtmlReport(bookings: BookingRecord[]): string {
   <!-- A4 Official Administrative Page Document -->
   <div class="page-sheet max-w-4xl mx-auto bg-white p-8 sm:p-12 shadow-xl border border-gray-200 rounded-xl relative print:shadow-none print:border-none print:rounded-none">
     
-    <!-- Top Administrative Header -->
+    <!-- 1. Royal Kingdom Motto: TOP CENTER -->
+    <div class="text-center mb-6 space-y-1">
+      <h1 class="font-mool text-lg sm:text-xl text-[#0c2340] tracking-wide">ព្រះរាជាណាចក្រកម្ពុជា</h1>
+      <h2 class="font-mool text-sm sm:text-base text-[#0c2340] tracking-wide">ជាតិ សាសនា ព្រះមហាក្សត្រ</h2>
+      <div class="text-xs text-amber-800 tracking-[0.25em] font-serif pt-0.5">❖ ❖ ❖</div>
+    </div>
+
+    <!-- 2. Hotel on Left & Date on Right on the SAME HORIZONTAL LINE -->
     <div class="flex justify-between items-start border-b-2 border-gray-800 pb-4 mb-6">
-      <!-- Left: Organization & Ref Number -->
-      <div class="space-y-1 text-left">
+      <!-- Left: Organization & Ref Number (ចុះក្រោមបន្តិច) -->
+      <div class="space-y-1 text-left pt-1">
         <h2 class="font-mool text-base text-[#0c2340] leading-relaxed">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម</h2>
         <p class="text-xs font-bold text-gray-700">ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ</p>
         <p class="text-xs text-gray-600">លេខ: ០២៤/២៦ វវ.កច</p>
       </div>
 
-      <!-- Right: Royal Motto & Header Date -->
-      <div class="space-y-1 text-center sm:text-right">
-        <h1 class="font-mool text-base sm:text-lg text-[#0c2340]">ព្រះរាជាណាចក្រកម្ពុជា</h1>
-        <h2 class="font-mool text-sm sm:text-base text-[#0c2340]">ជាតិ សាសនា ព្រះមហាក្សត្រ</h2>
-        <div class="text-xs text-amber-800 tracking-widest font-serif">❖ ❖ ❖</div>
-        <p class="text-xs italic text-gray-600 pt-1">${dateInfo.standardHeaderDate}</p>
+      <!-- Right: Date aligned horizontally on the same line as hotel name -->
+      <div class="text-right pt-2">
+        <p class="text-xs font-bold italic text-gray-700">${dateInfo.standardHeaderDate}</p>
       </div>
     </div>
 
@@ -1207,10 +1251,10 @@ export function generateOfficialHtmlReport(bookings: BookingRecord[]): string {
         </div>
       </div>
 
-      <!-- Right Signature: General Manager -->
+      <!-- Right Signature: Report Compiler -->
       <div class="text-center space-y-1">
         <p class="text-xs text-gray-600">${dateInfo.standardHeaderDate}</p>
-        <p class="font-mool text-xs sm:text-sm text-[#0c2340]">អគ្គនាយកសណ្ឋាគារ វឌ្ឍនៈ (VVotel)</p>
+        <p class="font-mool text-xs sm:text-sm text-[#0c2340]">អ្នកធ្វើតារាងរបាយការណ៍</p>
         <div class="h-24 flex items-center justify-center text-gray-400 italic text-xs">
           ( ហត្ថលេខា និងត្រា )
         </div>
