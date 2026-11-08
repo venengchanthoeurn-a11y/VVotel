@@ -52,32 +52,48 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (data.success && data.settings) {
           let activeSettings = data.settings;
 
-          // Check if local cache has newer edits that haven't synced yet
+          // Check if local cache has user edits that must be preserved
           if (typeof window !== "undefined") {
             try {
               const local = localStorage.getItem(PERSISTED_SETTINGS_KEY);
               if (local) {
                 const parsedLocal = JSON.parse(local);
-                if (
-                  parsedLocal.updatedAt &&
-                  data.settings.updatedAt &&
-                  new Date(parsedLocal.updatedAt).getTime() > new Date(data.settings.updatedAt).getTime()
-                ) {
+                const localIsCustomized = Boolean(parsedLocal._isUserCustomized);
+                const serverIsCustomized = Boolean(data.settings._isUserCustomized);
+
+                const localTime = parsedLocal.updatedAt ? new Date(parsedLocal.updatedAt).getTime() : 0;
+                const serverTime = data.settings.updatedAt ? new Date(data.settings.updatedAt).getTime() : 0;
+
+                // Rule 1: If local has user customization but server does not, LOCAL ALWAYS WINS!
+                // Rule 2: If both are customized, newer timestamp wins.
+                if (localIsCustomized && (!serverIsCustomized || localTime >= serverTime)) {
                   activeSettings = {
                     ...data.settings,
                     ...parsedLocal,
+                    _isUserCustomized: true,
                     features: {
                       ...data.settings.features,
                       ...(parsedLocal.features || {}),
                     },
                   };
 
-                  // Sync newer local edits to server in background
+                  // Re-sync local user customizations to server container in background
                   fetch("/api/settings", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(activeSettings),
                   }).catch(() => {});
+                } else if (serverIsCustomized && serverTime > localTime) {
+                  activeSettings = {
+                    ...data.settings,
+                    _isUserCustomized: true,
+                  };
+                } else if (localIsCustomized) {
+                  activeSettings = {
+                    ...data.settings,
+                    ...parsedLocal,
+                    _isUserCustomized: true,
+                  };
                 }
               }
             } catch (e) {}
@@ -131,6 +147,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           ...settings.features,
           ...(newSettings.features || {}),
         },
+        _isUserCustomized: true,
         updatedAt: new Date().toISOString(),
       };
 

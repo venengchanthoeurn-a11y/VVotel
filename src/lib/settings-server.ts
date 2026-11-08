@@ -66,6 +66,7 @@ export function saveSiteSettings(newSettings: Partial<SiteSettings>): SiteSettin
       ...current.features,
       ...(newSettings.features || {}),
     },
+    _isUserCustomized: true,
     updatedAt: new Date().toISOString(),
   };
 

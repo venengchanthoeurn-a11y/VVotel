@@ -48,6 +48,7 @@ import {
 import { BookingRecord } from "@/lib/bookings";
 import { PrintableReceipt } from "@/components/PrintableReceipt";
 import { AdminSettingsPortal } from "@/components/AdminSettingsPortal";
+import { useSettings } from "@/context/SettingsContext";
 
 // Dual Language Translations Dictionary for Admin Portal & Login Screen
 const ADMIN_I18N = {
@@ -252,6 +253,7 @@ function playHotelChime() {
 export default function AdminPage() {
   // Language State
   const [lang, setLang] = useState<"km" | "en">("km");
+  const { settings } = useSettings();
   const t = ADMIN_I18N[lang];
 
   // Authentication State
@@ -840,18 +842,24 @@ export default function AdminPage() {
           {/* Top Brand Header */}
           <div className="relative z-10 space-y-4">
             <div className="flex items-center space-x-3.5">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#12335e] to-[#0c2340] border-2 border-amber-300/80 flex items-center justify-center text-amber-300 font-mool text-3xl shadow-xl shadow-amber-950/20 shrink-0">
-                V
-              </div>
+              {settings.logoImageUrl ? (
+                <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-300 p-1 flex items-center justify-center shadow-xl shrink-0">
+                  <img src={settings.logoImageUrl} alt="Logo" className="w-full h-full object-contain" />
+                </div>
+              ) : (
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#12335e] to-[#0c2340] border-2 border-amber-300/80 flex items-center justify-center text-amber-300 font-mool text-3xl shadow-xl shadow-amber-950/20 shrink-0">
+                  {settings.logoText?.slice(0, 1) || "V"}
+                </div>
+              )}
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-widest text-amber-300 block font-siemreap">
-                  {t.hotelTagline}
+                  {lang === "km" ? settings.hotelTaglineKm : settings.hotelTaglineEn}
                 </span>
                 <h1 className="text-xl sm:text-2xl font-mool text-white tracking-normal mt-0.5">
-                  {t.hotelName}
+                  {lang === "km" ? settings.hotelNameKm : settings.hotelNameEn}
                 </h1>
                 <p className="text-xs text-amber-100/70 font-siemreap mt-0.5">
-                  {t.portalSubtitle}
+                  {lang === "km" ? (settings.adminPortalTitleKm || t.portalSubtitle) : (settings.adminPortalTitleEn || t.portalSubtitle)}
                 </p>
               </div>
             </div>
@@ -868,9 +876,9 @@ export default function AdminPage() {
             <div className="w-full overflow-visible py-1">
               <h2
                 className="text-xs sm:text-sm md:text-[15px] lg:text-[17px] xl:text-[20px] 2xl:text-[22px] font-mool text-white tracking-normal whitespace-nowrap overflow-visible leading-[2.3] py-2.5 block select-none"
-                title={t.showcaseTitle}
+                title={lang === "km" ? (settings.adminPortalTitleKm || t.showcaseTitle) : (settings.adminPortalTitleEn || t.showcaseTitle)}
               >
-                {t.showcaseTitle}
+                {lang === "km" ? (settings.adminPortalTitleKm || t.showcaseTitle) : (settings.adminPortalTitleEn || t.showcaseTitle)}
               </h2>
               <p className="text-amber-300 font-serif italic text-xs sm:text-sm md:text-base mt-0.5 font-normal tracking-wide whitespace-nowrap overflow-visible">
                 {t.showcaseSubtitle}
@@ -966,11 +974,19 @@ export default function AdminPage() {
 
             {/* Header */}
             <div className="text-center space-y-2.5 pt-2">
-              <div className="w-14 h-14 rounded-2xl bg-[#0c2340] border-2 border-amber-300 flex items-center justify-center text-amber-300 font-mool text-2xl shadow-md mx-auto">
-                V
-              </div>
+              {settings.logoImageUrl ? (
+                <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-300 p-1 flex items-center justify-center shadow-md mx-auto">
+                  <img src={settings.logoImageUrl} alt="Logo" className="w-full h-full object-contain" />
+                </div>
+              ) : (
+                <div className="w-14 h-14 rounded-2xl bg-[#0c2340] border-2 border-amber-300 flex items-center justify-center text-amber-300 font-mool text-2xl shadow-md mx-auto">
+                  {settings.logoText?.slice(0, 1) || "V"}
+                </div>
+              )}
               <span className="text-[11px] font-bold tracking-widest uppercase text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 inline-block font-siemreap">
-                VVotel Executive Security Portal
+                {lang === "km"
+                  ? (settings.adminPortalTitleKm || "VVotel Executive Security Portal")
+                  : (settings.adminPortalTitleEn || "VVotel Executive Security Portal")}
               </span>
               <h2 className="text-xl sm:text-2xl font-mool text-[#0c2340] tracking-normal">
                 {t.securityGateTitle}
@@ -1091,69 +1107,183 @@ export default function AdminPage() {
   // =========================================================================
   return (
     <div className="min-h-screen w-full bg-[#FAF7F2] text-gray-900 flex flex-col font-siemreap antialiased overflow-x-hidden">
-      {/* Top Navigation Bar: Slim, Clean & Professional */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-amber-200/80 sticky top-0 z-30 px-4 sm:px-6 lg:px-8 xl:px-12 py-2.5 shadow-xs">
-        <div className="w-full flex items-center justify-between gap-4">
-          {/* Brand & Live Clock */}
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0c2340] border border-amber-300 flex items-center justify-center text-amber-300 font-mool text-lg sm:text-xl shadow-sm shrink-0">
-              V
-            </div>
-            <div>
-              <div className="flex items-center space-x-2 flex-wrap">
-                <span className="font-mool text-base sm:text-lg text-[#0c2340] tracking-normal">
-                  VVotel PMS Admin Portal
+      {/* Top Navigation Bar: Sticky, Slim, Professional & Houses ALL Actions */}
+      <header className="bg-white/95 backdrop-blur-md border-b-2 border-amber-300 sticky top-0 z-40 px-2 sm:px-4 lg:px-6 py-2 shadow-sm font-siemreap">
+        <div className="w-full flex items-center justify-between gap-1.5 sm:gap-3">
+          {/* Brand & Live Clock: On screens < 2xl, show ONLY the clean Logo Icon! */}
+          <div className="flex items-center space-x-2 shrink-0">
+            {settings.logoImageUrl ? (
+              <img
+                src={settings.logoImageUrl}
+                alt="Logo"
+                className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl border border-amber-300 shadow-xs shrink-0 bg-white p-0.5"
+              />
+            ) : (
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#0c2340] border border-amber-300 flex items-center justify-center text-amber-300 font-mool text-base sm:text-lg shadow-xs shrink-0">
+                {settings.logoText?.slice(0, 1) || "V"}
+              </div>
+            )}
+
+            {/* Hotel/Portal Title & Clock: Hidden on < 2xl to guarantee all 11 buttons fit without wrapping! */}
+            <div className="hidden 2xl:flex flex-col min-w-0">
+              <div className="flex items-center space-x-2">
+                <span className="font-mool text-base text-[#0c2340] tracking-normal truncate">
+                  {lang === "km"
+                    ? (settings.adminPortalTitleKm || "VVotel PMS Admin Portal")
+                    : (settings.adminPortalTitleEn || "VVotel Central PMS Admin Portal")}
                 </span>
-                <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-siemreap">
+                <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">
                   Live System
                 </span>
-                <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full font-siemreap hidden sm:inline-block">
-                  {t.authorizedManager}
-                </span>
               </div>
-              <p className="text-[11px] text-gray-500 flex items-center space-x-2 mt-0.5 font-siemreap">
-                <span>{t.hotelName}</span>
+              <p className="text-[11px] text-gray-500 flex items-center space-x-1.5 mt-0.5 font-siemreap truncate">
+                <span>{lang === "km" ? settings.hotelNameKm : settings.hotelNameEn}</span>
                 <span>•</span>
                 <span className="font-mono font-bold text-amber-800">{currentTimeStr}</span>
               </p>
             </div>
           </div>
 
-          {/* Quick Header Badges & Tab Switcher */}
-          <div className="flex items-center space-x-2 font-siemreap">
+          {/* All 11 Action Buttons: Icons-Only on < 2xl, Icons + Text on 2xl */}
+          <div className="flex items-center space-x-1 sm:space-x-1.5 overflow-x-auto no-scrollbar py-0.5 shrink-0">
+            {/* 1. Toggle Dashboard / Settings */}
             <button
               onClick={() => setCurrentAdminTab(currentAdminTab === "settings" ? "dashboard" : "settings")}
-              className={`px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition border text-xs font-bold ${
+              className={`p-1.5 sm:p-2 2xl:px-3 2xl:py-1.5 rounded-xl flex items-center space-x-1.5 transition border text-xs font-bold shrink-0 ${
                 currentAdminTab === "settings"
-                  ? "bg-[#0c2340] text-amber-300 border-amber-300 shadow-sm"
-                  : "bg-white text-gray-700 border-amber-200 hover:bg-amber-50 shadow-xs"
+                  ? "bg-[#0c2340] text-amber-300 border-amber-300 shadow-xs"
+                  : "bg-white text-gray-700 border-amber-200 hover:bg-amber-50 shadow-2xs"
               }`}
+              title={currentAdminTab === "settings" ? (lang === "km" ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard") : (lang === "km" ? "ការកំណត់ប្រព័ន្ធ" : "Settings")}
             >
               {currentAdminTab === "settings" ? (
                 <>
-                  <LayoutGrid className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="hidden sm:inline">{lang === "km" ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard"}</span>
+                  <LayoutGrid className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="hidden 2xl:inline">{lang === "km" ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard"}</span>
                 </>
               ) : (
                 <>
-                  <Settings className="w-3.5 h-3.5 text-amber-600" />
-                  <span className="hidden sm:inline">{lang === "km" ? "ការកំណត់" : "Settings"}</span>
+                  <Settings className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span className="hidden 2xl:inline">{lang === "km" ? "ការកំណត់" : "Settings"}</span>
                 </>
               )}
             </button>
 
-            <span className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
-              {currentAdminTab === "settings"
-                ? (lang === "km" ? "⚙️ ការកំណត់" : "Settings")
-                : (lang === "km" ? `កក់សរុប: ${bookings.length}` : `Bookings: ${bookings.length}`)}
-            </span>
+            {/* 2. Walk-in Booking */}
+            <button
+              onClick={() => setIsNewBookingModalOpen(true)}
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white p-1.5 sm:p-2 2xl:px-3 2xl:py-1.5 rounded-xl flex items-center space-x-1.5 shadow-xs transition text-xs font-bold shrink-0"
+              title={t.walkInBtn}
+            >
+              <Plus className="w-4 h-4 shrink-0" />
+              <span className="hidden 2xl:inline">{t.walkInBtn}</span>
+            </button>
+
+            {/* 3. Administrative Reports Suite */}
+            <button
+              onClick={() => setIsReportModalOpen(true)}
+              className="bg-[#0c2340] hover:bg-[#12335e] text-amber-300 border border-amber-300/60 p-1.5 sm:p-2 2xl:px-3 2xl:py-1.5 rounded-xl flex items-center space-x-1.5 shadow-xs transition text-xs font-bold shrink-0"
+              title={t.reportsBtn}
+            >
+              <FileText className="w-4 h-4 text-amber-300 shrink-0" />
+              <span className="hidden 2xl:inline">{t.reportsBtn}</span>
+            </button>
+
+            {/* 4. Refresh Bookings */}
+            <button
+              onClick={() => fetchBookings(false)}
+              disabled={loading}
+              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 p-1.5 sm:p-2 2xl:px-2.5 2xl:py-1.5 rounded-xl flex items-center space-x-1 transition shadow-2xs text-xs font-bold shrink-0"
+              title={t.refreshData}
+            >
+              <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? "animate-spin text-amber-600" : ""}`} />
+              <span className="hidden 2xl:inline">{t.refreshData}</span>
+            </button>
+
+            {/* 5. Audio Alert Toggle */}
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className={`p-1.5 sm:p-2 2xl:px-2.5 2xl:py-1.5 rounded-xl flex items-center space-x-1 transition border text-xs font-bold shrink-0 ${
+                soundEnabled
+                  ? "bg-amber-50 text-amber-900 border-amber-300 shadow-2xs"
+                  : "bg-gray-100 text-gray-500 border-gray-300"
+              }`}
+              title={soundEnabled ? t.soundOn : t.soundOff}
+            >
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-amber-600 shrink-0" /> : <VolumeX className="w-4 h-4 shrink-0" />}
+              <span className="hidden 2xl:inline">{soundEnabled ? "ON" : "OFF"}</span>
+            </button>
+
+            {/* 6. Send Test Alert */}
+            <button
+              onClick={handleTestTelegram}
+              disabled={telegramStatus.loading}
+              className="bg-sky-600 hover:bg-sky-700 text-white p-1.5 sm:p-2 2xl:px-2.5 2xl:py-1.5 rounded-xl flex items-center space-x-1 shadow-2xs transition disabled:opacity-50 text-xs font-bold shrink-0"
+              title={t.sendTestAlert}
+            >
+              <Send className={`w-4 h-4 shrink-0 ${telegramStatus.loading ? "animate-spin" : ""}`} />
+              <span className="hidden 2xl:inline">{telegramStatus.loading ? t.sendingAlert : t.sendTestAlert}</span>
+            </button>
+
+            {/* 7. Direct Link to Telegram Bot */}
+            <a
+              href="https://t.me/vvotel_bot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 p-1.5 sm:p-2 2xl:px-2.5 2xl:py-1.5 rounded-xl flex items-center space-x-1 transition shadow-2xs text-xs font-bold shrink-0"
+              title="Open @vvotel_bot in Telegram"
+            >
+              <ExternalLink className="w-4 h-4 text-sky-600 shrink-0" />
+              <span className="hidden 2xl:inline">@vvotel_bot</span>
+            </a>
+
+            {/* 8. Accor PMS link */}
+            <a
+              href="https://t.me/vvotel_bot?start=accor_pms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 p-1.5 sm:p-2 2xl:px-2.5 2xl:py-1.5 rounded-xl flex items-center space-x-1 transition text-xs font-bold shrink-0"
+              title={t.accorPmsBtn}
+            >
+              <Building className="w-4 h-4 text-purple-600 shrink-0" />
+              <span className="hidden 2xl:inline">Accor PMS</span>
+            </a>
+
+            {/* 9. Public Website Link */}
+            <Link
+              href="/"
+              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 p-1.5 sm:p-2 2xl:px-2.5 2xl:py-1.5 rounded-xl flex items-center space-x-1 transition text-xs font-bold shrink-0"
+              title={t.homeBtn}
+            >
+              <Home className="w-4 h-4 shrink-0" />
+              <span className="hidden 2xl:inline">{t.homeBtn}</span>
+            </Link>
+
+            {/* 10. Language Switcher (KM / EN) */}
+            <button
+              onClick={() => switchLanguage(lang === "km" ? "en" : "km")}
+              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 p-1.5 sm:p-2 2xl:px-2.5 2xl:py-1.5 rounded-xl flex items-center space-x-1 transition text-xs font-bold shrink-0"
+              title={lang === "km" ? "Switch to English" : "ប្តូរទៅភាសាខ្មែរ"}
+            >
+              <Globe className="w-4 h-4 text-amber-700 shrink-0" />
+              <span className="hidden 2xl:inline font-bold">{lang === "km" ? "EN" : "ខ្មែរ"}</span>
+            </button>
+
+            {/* 11. Logout */}
+            <button
+              onClick={handleLogout}
+              className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 p-1.5 sm:p-2 2xl:px-2.5 2xl:py-1.5 rounded-xl flex items-center space-x-1 transition text-xs font-bold shrink-0"
+              title={t.logoutBtn}
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              <span className="hidden 2xl:inline">{t.logoutBtn}</span>
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Main Fluid Content Area (with bottom padding for fixed footer action bar) */}
-      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 flex-1 space-y-6 font-siemreap pb-28">
+      {/* Main Fluid Content Area */}
+      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 flex-1 space-y-6 font-siemreap">
         {/* Real-time Dynamic Booking Alert Banner */}
         {newBookingAlert && (
           <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 text-white p-4 rounded-2xl shadow-lg border border-amber-300 flex items-center justify-between animate-in slide-in-from-top-3 duration-300 font-siemreap">
@@ -2157,174 +2287,6 @@ export default function AdminPage() {
           </div>
         </div>
       )}
-
-      {/* ======================= FIXED BOTTOM ACTION FOOTER BAR ======================= */}
-      <footer className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t-2 border-amber-300 shadow-[0_-4px_25px_rgba(0,0,0,0.12)] py-2 px-3 sm:px-6 font-siemreap">
-        <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar">
-          {/* Group 1: Language & Admin Mode Switch */}
-          <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0">
-            {/* Language Switcher */}
-            <div className="bg-gray-100 border border-amber-200/80 rounded-xl p-0.5 flex items-center space-x-0.5 text-xs shadow-2xs">
-              <button
-                type="button"
-                onClick={() => switchLanguage("km")}
-                title="ភាសាខ្មែរ (Khmer)"
-                className={`px-2 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 ${
-                  lang === "km"
-                    ? "bg-[#0c2340] text-amber-300 shadow-xs"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <span>🇰🇭</span>
-                <span className="hidden lg:inline text-[11px]">ខ្មែរ</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => switchLanguage("en")}
-                title="English (EN)"
-                className={`px-2 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 ${
-                  lang === "en"
-                    ? "bg-[#0c2340] text-amber-300 shadow-xs"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <span>🇬🇧</span>
-                <span className="hidden lg:inline text-[11px]">EN</span>
-              </button>
-            </div>
-
-            {/* Dashboard / Settings Tab Toggle */}
-            <button
-              onClick={() => setCurrentAdminTab(currentAdminTab === "settings" ? "dashboard" : "settings")}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition border text-xs font-bold shrink-0 ${
-                currentAdminTab === "settings"
-                  ? "bg-[#0c2340] text-amber-300 border-amber-300 shadow-xs"
-                  : "bg-white text-gray-700 border-amber-200 hover:bg-amber-50 shadow-2xs"
-              }`}
-              title={currentAdminTab === "settings" ? (lang === "km" ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard") : (lang === "km" ? "ការកំណត់ប្រព័ន្ធ" : "Settings")}
-            >
-              {currentAdminTab === "settings" ? (
-                <>
-                  <LayoutGrid className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span className="hidden sm:inline">{lang === "km" ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard"}</span>
-                </>
-              ) : (
-                <>
-                  <Settings className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span className="hidden sm:inline">{lang === "km" ? "ការកំណត់" : "Settings"}</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Group 2: Core Admin Actions */}
-          <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0">
-            {/* Add Walk-in Booking */}
-            <button
-              onClick={() => setIsNewBookingModalOpen(true)}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center space-x-1.5 shadow-xs transition text-xs font-bold shrink-0"
-              title={t.walkInBtn}
-            >
-              <Plus className="w-4 h-4 shrink-0" />
-              <span>{t.walkInBtn}</span>
-            </button>
-
-            {/* Executive Administrative Reports Suite */}
-            <button
-              onClick={() => setIsReportModalOpen(true)}
-              className="bg-[#0c2340] hover:bg-[#12335e] text-amber-300 border border-amber-300/60 px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center space-x-1.5 shadow-xs transition text-xs font-bold shrink-0"
-              title={t.reportsBtn}
-            >
-              <FileText className="w-4 h-4 text-amber-300 shrink-0" />
-              <span className="hidden sm:inline">{t.reportsBtn}</span>
-              <span className="sm:hidden">{lang === "km" ? "របាយការណ៍" : "Reports"}</span>
-            </button>
-
-            {/* Refresh Data */}
-            <button
-              onClick={() => fetchBookings(false)}
-              disabled={loading}
-              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 px-2 sm:px-2.5 py-1.5 rounded-xl flex items-center space-x-1 transition shadow-2xs text-xs font-bold shrink-0"
-              title={t.refreshData}
-            >
-              <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? "animate-spin text-amber-600" : ""}`} />
-              <span className="hidden md:inline">{t.refreshData}</span>
-            </button>
-          </div>
-
-          {/* Group 3: Real-Time Alerts, Telegram Bot & System Navigation */}
-          <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0">
-            {/* Audio Alert Toggle */}
-            <button
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              className={`p-1.5 sm:px-2 sm:py-1.5 rounded-xl flex items-center space-x-1 transition border text-xs font-bold shrink-0 ${
-                soundEnabled
-                  ? "bg-amber-50 text-amber-900 border-amber-300 shadow-2xs"
-                  : "bg-gray-100 text-gray-500 border-gray-300"
-              }`}
-              title={soundEnabled ? t.soundOn : t.soundOff}
-            >
-              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-amber-600 shrink-0" /> : <VolumeX className="w-3.5 h-3.5 shrink-0" />}
-              <span className="hidden xl:inline">{soundEnabled ? "ON" : "OFF"}</span>
-            </button>
-
-            {/* Telegram Bot Alert Test */}
-            <button
-              onClick={handleTestTelegram}
-              disabled={telegramStatus.loading}
-              className="bg-sky-600 hover:bg-sky-700 text-white p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl flex items-center space-x-1 shadow-2xs transition disabled:opacity-50 text-xs font-bold shrink-0"
-              title={t.sendTestAlert}
-            >
-              <Send className={`w-3.5 h-3.5 shrink-0 ${telegramStatus.loading ? "animate-spin" : ""}`} />
-              <span className="hidden lg:inline">{telegramStatus.loading ? t.sendingAlert : t.sendTestAlert}</span>
-            </button>
-
-            {/* Direct Link to Telegram Bot */}
-            <a
-              href="https://t.me/vvotel_bot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 p-1.5 sm:px-2 sm:py-1.5 rounded-xl flex items-center space-x-1 transition shadow-2xs text-xs font-bold shrink-0"
-              title="Open @vvotel_bot in Telegram"
-            >
-              <ExternalLink className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-              <span className="hidden md:inline">@vvotel_bot</span>
-            </a>
-
-            {/* Accor PMS link */}
-            <a
-              href="https://t.me/vvotel_bot?start=accor_pms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 p-1.5 sm:px-2 sm:py-1.5 rounded-xl flex items-center space-x-1 transition text-xs font-bold shrink-0"
-              title={t.accorPmsBtn}
-            >
-              <Building className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-              <span className="hidden xl:inline">Accor PMS</span>
-            </a>
-
-            {/* Public Website */}
-            <Link
-              href="/"
-              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 p-1.5 sm:px-2 sm:py-1.5 rounded-xl flex items-center space-x-1 transition text-xs font-bold shrink-0"
-              title={t.homeBtn}
-            >
-              <Home className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden md:inline">{t.homeBtn}</span>
-            </Link>
-
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 p-1.5 sm:px-2 sm:py-1.5 rounded-xl flex items-center space-x-1 transition text-xs font-bold shrink-0"
-              title={t.logoutBtn}
-            >
-              <LogOut className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden md:inline">{t.logoutBtn}</span>
-            </button>
-          </div>
-        </div>
-      </footer>
 
       {/* ======================= PRINTABLE RECEIPT MODAL ======================= */}
       <PrintableReceipt

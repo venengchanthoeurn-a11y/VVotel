@@ -131,15 +131,15 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
   const handleSaveEditRoom = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingRoomIndex === null || !editingRoom) return;
-    setFormSettings((prev) => {
-      const updated = [...prev.rooms];
-      updated[editingRoomIndex] = {
-        ...editingRoom,
-        viewKm: editingRoom.viewKm || editingRoom.viewTypeKm || "ទេសភាពទន្លេមេគង្គ",
-        viewEn: editingRoom.viewEn || editingRoom.viewTypeEn || "Mekong River View",
-      };
-      return { ...prev, rooms: updated };
-    });
+    const updated = [...formSettings.rooms];
+    updated[editingRoomIndex] = {
+      ...editingRoom,
+      viewKm: editingRoom.viewKm || editingRoom.viewTypeKm || "ទេសភាពទន្លេមេគង្គ",
+      viewEn: editingRoom.viewEn || editingRoom.viewTypeEn || "Mekong River View",
+    };
+    const nextSettings = { ...formSettings, rooms: updated };
+    setFormSettings(nextSettings);
+    updateSettings(nextSettings);
     setIsEditRoomModalOpen(false);
     setEditingRoom(null);
     setEditingRoomIndex(null);
@@ -158,10 +158,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       viewKm: newRoom.viewKm || newRoom.viewTypeKm || "ទេសភាពទន្លេមេគង្គ",
       viewEn: newRoom.viewEn || newRoom.viewTypeEn || "Mekong River View",
     };
-    setFormSettings((prev) => ({
-      ...prev,
-      rooms: [...prev.rooms, roomToAdd],
-    }));
+    const nextSettings = {
+      ...formSettings,
+      rooms: [...formSettings.rooms, roomToAdd],
+    };
+    setFormSettings(nextSettings);
+    updateSettings(nextSettings);
     setIsAddRoomModalOpen(false);
     setNewRoom({
       id: "",
@@ -191,10 +193,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
   const handleDeleteRoom = (index: number) => {
     const room = formSettings.rooms[index];
     if (!confirm(lang === "km" ? `តើអ្នកពិតជាចង់លុបបន្ទប់ "${room.nameKm}" មែនទេ?` : `Delete room "${room.nameEn}"?`)) return;
-    setFormSettings((prev) => ({
-      ...prev,
-      rooms: prev.rooms.filter((_, i) => i !== index),
-    }));
+    const nextSettings = {
+      ...formSettings,
+      rooms: formSettings.rooms.filter((_, i) => i !== index),
+    };
+    setFormSettings(nextSettings);
+    updateSettings(nextSettings);
   };
 
   // ======================= DINING CRUD STATE =======================
@@ -233,11 +237,11 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
   const handleSaveEditDining = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingDiningIndex === null || !editingDining) return;
-    setFormSettings((prev) => {
-      const updated = [...(prev.dining || [])];
-      updated[editingDiningIndex] = editingDining;
-      return { ...prev, dining: updated };
-    });
+    const updated = [...(formSettings.dining || [])];
+    updated[editingDiningIndex] = editingDining;
+    const nextSettings = { ...formSettings, dining: updated };
+    setFormSettings(nextSettings);
+    updateSettings(nextSettings);
     setIsEditDiningModalOpen(false);
     setEditingDining(null);
     setEditingDiningIndex(null);
@@ -254,10 +258,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       ...newDining,
       id: diningId,
     };
-    setFormSettings((prev) => ({
-      ...prev,
-      dining: [...(prev.dining || []), diningToAdd],
-    }));
+    const nextSettings = {
+      ...formSettings,
+      dining: [...(formSettings.dining || []), diningToAdd],
+    };
+    setFormSettings(nextSettings);
+    updateSettings(nextSettings);
     setIsAddDiningModalOpen(false);
     setNewDining({
       id: "",
@@ -284,18 +290,20 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
   const handleDeleteDining = (index: number) => {
     const venue = (formSettings.dining || [])[index];
     if (!confirm(lang === "km" ? `តើអ្នកពិតជាចង់លុប "${venue.nameKm}" មែនទេ?` : `Delete venue "${venue.nameEn}"?`)) return;
-    setFormSettings((prev) => ({
-      ...prev,
-      dining: (prev.dining || []).filter((_, i) => i !== index),
-    }));
+    const nextSettings = {
+      ...formSettings,
+      dining: (formSettings.dining || []).filter((_, i) => i !== index),
+    };
+    setFormSettings(nextSettings);
+    updateSettings(nextSettings);
   };
 
   const handleToggleDining = (index: number) => {
-    setFormSettings((prev) => {
-      const updated = [...(prev.dining || [])];
-      updated[index] = { ...updated[index], enabled: !updated[index].enabled };
-      return { ...prev, dining: updated };
-    });
+    const updated = [...(formSettings.dining || [])];
+    updated[index] = { ...updated[index], enabled: !updated[index].enabled };
+    const nextSettings = { ...formSettings, dining: updated };
+    setFormSettings(nextSettings);
+    updateSettings(nextSettings);
   };
 
   // ======================= DESTINATIONS CRUD STATE =======================
@@ -332,10 +340,10 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
   const handleSaveEditDest = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingDest || editingDestId === null) return;
-    setFormSettings((prev) => ({
-      ...prev,
-      destinations: prev.destinations.map((d) => (d.id === editingDestId ? editingDest : d)),
-    }));
+    const updated = formSettings.destinations.map((d) => (d.id === editingDestId ? editingDest : d));
+    const nextSettings = { ...formSettings, destinations: updated };
+    setFormSettings(nextSettings);
+    updateSettings(nextSettings);
     setIsEditDestModalOpen(false);
     setEditingDest(null);
     setEditingDestId(null);
@@ -358,13 +366,17 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
   // Feature toggle updater
   const handleFeatureToggle = (featureKey: keyof SiteSettings["features"]) => {
-    setFormSettings((prev) => ({
-      ...prev,
-      features: {
-        ...prev.features,
-        [featureKey]: !prev.features[featureKey],
-      },
-    }));
+    setFormSettings((prev) => {
+      const nextSettings = {
+        ...prev,
+        features: {
+          ...prev.features,
+          [featureKey]: !prev.features[featureKey],
+        },
+      };
+      updateSettings(nextSettings);
+      return nextSettings;
+    });
   };
 
   // Room item updater
@@ -375,29 +387,35 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         ...updatedRooms[index],
         [field]: value,
       };
-      return {
+      const nextSettings = {
         ...prev,
         rooms: updatedRooms,
       };
+      updateSettings(nextSettings);
+      return nextSettings;
     });
   };
 
   // Destination item updater
   const handleDestinationToggle = (id: number) => {
-    setFormSettings((prev) => ({
-      ...prev,
-      destinations: prev.destinations.map((d) =>
+    const nextSettings = {
+      ...formSettings,
+      destinations: formSettings.destinations.map((d) =>
         d.id === id ? { ...d, enabled: !d.enabled } : d
       ),
-    }));
+    };
+    setFormSettings(nextSettings);
+    updateSettings(nextSettings);
   };
 
   const handleDeleteDestination = (id: number) => {
     if (!confirm(lang === "km" ? "តើអ្នកពិតជាចង់លុបទីតាំងនេះមែនទេ?" : "Delete this destination?")) return;
-    setFormSettings((prev) => ({
-      ...prev,
-      destinations: prev.destinations.filter((d) => d.id !== id),
-    }));
+    const nextSettings = {
+      ...formSettings,
+      destinations: formSettings.destinations.filter((d) => d.id !== id),
+    };
+    setFormSettings(nextSettings);
+    updateSettings(nextSettings);
   };
 
   // Add new destination submit
@@ -437,10 +455,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       enabled: true,
     };
 
-    setFormSettings((prev) => ({
-      ...prev,
-      destinations: [...prev.destinations, completeDest],
-    }));
+    const nextSettings = {
+      ...formSettings,
+      destinations: [...formSettings.destinations, completeDest],
+    };
+    setFormSettings(nextSettings);
+    updateSettings(nextSettings);
 
     setIsAddDestModalOpen(false);
     // Reset form
@@ -617,6 +637,34 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               />
             </div>
 
+            {/* Admin Portal Title KM */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                {lang === "km" ? "ចំណងជើង Admin Portal (ភាសាខ្មែរ):" : "Admin Portal Title (Khmer):"}
+              </label>
+              <input
+                type="text"
+                value={formSettings.adminPortalTitleKm || ""}
+                onChange={(e) => handleFieldChange("adminPortalTitleKm", e.target.value)}
+                placeholder="ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ និងភោជនីយដ្ឋាន VVotel"
+                className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-4 py-3 text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-amber-500 font-siemreap"
+              />
+            </div>
+
+            {/* Admin Portal Title EN */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                {lang === "km" ? "ចំណងជើង Admin Portal (ភាសាអង់គ្លេស):" : "Admin Portal Title (English):"}
+              </label>
+              <input
+                type="text"
+                value={formSettings.adminPortalTitleEn || ""}
+                onChange={(e) => handleFieldChange("adminPortalTitleEn", e.target.value)}
+                placeholder="VVotel Central PMS Admin Portal"
+                className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-4 py-3 text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-amber-500"
+              />
+            </div>
+
             {/* Tagline KM */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
@@ -643,11 +691,11 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               />
             </div>
 
-            {/* Logo Text & Image URL */}
-            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-amber-50/50 rounded-2xl border border-amber-200/60">
+            {/* Logo Text & Image Upload Section */}
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-5 p-5 bg-gradient-to-br from-amber-50/70 to-orange-50/40 rounded-2xl border-2 border-amber-200">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                  {lang === "km" ? "អក្សរ Logo សង្ខេប (Logo Text):" : "Logo Text Badge:"}
+                  {lang === "km" ? "អក្សរ Logo សង្ខេប (Logo Text Badge):" : "Logo Text Badge:"}
                 </label>
                 <input
                   type="text"
@@ -655,56 +703,84 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                   onChange={(e) => handleFieldChange("logoText", e.target.value)}
                   className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-amber-500 font-bold"
                 />
+                <p className="text-[11px] text-gray-500 mt-1">
+                  {lang === "km" ? "បង្ហាញជំនួសពេលគ្មានរូបភាព (ឧ. VVOTEL)" : "Used as fallback badge if no image"}
+                </p>
               </div>
 
-              <div className="md:col-span-2">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-gray-700">
-                    {lang === "km" ? "រូបភាព Logo (ជ្រើសរើសរូបពីទូរស័ព្ទ/កុំព្យូទ័រ ឬ URL):" : "Custom Logo Image (Upload or URL):"}
-                  </label>
-                  <label className="cursor-pointer bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center space-x-1.5 transition shadow-2xs">
-                    <Upload className="w-3.5 h-3.5 text-amber-800" />
-                    <span>{lang === "km" ? "ជ្រើសរើសរូបភាព..." : "Upload File..."}</span>
+              <div className="md:col-span-2 space-y-3">
+                <label className="block text-xs font-bold text-gray-700">
+                  {lang === "km"
+                    ? "រូបភាព Logo សណ្ឋាគារ & Admin (ជ្រើសរើសរូបភាពពីទូរស័ព្ទ / កុំព្យូទ័រ ឬ URL):"
+                    : "Official Hotel & Admin Logo (Upload from Phone/PC or paste URL):"}
+                </label>
+
+                {/* Prominent Direct Upload Button */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <label className="cursor-pointer flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl border-2 border-dashed border-amber-400 bg-white hover:bg-amber-50 hover:border-amber-600 transition text-xs font-bold text-amber-950 shadow-xs group">
+                    <Upload className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform shrink-0" />
+                    <span>
+                      {lang === "km"
+                        ? "📁 ចុចត្រង់នេះដើម្បីជ្រើសរើសរូបភាព Logo (Upload File)"
+                        : "📁 Click here to Upload Logo Image"}
+                    </span>
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => handleImageUpload(e, (dataUrl) => handleFieldChange("logoImageUrl", dataUrl))}
+                      onChange={(e) =>
+                        handleImageUpload(e, (dataUrl) => {
+                          const updated = { ...formSettings, logoImageUrl: dataUrl };
+                          setFormSettings(updated);
+                          updateSettings(updated);
+                        })
+                      }
                     />
                   </label>
+
+                  {/* Logo Preview & Clear */}
+                  <div className="flex items-center space-x-2 shrink-0">
+                    {formSettings.logoImageUrl ? (
+                      <div className="w-14 h-14 rounded-xl border-2 border-amber-300 overflow-hidden bg-white p-1 shadow-sm flex items-center justify-center">
+                        <img
+                          src={formSettings.logoImageUrl}
+                          alt="Logo Preview"
+                          className="w-full h-full object-contain"
+                          onError={(e) => ((e.target as any).style.display = "none")}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl bg-vvotel-navy text-amber-300 font-mool flex items-center justify-center text-xl shadow-sm border border-amber-300/40">
+                        {formSettings.logoText?.slice(0, 1) || "V"}
+                      </div>
+                    )}
+
+                    {formSettings.logoImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = { ...formSettings, logoImageUrl: "" };
+                          setFormSettings(updated);
+                          updateSettings(updated);
+                        }}
+                        className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition"
+                        title={lang === "km" ? "លុបរូបភាព" : "Clear Logo"}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2 sm:space-x-3">
+
+                {/* Optional URL Input */}
+                <div className="pt-1">
                   <input
                     type="text"
-                    placeholder="https://.../hotel-logo.png ឬ Upload រូបផ្ទាល់"
+                    placeholder="ឬ បញ្ចូលតំណភ្ជាប់ URL (https://.../logo.png)"
                     value={formSettings.logoImageUrl}
                     onChange={(e) => handleFieldChange("logoImageUrl", e.target.value)}
-                    className="flex-1 bg-white border border-amber-200 rounded-xl px-4 py-3 text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-amber-500 font-mono"
+                    className="w-full bg-white border border-amber-200 rounded-xl px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:border-amber-500 font-mono"
                   />
-                  {formSettings.logoImageUrl && (
-                    <button
-                      type="button"
-                      onClick={() => handleFieldChange("logoImageUrl", "")}
-                      className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition"
-                      title={lang === "km" ? "លុបរូបភាព" : "Clear Logo"}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                  {formSettings.logoImageUrl ? (
-                    <div className="w-12 h-12 rounded-xl border border-amber-300 overflow-hidden bg-white shrink-0 flex items-center justify-center p-1 shadow-sm">
-                      <img
-                        src={formSettings.logoImageUrl}
-                        alt="Logo Preview"
-                        className="w-full h-full object-contain"
-                        onError={(e) => ((e.target as any).style.display = "none")}
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl bg-vvotel-navy text-amber-300 font-mool flex items-center justify-center text-xl shrink-0 shadow-sm border border-amber-300/40">
-                      {formSettings.logoText || "V"}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -951,55 +1027,79 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             </div>
 
             {/* Custom QR Code Image Upload & URL */}
-            <div className="md:col-span-2 p-4 bg-amber-50/50 rounded-2xl border border-amber-200/60">
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-gray-700">
-                  {lang === "km"
-                    ? "រូបភាព QR Code ផ្ទាល់ខ្លួន (Upload ពីរូបភាព ឬ បញ្ចូល URL):"
-                    : "Custom QR Code Image (Upload or URL):"}
-                </label>
-                <label className="cursor-pointer bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center space-x-1.5 transition shadow-2xs">
-                  <Upload className="w-3.5 h-3.5 text-amber-800" />
-                  <span>{lang === "km" ? "ជ្រើសរើសរូប QR..." : "Upload QR Image..."}</span>
+            <div className="md:col-span-2 p-5 bg-gradient-to-br from-amber-50/70 to-orange-50/40 rounded-2xl border-2 border-amber-200 space-y-3">
+              <label className="block text-xs font-bold text-gray-700">
+                {lang === "km"
+                  ? "រូបភាព QR Code ផ្ទាល់ខ្លួន (ជ្រើសរើសរូបភាពពីទូរស័ព្ទ / កុំព្យូទ័រ ឬ បញ្ចូល URL):"
+                  : "Custom QR Code Image (Upload from Phone/PC or paste URL):"}
+              </label>
+
+              {/* Prominent Direct Upload Button */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <label className="cursor-pointer flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl border-2 border-dashed border-amber-400 bg-white hover:bg-amber-50 hover:border-amber-600 transition text-xs font-bold text-amber-950 shadow-xs group">
+                  <Upload className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform shrink-0" />
+                  <span>
+                    {lang === "km"
+                      ? "📁 ចុចត្រង់នេះដើម្បីជ្រើសរើសរូបភាព QR Code (Upload File)"
+                      : "📁 Click here to Upload QR Code Image"}
+                  </span>
                   <input
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => handleImageUpload(e, (dataUrl) => handleFieldChange("qrCustomImageUrl", dataUrl))}
+                    onChange={(e) =>
+                      handleImageUpload(e, (dataUrl) => {
+                        const updated = { ...formSettings, qrCustomImageUrl: dataUrl };
+                        setFormSettings(updated);
+                        updateSettings(updated);
+                      })
+                    }
                   />
                 </label>
+
+                {/* QR Preview & Clear */}
+                <div className="flex items-center space-x-2 shrink-0">
+                  {formSettings.qrCustomImageUrl ? (
+                    <div className="w-16 h-16 bg-white rounded-xl border-2 border-amber-300 p-1 shadow-sm shrink-0 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={formSettings.qrCustomImageUrl}
+                        alt="Custom QR Preview"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  ) : null}
+
+                  {formSettings.qrCustomImageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = { ...formSettings, qrCustomImageUrl: "" };
+                        setFormSettings(updated);
+                        updateSettings(updated);
+                      }}
+                      className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition shrink-0"
+                      title={lang === "km" ? "លុបរូបភាព QR" : "Clear QR"}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+
+              {/* Optional URL Input */}
+              <div className="pt-1">
                 <input
                   type="text"
                   value={formSettings.qrCustomImageUrl}
                   onChange={(e) => handleFieldChange("qrCustomImageUrl", e.target.value)}
-                  placeholder="https://.../my-aba-khqr.png ឬ Upload រូប QR ផ្ទាល់"
-                  className="flex-1 w-full bg-white border border-amber-200 rounded-xl px-4 py-3 text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-amber-500 font-mono"
+                  placeholder="ឬ បញ្ចូលតំណភ្ជាប់ URL (https://.../my-aba-khqr.png)"
+                  className="w-full bg-white border border-amber-200 rounded-xl px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:border-amber-500 font-mono"
                 />
-                {formSettings.qrCustomImageUrl && (
-                  <button
-                    type="button"
-                    onClick={() => handleFieldChange("qrCustomImageUrl", "")}
-                    className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition shrink-0"
-                    title={lang === "km" ? "លុបរូបភាព QR" : "Clear QR"}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-                {formSettings.qrCustomImageUrl && (
-                  <div className="w-20 h-20 bg-white rounded-xl border border-amber-300 p-1 shadow shrink-0 flex items-center justify-center overflow-hidden">
-                    <img
-                      src={formSettings.qrCustomImageUrl}
-                      alt="Custom QR Preview"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                )}
               </div>
-              <p className="text-[11px] text-gray-500 mt-2">
+
+              <p className="text-[11px] text-gray-500">
                 {lang === "km"
-                  ? "ចំណាំ៖ លោកអ្នកអាច Upload រូបភាពកូដ QR ពីទូរស័ព្ទផ្ទាល់ ឬប្រើ Dynamic Bakong KHQR EMVCo ផ្លូវការ។"
+                  ? "ចំណាំ៖ លោកអ្នកអាច Upload រូបភាពកូដ QR ពីទូរស័ព្ទផ្ទាល់ ឬប្រើប្រព័ន្ធ Dynamic Bakong KHQR EMVCo ផ្លូវការ។"
                   : "Note: You can upload your official QR code image directly or use dynamic EMVCo Bakong KHQR."}
               </p>
             </div>

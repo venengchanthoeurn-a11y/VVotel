@@ -72,6 +72,8 @@ export interface SiteSettings {
   hotelTaglineEn: string;
   logoText: string;
   logoImageUrl: string;
+  adminPortalTitleKm?: string;
+  adminPortalTitleEn?: string;
   phone: string;
   email: string;
   addressKm: string;
@@ -118,6 +120,7 @@ export interface SiteSettings {
   telegramAdminChatId: string;
   telegramBotUsername: string;
 
+  _isUserCustomized?: boolean;
   updatedAt: string;
 }
 
@@ -128,6 +131,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   hotelTaglineEn: "5-Star Luxury Riverside Resort & Spa",
   logoText: "VVOTEL",
   logoImageUrl: "",
+  adminPortalTitleKm: "ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ និងភោជនីយដ្ឋាន VVotel",
+  adminPortalTitleEn: "VVotel Central PMS Admin Portal",
   phone: "+855 (0) 42 982 999",
   email: "reservations@vvotel.com",
   addressKm: "ផ្ទះលេខ ២០៥២, ផ្លូវព្រះមុនីវង្ស, ភូមិ ៧, សង្កាត់បឹងកុក, ក្រុងកំពង់ចាម",
@@ -408,5 +413,6 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   telegramAdminChatId: "683808125",
   telegramBotUsername: "vvotel_bot",
 
-  updatedAt: new Date().toISOString(),
+  _isUserCustomized: false,
+  updatedAt: "2026-01-01T00:00:00.000Z",
 };
