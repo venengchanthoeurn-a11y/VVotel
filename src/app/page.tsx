@@ -15,6 +15,7 @@ import { ServicesSection } from "@/components/ServicesSection";
 import { LoyaltyBanner } from "@/components/LoyaltyBanner";
 import { NewsletterSection } from "@/components/NewsletterSection";
 import { Footer } from "@/components/Footer";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { DESTINATIONS, Destination } from "@/data/destinations";
 import { useLanguage } from "@/context/LanguageContext";
 import {
@@ -316,6 +317,9 @@ export default function HomePage() {
 
       {/* Global Footer */}
       <Footer />
+
+      {/* Mobile Bottom Navigation Bar (Icons for all key actions on mobile) */}
+      <MobileBottomNav />
     </div>
   );
 }

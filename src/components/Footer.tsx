@@ -3,10 +3,18 @@
 import React from "react";
 import { HOTEL_INFO } from "@/data/destinations";
 import { useLanguage } from "@/context/LanguageContext";
+import { useSettings } from "@/context/SettingsContext";
 import { MapPin, Phone, Mail, FileText, Shield, Cookie, HelpCircle, Share2 } from "lucide-react";
 
 export const Footer: React.FC = () => {
   const { lang, t } = useLanguage();
+  const { settings } = useSettings();
+
+  const hotelNameKm = settings.hotelNameKm || "សណ្ឋាគារ វឌ្ឍនៈ (VVOTEL) កំពង់ចាម";
+  const hotelNameEn = settings.hotelNameEn || "VATTANAC HOTEL (VVOTEL) • KAMPONG CHAM";
+  const phone = settings.phone || HOTEL_INFO.phone;
+  const email = settings.email || HOTEL_INFO.email;
+  const address = lang === "km" ? (settings.addressKm || HOTEL_INFO.address.km) : (settings.addressEn || HOTEL_INFO.address.en);
 
   return (
     <footer className="bg-[#08182b] text-gray-400 text-xs border-t border-white/10">
@@ -15,40 +23,48 @@ export const Footer: React.FC = () => {
           {/* Col 1: Property Identity */}
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center space-x-2.5">
-              <div className="w-10 h-10 rounded-xl bg-vvotel-gold flex items-center justify-center text-vvotel-navy font-black text-xl shadow">
-                V
-              </div>
+              {settings.logoImageUrl ? (
+                <img
+                  src={settings.logoImageUrl}
+                  alt={hotelNameEn}
+                  className="w-10 h-10 rounded-xl object-contain shadow border border-vvotel-gold/40"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-vvotel-gold flex items-center justify-center text-vvotel-navy font-black text-xl shadow">
+                  {settings.logoText || "V"}
+                </div>
+              )}
               <div>
                 <span className="font-extrabold text-xl tracking-tight text-white block">
-                  VVOTEL
+                  {settings.logoText || "VVOTEL"}
                 </span>
                 <span className="text-[10px] tracking-wider uppercase text-vvotel-gold -mt-1 block">
-                  {lang === "km" ? "សណ្ឋាគារ វឌ្ឍនៈ (VVOTEL) កំពង់ចាម" : "VATTANAC HOTEL (VVOTEL) • KAMPONG CHAM"}
+                  {lang === "km" ? hotelNameKm : hotelNameEn}
                 </span>
               </div>
             </div>
 
             <p className="text-gray-400 text-xs leading-relaxed max-w-md">
               {lang === "km"
-                ? "សណ្ឋាគារប្រណីតលំដាប់ខ្ពស់ជាប់មាត់ទន្លេមេគង្គក្នុងក្រុងកំពង់ចាម ផ្តល់ជូននូវបន្ទប់ស្នាក់នៅដ៏មានផាសុកភាព ម្ហូបអាហារឆ្ងាញ់ពិសា និងមគ្គុទ្ទេសក៍ទេសចរណ៍រុករកវប្បធម៌ខ្មែរដ៏សម្បូរបែប។"
-                : "A luxurious riverfront hotel along the legendary Mekong in Kampong Cham. Enjoy world-class hospitality, panoramic river views, authentic gastronomy, and enriching cultural discovery tours."}
+                ? (settings.hotelTaglineKm || "សណ្ឋាគារប្រណីតលំដាប់ខ្ពស់ជាប់មាត់ទន្លេមេគង្គក្នុងក្រុងកំពង់ចាម ផ្តល់ជូននូវបន្ទប់ស្នាក់នៅដ៏មានផាសុកភាព ម្ហូបអាហារឆ្ងាញ់ពិសា និងមគ្គុទ្ទេសក៍ទេសចរណ៍រុករកវប្បធម៌ខ្មែរដ៏សម្បូរបែប។")
+                : (settings.hotelTaglineEn || "A luxurious riverfront hotel along the legendary Mekong in Kampong Cham. Enjoy world-class hospitality, panoramic river views, authentic gastronomy, and enriching cultural discovery tours.")}
             </p>
 
             <div className="space-y-2 pt-2 text-gray-300">
               <div className="flex items-start space-x-2">
                 <MapPin className="w-4 h-4 text-vvotel-gold shrink-0 mt-0.5" />
-                <span>{lang === "km" ? HOTEL_INFO.address.km : HOTEL_INFO.address.en}</span>
+                <span>{address}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="w-4 h-4 text-vvotel-gold shrink-0" />
-                <a href={`tel:${HOTEL_INFO.phone}`} className="hover:text-white transition">
-                  {HOTEL_INFO.phone}
+                <a href={`tel:${phone}`} className="hover:text-white transition">
+                  {phone}
                 </a>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="w-4 h-4 text-vvotel-gold shrink-0" />
-                <a href={`mailto:${HOTEL_INFO.email}`} className="hover:text-white transition">
-                  {HOTEL_INFO.email}
+                <a href={`mailto:${email}`} className="hover:text-white transition">
+                  {email}
                 </a>
               </div>
             </div>

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useSettings } from "@/context/SettingsContext";
 import {
   BedDouble,
   Users,
@@ -227,7 +228,29 @@ export const ROOMS: RoomItem[] = [
 
 export const AccommodationSection: React.FC = () => {
   const { lang, t } = useLanguage();
+  const { settings } = useSettings();
   const [activeModalRoom, setActiveModalRoom] = useState<RoomItem | null>(null);
+
+  const displayedRooms: RoomItem[] = ROOMS.map((staticRoom) => {
+    const match = settings?.rooms?.find((r) => r.id === staticRoom.id);
+    if (!match) return staticRoom;
+    return {
+      ...staticRoom,
+      pricePerNightUSD: typeof match.basePrice === "number" ? match.basePrice : staticRoom.pricePerNightUSD,
+      name: {
+        en: match.nameEn || staticRoom.name.en,
+        km: match.nameKm || staticRoom.name.km,
+      },
+      category: {
+        en: match.categoryEn || staticRoom.category.en,
+        km: match.categoryKm || staticRoom.category.km,
+      },
+      imageUrl: match.imageUrl || staticRoom.imageUrl,
+    };
+  }).filter((r) => {
+    const match = settings?.rooms?.find((s) => s.id === r.id);
+    return match ? match.enabled !== false : true;
+  });
 
   const handleBookRoom = (room: RoomItem) => {
     // 1. Dispatch custom event to select room and open booking modal directly
@@ -282,7 +305,7 @@ export const AccommodationSection: React.FC = () => {
 
         {/* Room Grid (4 luxury cards) */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          {ROOMS.map((room) => (
+          {displayedRooms.map((room) => (
             <div
               key={room.id}
               className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col group"

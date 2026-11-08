@@ -1,7 +1,6 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useSettings } from "@/context/SettingsContext";
 import { PrintableReceipt } from "@/components/PrintableReceipt";
 import {
   Calendar,
@@ -40,6 +39,7 @@ interface RoomComposition {
 
 export const BookingBar: React.FC = () => {
   const { lang, t } = useLanguage();
+  const { settings } = useSettings();
 
   // Dates
   const [checkIn, setCheckIn] = useState<string>("2026-11-05");
@@ -84,6 +84,9 @@ export const BookingBar: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<"khqr" | "card" | "hotel">("khqr");
   const [khqrTimer, setKhqrTimer] = useState<number>(299); // 5 mins
   const [isVerifyingPayment, setIsVerifyingPayment] = useState<boolean>(false);
+  const [khqrData, setKhqrData] = useState<any>(null);
+  const [khqrError, setKhqrError] = useState<string | null>(null);
+  const [manualApprovalCode, setManualApprovalCode] = useState<string>("");
   const [paymentConfirmed, setPaymentConfirmed] = useState<any>(null);
   const [receiptModalOpen, setReceiptModalOpen] = useState<boolean>(false);
   const [receiptModalMode, setReceiptModalMode] = useState<"pos-80mm" | "a4-invoice">("pos-80mm");
@@ -110,56 +113,72 @@ export const BookingBar: React.FC = () => {
     ) || 1
   );
 
-  // Room pricing catalog (Synced with AccommodationSection)
-  const roomCatalog: Record<
-    string,
-    { nameEn: string; nameKm: string; basePrice: number; size: string; bed: string; img: string }
-  > = {
-    "standard-city": {
-      nameEn: "Standard Room City View",
-      nameKm: "បន្ទប់ស្តង់ដារ ទេសភាពទីក្រុង",
-      basePrice: 85,
-      size: "34 m²",
-      bed: "1 King Bed or 2 Twins",
-      img: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
-    },
-    "superior-river": {
-      nameEn: "Superior Room River View",
-      nameKm: "បន្ទប់ស៊ុភើរៀ ទេសភាពទន្លេមេគង្គ",
-      basePrice: 125,
-      size: "42 m²",
-      bed: "1 King Bed / Balcony",
-      img: "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=600&q=80",
-    },
-    "executive-suite": {
-      nameEn: "Executive Mekong Suite (1 Bedroom)",
-      nameKm: "បន្ទប់ស្វ៊ីតប្រណីតមាត់ទន្លេ (១ បន្ទប់គេង)",
-      basePrice: 195,
-      size: "68 m²",
-      bed: "1 Super King / Living Lounge",
-      img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80",
-    },
-    "royal-family-suite": {
-      nameEn: "Royal Family River Suite (2 Bedroom)",
-      nameKm: "បន្ទប់ស្វ៊ីតគ្រួសារមាត់ទន្លេ (២ បន្ទប់គេង)",
-      basePrice: 280,
-      size: "95 m²",
-      bed: "2 En-suite Bedrooms / Dining Area",
-      img: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=600&q=80",
-    },
-    "royal-family": {
-      nameEn: "Royal Family River Suite (2 Bedroom)",
-      nameKm: "បន្ទប់ស្វ៊ីតគ្រួសារមាត់ទន្លេ (២ បន្ទប់គេង)",
-      basePrice: 280,
-      size: "95 m²",
-      bed: "2 En-suite Bedrooms / Dining Area",
-      img: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=600&q=80",
-    },
-  };
+  // Dynamic Room pricing catalog (Synced with settings and AccommodationSection)
+  const roomCatalog = useMemo<
+    Record<string, { nameEn: string; nameKm: string; basePrice: number; size: string; bed: string; img: string }>
+  >(() => {
+    const baseCatalog: Record<string, { nameEn: string; nameKm: string; basePrice: number; size: string; bed: string; img: string }> = {
+      "standard-city": {
+        nameEn: "Standard Room City View",
+        nameKm: "បន្ទប់ស្តង់ដារ ទេសភាពទីក្រុង",
+        basePrice: 85,
+        size: "34 m²",
+        bed: "1 King Bed or 2 Twins",
+        img: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
+      },
+      "superior-river": {
+        nameEn: "Superior Room River View",
+        nameKm: "បន្ទប់ស៊ុភើរៀ ទេសភាពទន្លេមេគង្គ",
+        basePrice: 125,
+        size: "42 m²",
+        bed: "1 King Bed / Balcony",
+        img: "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=600&q=80",
+      },
+      "executive-suite": {
+        nameEn: "Executive Mekong Suite (1 Bedroom)",
+        nameKm: "បន្ទប់ស្វ៊ីតប្រណីតមាត់ទន្លេ (១ បន្ទប់គេង)",
+        basePrice: 195,
+        size: "68 m²",
+        bed: "1 Super King / Living Lounge",
+        img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80",
+      },
+      "royal-family-suite": {
+        nameEn: "Royal Family River Suite (2 Bedroom)",
+        nameKm: "បន្ទប់ស្វ៊ីតគ្រួសារមាត់ទន្លេ (២ បន្ទប់គេង)",
+        basePrice: 280,
+        size: "95 m²",
+        bed: "2 En-suite Bedrooms / Dining Area",
+        img: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=600&q=80",
+      },
+      "royal-family": {
+        nameEn: "Royal Family River Suite (2 Bedroom)",
+        nameKm: "បន្ទប់ស្វ៊ីតគ្រួសារមាត់ទន្លេ (២ បន្ទប់គេង)",
+        basePrice: 280,
+        size: "95 m²",
+        bed: "2 En-suite Bedrooms / Dining Area",
+        img: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=600&q=80",
+      },
+    };
+
+    if (settings.rooms && settings.rooms.length > 0) {
+      settings.rooms.forEach((r) => {
+        baseCatalog[r.id] = {
+          nameEn: r.nameEn,
+          nameKm: r.nameKm,
+          basePrice: r.basePrice,
+          size: `${r.sizeSqm} m²`,
+          bed: r.bedTypeKm || r.bedTypeEn,
+          img: r.imageUrl || baseCatalog[r.id]?.img || "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
+        };
+      });
+    }
+
+    return baseCatalog;
+  }, [settings.rooms]);
 
   // Pricing math
   const activeRoom = roomCatalog[selectedRoomType] || roomCatalog["superior-river"];
-  const breakfastCost = includeBreakfast ? 15 * nights * rooms.slice(0, roomCount).reduce((acc, r) => acc + r.adults, 0) : 0;
+  const breakfastCost = includeBreakfast ? (settings.breakfastPriceUSD || 15) * nights * rooms.slice(0, roomCount).reduce((acc, r) => acc + r.adults, 0) : 0;
   const roomBaseSubtotal = activeRoom.basePrice * nights * roomCount;
   const subtotalBeforeDiscount = roomBaseSubtotal + breakfastCost;
 
@@ -204,6 +223,28 @@ export const BookingBar: React.FC = () => {
       };
     }
   }, [roomCatalog]);
+
+  // Fetch dynamic KHQR data from API when payment step opens
+  useEffect(() => {
+    if (isModalOpen && currentStep === "payment" && paymentMethod === "khqr") {
+      setKhqrError(null);
+      fetch("/api/booking/khqr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: totalAmountUSD,
+          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setKhqrData(data);
+          }
+        })
+        .catch((err) => console.error("Error generating KHQR:", err));
+    }
+  }, [isModalOpen, currentStep, paymentMethod, totalAmountUSD, guestDetails.firstName, guestDetails.lastName]);
 
   // Timer countdown for KHQR
   useEffect(() => {
@@ -320,12 +361,13 @@ export const BookingBar: React.FC = () => {
 
   const handleVerifyKhqrPay = async () => {
     setIsVerifyingPayment(true);
+    setKhqrError(null);
     try {
       const res = await fetch("/api/booking/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          bookingRef: `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`,
+          bookingRef: khqrData?.bookingRef || `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`,
           paymentMethod: "KHQR_BAKONG",
           guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
           firstName: guestDetails.firstName,
@@ -346,17 +388,32 @@ export const BookingBar: React.FC = () => {
           includeBreakfast,
           amountUSD: totalAmountUSD,
           otpVerified: true,
+          md5Hash: khqrData?.md5Hash,
+          manualApprovalCode: manualApprovalCode,
         }),
       });
       const data = await res.json();
+      if (!res.ok || !data.success) {
+        setKhqrError(
+          data.message?.[lang] ||
+            data.error ||
+            (lang === "km"
+              ? "មិនទាន់ទទួលបានប្រាក់ចូលក្នុងកុងបាគងនៅឡើយទេ! សូមពិនិត្យមើល App ធនាគាររបស់អ្នក រួចស្កេនបាញ់ប្រាក់ចូលកុងជាមុនសិន។"
+              : "Payment not yet received in Bakong account. Please complete the transfer first.")
+        );
+        return;
+      }
       if (data.booking) {
         recordClientBooking(data.booking);
       }
       setPaymentConfirmed(data);
       setCurrentStep("confirmed");
     } catch {
-      alert("KHQR verification simulation completed.");
-      setCurrentStep("confirmed");
+      setKhqrError(
+        lang === "km"
+          ? "មានបញ្ហាបច្ចេកទេសតភ្ជាប់ទៅកាន់ប្រព័ន្ធផ្ទៀងផ្ទាត់ធនាគារ! សូមព្យាយាមម្តងទៀត។"
+          : "Network error verifying payment with Bakong. Please try again."
+      );
     } finally {
       setIsVerifyingPayment(false);
     }
@@ -493,28 +550,30 @@ export const BookingBar: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex items-center flex-wrap gap-2.5">
+            <div className="flex items-center flex-wrap gap-2">
               {/* Accor PMS Central Link -> Telegram Bot */}
               <a
                 href="https://t.me/vvotel_bot?start=accor_pms"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-500/50 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
+                className="bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-500/50 text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center space-x-1 sm:space-x-1.5 transition shadow-sm shrink-0"
                 title="ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS តាម Telegram Bot (@vvotel_bot)"
               >
-                <Building className="w-3.5 h-3.5 text-vvotel-gold" />
-                <span>{lang === "km" ? "ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS" : "ALL Accor PMS"}</span>
-                <Send className="w-3 h-3 text-purple-300" />
+                <Building className="w-3.5 h-3.5 text-vvotel-gold shrink-0" />
+                <span className="hidden md:inline">{lang === "km" ? "ភ្ជាប់ទៅកាន់ប្រព័ន្ធកណ្តាល ALL Accor PMS" : "ALL Accor PMS"}</span>
+                <span className="md:hidden text-[11px]">PMS</span>
+                <Send className="w-3 h-3 text-purple-300 shrink-0" />
               </a>
 
               {/* Admin Portal Button */}
               <a
                 href="/admin"
-                className="bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-600 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
+                className="bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-600 text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center space-x-1 sm:space-x-1.5 transition shadow-sm shrink-0"
                 title="ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ (Admin Management Portal)"
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-vvotel-gold" />
-                <span>{lang === "km" ? "ប្រព័ន្ធគ្រប់គ្រង (Admin)" : "Admin"}</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-vvotel-gold shrink-0" />
+                <span className="hidden md:inline">{lang === "km" ? "ប្រព័ន្ធគ្រប់គ្រង (Admin)" : "Admin"}</span>
+                <span className="md:hidden text-[11px]">Admin</span>
               </a>
 
               <button
@@ -1158,24 +1217,36 @@ export const BookingBar: React.FC = () => {
                       <div className="bg-white p-4 rounded-2xl shadow-md border-2 border-red-500 max-w-[250px] w-full text-center space-y-2">
                         <div className="bg-red-600 text-white font-extrabold text-xs py-1 px-2 rounded-md tracking-wider flex items-center justify-between">
                           <span>KHQR</span>
-                          <span className="text-[10px] opacity-90 font-mono">EMVCo</span>
-                          <span>BAKONG</span>
+                          <span className="text-[10px] opacity-90 font-mono bg-red-800 text-white px-2 py-0.5 rounded">EMVCo BAKONG</span>
                         </div>
-                        <div className="text-[11px] font-bold text-gray-800 leading-tight">
-                          VATTANAC HOTEL (VVOTEL)
-                        </div>
-                        <div className="text-[9px] text-gray-500">
-                          NO. 2052 PREAH MONIVONG ST
+                        <div className="space-y-1">
+                          <div className="text-xs font-bold text-gray-900 leading-tight">
+                            {khqrData?.bankAccountName || settings.bankAccountName || "VATTANAC HOTEL VVOTEL CO., LTD"}
+                          </div>
+                          <div className="text-[10px] text-gray-600 font-mono">
+                            {khqrData?.bankName || settings.bankName} • {khqrData?.bankAccountNumber || settings.bankAccountNumber}
+                          </div>
+                          <div className="text-[10px] text-red-700 font-mono font-bold">
+                            Bakong ID: {khqrData?.bakongAccountId || settings.bakongAccountId || "vvotel@abaa"}
+                          </div>
                         </div>
                         
                         <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 inline-block">
-                          {/* Authentic high-resolution EMVCo QR graphic */}
-                          <div className="w-36 h-36 mx-auto bg-gray-900 rounded-lg p-2 flex items-center justify-center relative overflow-hidden shadow-inner">
-                            <div className="absolute inset-0 bg-[radial-gradient(#fff_2px,transparent_2px)] [background-size:8px_8px]" />
-                            <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center font-black text-red-600 text-[11px] shadow-lg z-10 border border-red-200">
-                              KHQR
+                          {/* Custom QR Image or Standard EMVCo QR Graphic */}
+                          {settings.qrCustomImageUrl ? (
+                            <img
+                              src={settings.qrCustomImageUrl}
+                              alt="Bakong KHQR"
+                              className="w-40 h-40 object-contain rounded-lg shadow-sm mx-auto bg-white p-1"
+                            />
+                          ) : (
+                            <div className="w-36 h-36 mx-auto bg-gray-900 rounded-lg p-2 flex items-center justify-center relative overflow-hidden shadow-inner">
+                              <div className="absolute inset-0 bg-[radial-gradient(#fff_2px,transparent_2px)] [background-size:8px_8px]" />
+                              <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center font-black text-red-600 text-[11px] shadow-lg z-10 border border-red-200">
+                                KHQR
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
 
                         <div className="space-y-0.5">
@@ -1202,21 +1273,46 @@ export const BookingBar: React.FC = () => {
                       </div>
 
                       {/* Instructions & Trigger */}
-                      <div className="flex-1 space-y-4 text-xs">
+                      <div className="flex-1 space-y-3.5 text-xs">
                         <div className="space-y-1.5">
                           <span className="font-bold text-gray-800 text-sm block">
                             {lang === "km" ? "ច្រកទូទាត់ប្រាក់ KHQR Bakong មានសុវត្ថិភាពខ្ពស់" : "Secure EMVCo Bakong KHQR Gateway"}
                           </span>
                           <ol className="list-decimal list-inside text-gray-600 space-y-1">
-                            <li>{lang === "km" ? "បើកកម្មវិធី ABA Mobile, Bakong, ACLEDA, ឬធនាគារក្នុងស្រុកណាមួយ" : "Open ABA Mobile, Bakong, ACLEDA, or any member bank app."}</li>
-                            <li>{lang === "km" ? "ចុចប៊ូតុងស្កេន KHQR (Scan QR) ហើយស្កេនរូបភាព QR ខាងឆ្វេង" : "Select 'Scan QR' and scan the dynamic code."}</li>
-                            <li>{lang === "km" ? "ពិនិត្យឈ្មោះ VATTANAC HOTEL (VVOTEL) និងផ្ទៀងផ្ទាត់ទឹកប្រាក់" : "Verify the merchant name and total amount to confirm."}</li>
+                            <li>{lang === "km" ? `បើកកម្មវិធី ${settings.bankName || "ABA Mobile"}, Bakong, ACLEDA, ឬ App ធនាគារណាមួយ` : "Open your mobile banking app."}</li>
+                            <li>{lang === "km" ? "ស្កេនរូបភាព KHQR ខាងឆ្វេង ហើយផ្ទេរប្រាក់ចូលកុង" : "Scan the dynamic KHQR code."}</li>
+                            <li>{lang === "km" ? `ផ្ទៀងផ្ទាត់ឈ្មោះ ${settings.bankAccountName || "VATTANAC HOTEL"} និងចំនួនទឹកប្រាក់` : "Verify merchant and confirm transfer."}</li>
                           </ol>
                         </div>
 
+                        {/* Error Alert Banner when money is not in bank account */}
+                        {khqrError && (
+                          <div className="p-3 bg-red-50 border-2 border-red-300 rounded-xl text-xs text-red-800 space-y-1 animate-in fade-in">
+                            <div className="flex items-center space-x-1.5 font-bold text-red-900">
+                              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                              <span>{lang === "km" ? "មិនទាន់អាចបញ្ជាក់ការកក់បានទេ!" : "Payment Not Verified Yet!"}</span>
+                            </div>
+                            <p className="text-[11px] leading-relaxed pl-5">{khqrError}</p>
+                          </div>
+                        )}
+
+                        {/* Manual Transaction Reference Input (Optional / Bank approval) */}
+                        <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-200 space-y-1">
+                          <label className="text-[10px] font-bold text-gray-700 block">
+                            {lang === "km" ? "លេខកូដយោងប្រតិបត្តិការធនាគារ (Transaction Ref / Approval Code បើមាន)៖" : "Transaction Ref / Approval Code (Optional):"}
+                          </label>
+                          <input
+                            type="text"
+                            value={manualApprovalCode}
+                            onChange={(e) => setManualApprovalCode(e.target.value)}
+                            placeholder={lang === "km" ? "ឧ. 839201948 ឬលេខ Hash ធនាគារ" : "e.g. 839201948 or Bank Hash"}
+                            className="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs font-mono text-gray-900 focus:outline-none focus:border-red-500 shadow-inner"
+                          />
+                        </div>
+
                         {/* Supported Banks Badges */}
-                        <div className="pt-1">
-                          <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1.5">
+                        <div className="pt-0.5">
+                          <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">
                             {lang === "km" ? "ធនាគារគាំទ្រស្វ័យប្រវត្ត" : "Supported Mobile Banking Apps"}
                           </span>
                           <div className="flex flex-wrap gap-1.5">
@@ -1230,9 +1326,9 @@ export const BookingBar: React.FC = () => {
                         </div>
 
                         {/* Security Trust Seals */}
-                        <div className="flex items-center space-x-3 text-[10px] text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                        <div className="flex items-center space-x-2 text-[10px] text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200">
                           <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span>NBC Bakong Certified • 256-bit TLS 1.3 Encryption</span>
+                          <span>NBC Bakong Certified • 256-bit TLS 1.3 • Strict Live Bank Check</span>
                         </div>
 
                         <div className="pt-1">
@@ -1240,13 +1336,13 @@ export const BookingBar: React.FC = () => {
                             type="button"
                             onClick={handleVerifyKhqrPay}
                             disabled={isVerifyingPayment}
-                            className="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center space-x-2 shadow-lg"
+                            className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center space-x-2 shadow-lg cursor-pointer"
                           >
                             <Smartphone className="w-4 h-4" />
                             <span>
                               {isVerifyingPayment
-                                ? lang === "km" ? "កំពុងត្រួតពិនិត្យប្រតិបត្តិការធនាគារ..." : "Verifying Bank Transaction..."
-                                : lang === "km" ? "តេស្តបង់ប្រាក់ភ្លាមៗ (ABA / Bakong Auto-Verify)" : "Simulate Pay & Verify with ABA Mobile"}
+                                ? lang === "km" ? "កំពុងទាញទិន្នន័យពីប្រព័ន្ធ Bakong NBC..." : "Verifying Bank Transaction..."
+                                : lang === "km" ? "ផ្ទៀងផ្ទាត់ទិន្នន័យលុយចូលកុង (Verify Bakong Payment)" : "Verify Bakong Payment Receipt"}
                             </span>
                           </button>
                         </div>

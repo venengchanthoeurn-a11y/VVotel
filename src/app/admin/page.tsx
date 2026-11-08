@@ -42,9 +42,11 @@ import {
   MapPin,
   Globe,
   SlidersHorizontal,
+  Settings,
 } from "lucide-react";
 import { BookingRecord } from "@/lib/bookings";
 import { PrintableReceipt } from "@/components/PrintableReceipt";
+import { AdminSettingsPortal } from "@/components/AdminSettingsPortal";
 
 // Dual Language Translations Dictionary for Admin Portal & Login Screen
 const ADMIN_I18N = {
@@ -280,6 +282,7 @@ export default function AdminPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL"); // ALL, ROOM, DINING
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [dateFilter, setDateFilter] = useState<string>("ALL");
+  const [currentAdminTab, setCurrentAdminTab] = useState<"dashboard" | "settings">("dashboard");
 
   // Tracking
   const knownBookingIdsRef = useRef<Set<string>>(new Set());
@@ -1178,6 +1181,20 @@ export default function AdminPage() {
               <ExternalLink className="w-3 h-3" />
             </a>
 
+            {/* System Settings Shortcut Button */}
+            <button
+              onClick={() => setCurrentAdminTab(currentAdminTab === "settings" ? "dashboard" : "settings")}
+              className={`text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition border ${
+                currentAdminTab === "settings"
+                  ? "bg-[#0c2340] text-amber-300 border-amber-300 shadow-sm"
+                  : "bg-white text-gray-700 border-amber-200 hover:bg-amber-50 shadow-sm"
+              }`}
+              title="System Settings"
+            >
+              <Settings className="w-3.5 h-3.5 text-amber-600" />
+              <span className="hidden sm:inline">{lang === "km" ? "ការកំណត់" : "Settings"}</span>
+            </button>
+
             {/* Executive Administrative Reports Suite */}
             <button
               onClick={() => setIsReportModalOpen(true)}
@@ -1300,8 +1317,41 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Executive KPI Metric Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 xl:gap-5 font-siemreap">
+        {/* Operations View Tabs Switcher (Dashboard vs Settings) */}
+        <div className="flex items-center space-x-2 border-b border-amber-200/80 pb-3 font-siemreap">
+          <button
+            type="button"
+            onClick={() => setCurrentAdminTab("dashboard")}
+            className={`px-4 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center space-x-2 transition ${
+              currentAdminTab === "dashboard"
+                ? "bg-[#0c2340] text-amber-300 shadow-md border border-amber-300/40"
+                : "bg-white text-gray-600 hover:text-gray-900 border border-gray-200/80 hover:bg-amber-50/50"
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4 text-amber-400" />
+            <span>{lang === "km" ? "📊 ផ្ទាំងគ្រប់គ្រងទូទៅ (Dashboard)" : "📊 Operations Dashboard"}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setCurrentAdminTab("settings")}
+            className={`px-4 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center space-x-2 transition ${
+              currentAdminTab === "settings"
+                ? "bg-[#0c2340] text-amber-300 shadow-md border border-amber-300/40"
+                : "bg-white text-gray-600 hover:text-gray-900 border border-gray-200/80 hover:bg-amber-50/50"
+            }`}
+          >
+            <Settings className="w-4 h-4 text-amber-400" />
+            <span>{lang === "km" ? "⚙️ ការកំណត់ប្រព័ន្ធ (Settings)" : "⚙️ System Settings"}</span>
+          </button>
+        </div>
+
+        {currentAdminTab === "settings" ? (
+          <AdminSettingsPortal lang={lang} />
+        ) : (
+          <>
+            {/* Executive KPI Metric Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 xl:gap-5 font-siemreap">
           {/* Card 1: Total Bookings */}
           <div className="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
             <div className="flex items-center justify-between text-gray-500 text-xs font-bold">
@@ -1759,7 +1809,9 @@ export default function AdminPage() {
             </table>
           </div>
         </div>
-      </main>
+      </>
+    )}
+  </main>
 
       {/* ======================= MODAL 1: CHECK-IN / SEAT GUEST ======================= */}
       {checkInModalBooking && (

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { AccessibilityProvider } from "@/context/AccessibilityContext";
+import { SettingsProvider } from "@/context/SettingsContext";
 import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
 
 export const viewport: Viewport = {
@@ -75,13 +76,15 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <LanguageProvider>
-          <AccessibilityProvider>
-            {children}
-            {/* PWA Floating Install Action */}
-            <PwaInstallPrompt />
-          </AccessibilityProvider>
-        </LanguageProvider>
+        <SettingsProvider>
+          <LanguageProvider>
+            <AccessibilityProvider>
+              {children}
+              {/* PWA Floating Install Action */}
+              <PwaInstallPrompt />
+            </AccessibilityProvider>
+          </LanguageProvider>
+        </SettingsProvider>
       </body>
     </html>
   );

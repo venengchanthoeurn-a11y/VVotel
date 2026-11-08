@@ -2,11 +2,13 @@
 
 import React, { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { Menu, ChevronDown, Phone, Compass, BedDouble, Utensils, Sparkles, Calendar, Users, Download } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
+import { Menu, ChevronDown, Phone, Compass, BedDouble, Utensils, Sparkles, Calendar, Users, Download, Building, ShieldCheck } from "lucide-react";
 import { MenuSidebar } from "@/components/MenuSidebar";
 
 export const Header: React.FC = () => {
   const { lang, t } = useLanguage();
+  const { settings } = useSettings();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -33,14 +35,14 @@ export const Header: React.FC = () => {
     <>
       <header className="bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-sm border-b border-gray-100 transition-all w-full">
         {/* Full-width container with generous padding */}
-        <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16">
+        <div className="w-full px-3 sm:px-6 lg:px-12 xl:px-16">
           <div className="flex items-center justify-between h-20">
             {/* Left: Brand Logo & Sliding Sidebar Trigger */}
-            <div className="flex items-center space-x-4">
-              {/* Luxury Menu Hamburger Button (Accessible on both Desktop and Mobile matching Novotel) */}
+            <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
+              {/* Luxury Menu Hamburger Button (Accessible on both Desktop and Mobile) */}
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2.5 rounded-xl bg-gray-100 hover:bg-vvotel-navy hover:text-white text-vvotel-navy transition flex items-center space-x-2 border border-gray-200 group"
+                className="p-2 sm:p-2.5 rounded-xl bg-gray-100 hover:bg-vvotel-navy hover:text-white text-vvotel-navy transition flex items-center space-x-1.5 border border-gray-200 group"
                 title="Open main navigation menu (menu_sidebar)"
                 aria-label="Open navigation sidebar"
               >
@@ -50,16 +52,24 @@ export const Header: React.FC = () => {
                 </span>
               </button>
 
-              <a href="/" className="flex items-center space-x-2.5 group">
-                <div className="w-11 h-11 rounded-xl bg-vvotel-navy flex items-center justify-center text-vvotel-gold font-black text-2xl shadow-md group-hover:scale-105 transition-transform border border-vvotel-gold/30">
-                  V
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-extrabold text-2xl tracking-tighter text-vvotel-navy leading-none">
-                    VVOTEL
+              <a href="/" className="flex items-center space-x-2 sm:space-x-2.5 group">
+                {settings.logoImageUrl ? (
+                  <img
+                    src={settings.logoImageUrl}
+                    alt={settings.hotelNameEn}
+                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain shadow-md border border-vvotel-gold/30 shrink-0"
+                  />
+                ) : (
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-vvotel-navy flex items-center justify-center text-vvotel-gold font-black text-xl sm:text-2xl shadow-md group-hover:scale-105 transition-transform border border-vvotel-gold/30 shrink-0">
+                    {settings.logoText?.slice(0, 1) || "V"}
+                  </div>
+                )}
+                <div className="flex flex-col min-w-0">
+                  <span className="font-extrabold text-xl sm:text-2xl tracking-tighter text-vvotel-navy leading-none truncate">
+                    {settings.logoText || "VVOTEL"}
                   </span>
-                  <span className="text-[10px] font-bold tracking-wider text-vvotel-gold mt-0.5">
-                    {lang === "km" ? "សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម" : "VATTANAC HOTEL • KAMPONG CHAM"}
+                  <span className="text-[10px] font-bold tracking-wider text-vvotel-gold mt-0.5 truncate max-w-[130px] sm:max-w-none">
+                    {lang === "km" ? settings.hotelNameKm : settings.hotelNameEn}
                   </span>
                 </div>
               </a>
@@ -174,34 +184,68 @@ export const Header: React.FC = () => {
               </a>
             </nav>
 
-            {/* Right Quick Actions */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              {/* Install PWA Button (Visible on Mobile, Tablet & Desktop) */}
+            {/* Right Quick Actions: Icons on mobile, full text on desktop */}
+            <div className="flex items-center space-x-1.5 sm:space-x-2.5 shrink-0">
+              {/* Install PWA Button */}
               <button
                 type="button"
                 onClick={() => {
                   window.dispatchEvent(new CustomEvent("open-pwa-install"));
                 }}
-                className="flex items-center space-x-1.5 text-xs font-bold text-vvotel-navy bg-gradient-to-r from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 px-3 py-2 rounded-xl border border-vvotel-gold/50 shadow-sm transition active:scale-95 cursor-pointer"
+                className="flex items-center space-x-1.5 text-xs font-bold text-vvotel-navy bg-gradient-to-r from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 p-2 sm:px-3 sm:py-2 rounded-xl border border-vvotel-gold/50 shadow-xs transition active:scale-95 cursor-pointer shrink-0"
                 title={lang === "km" ? "ដំឡើងកម្មវិធីលើទូរស័ព្ទ / iPad" : "Install VVotel App"}
+                aria-label="Install App"
               >
-                <Download className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-                <span className="text-[11px] font-extrabold">{lang === "km" ? "ដំឡើង App" : "Install App"}</span>
+                <Download className="w-4 h-4 text-amber-800 shrink-0" />
+                <span className="hidden md:inline text-[11px] font-extrabold whitespace-nowrap">
+                  {lang === "km" ? "ដំឡើង App" : "Install App"}
+                </span>
               </button>
 
+              {/* Direct Phone Call */}
               <a
-                href="tel:+85542982999"
-                className="hidden sm:flex items-center space-x-2 text-xs font-bold text-vvotel-navy bg-amber-50/80 hover:bg-amber-100 px-3.5 py-2.5 rounded-xl border border-vvotel-gold/30 transition shadow-sm"
+                href={settings.phone ? `tel:${settings.phone.replace(/[^0-9+]/g, "")}` : "tel:+85542982999"}
+                className="flex items-center space-x-1.5 text-xs font-bold text-vvotel-navy bg-amber-50 hover:bg-amber-100 p-2 sm:px-3 sm:py-2 rounded-xl border border-vvotel-gold/30 transition shadow-xs shrink-0"
+                title={settings.phone || "+855 (0) 42 982 999"}
+                aria-label="Call Reception"
               >
-                <Phone className="w-3.5 h-3.5 text-vvotel-gold" />
-                <span>+855 (0) 42 982 999</span>
+                <Phone className="w-4 h-4 text-vvotel-gold shrink-0" />
+                <span className="hidden lg:inline whitespace-nowrap">{settings.phone || "+855 (0) 42 982 999"}</span>
               </a>
 
-              <button
-                onClick={scrollToBooking}
-                className="bg-gradient-to-r from-vvotel-gold to-amber-600 hover:from-amber-400 hover:to-amber-700 text-white font-extrabold text-xs uppercase tracking-wider px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg transition"
+              {/* Mobile-friendly PMS Telegram Bot Icon Link */}
+              <a
+                href="https://t.me/vvotel_bot?start=accor_pms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lg:hidden flex items-center justify-center p-2 rounded-xl text-purple-900 bg-purple-50 hover:bg-purple-100 transition border border-purple-200 shrink-0"
+                title="ALL Accor PMS (@vvotel_bot)"
+                aria-label="ALL Accor PMS"
               >
-                {t("bookNow")}
+                <Building className="w-4 h-4 text-purple-700" />
+              </a>
+
+              {/* Mobile-friendly Admin Portal Icon Link */}
+              <a
+                href="/admin"
+                className="lg:hidden flex items-center justify-center p-2 rounded-xl text-slate-800 bg-slate-100 hover:bg-slate-200 transition border border-slate-300 shrink-0"
+                title="Admin Portal"
+                aria-label="Admin Portal"
+              >
+                <ShieldCheck className="w-4 h-4 text-slate-700" />
+              </a>
+
+              {/* Book Now Button: Compact icon on small screen, full text on larger screen */}
+              <button
+                type="button"
+                onClick={scrollToBooking}
+                className="bg-gradient-to-r from-vvotel-gold to-amber-600 hover:from-amber-400 hover:to-amber-700 text-white font-extrabold text-xs uppercase tracking-wider p-2 sm:px-4 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg transition flex items-center space-x-1.5 shrink-0 whitespace-nowrap active:scale-95"
+                title={t("bookNow")}
+                aria-label={t("bookNow")}
+              >
+                <Calendar className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline whitespace-nowrap">{t("bookNow")}</span>
+                <span className="sm:hidden text-[11px] font-extrabold">{lang === "km" ? "កក់" : "Book"}</span>
               </button>
             </div>
           </div>
