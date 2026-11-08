@@ -1106,9 +1106,9 @@ export default function AdminPage() {
   // Full fluid width, Khmer Mool headings, Khmer OS Siemreap body & Language Switcher!
   // =========================================================================
   return (
-    <div className="min-h-screen w-full bg-[#FAF7F2] text-gray-900 flex flex-col font-siemreap antialiased overflow-x-hidden">
-      {/* Top Navigation Bar: Sticky, Slim, Professional & Houses ALL Actions */}
-      <header className="bg-white/95 backdrop-blur-md border-b-2 border-amber-300 sticky top-0 z-40 px-2 sm:px-4 lg:px-6 py-2 shadow-sm font-siemreap">
+    <div className="min-h-screen w-full bg-[#FAF7F2] text-gray-900 flex flex-col font-siemreap antialiased">
+      {/* Top Navigation Bar: Fixed, Slim, Professional & Houses ALL Actions Permanently on Top */}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-amber-300 px-2 sm:px-4 lg:px-6 py-2 shadow-sm font-siemreap">
         <div className="w-full flex items-center justify-between gap-1.5 sm:gap-3">
           {/* Brand & Live Clock: On screens < 2xl, show ONLY the clean Logo Icon! */}
           <div className="flex items-center space-x-2 shrink-0">
@@ -1281,6 +1281,9 @@ export default function AdminPage() {
           </div>
         </div>
       </header>
+
+      {/* Spacer to push main fluid content below the fixed header */}
+      <div className="h-14 sm:h-16 w-full shrink-0" aria-hidden="true" />
 
       {/* Main Fluid Content Area */}
       <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 flex-1 space-y-6 font-siemreap">
