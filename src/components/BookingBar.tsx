@@ -91,6 +91,14 @@ export const BookingBar: React.FC = () => {
   const [receiptModalOpen, setReceiptModalOpen] = useState<boolean>(false);
   const [receiptModalMode, setReceiptModalMode] = useState<"pos-80mm" | "a4-invoice">("pos-80mm");
 
+  // Pay at Hotel Room Guarantee options
+  const [hotelGuaranteeType, setHotelGuaranteeType] = useState<"BAKONG_DEPOSIT" | "CARD_PREAUTH">("BAKONG_DEPOSIT");
+  const [hotelDepositKhqrData, setHotelDepositKhqrData] = useState<any>(null);
+  const [hotelDepositError, setHotelDepositError] = useState<string | null>(null);
+  const [isVerifyingHotelDeposit, setIsVerifyingHotelDeposit] = useState<boolean>(false);
+  const [hotelDepositTimer, setHotelDepositTimer] = useState<number>(299);
+  const [threeDSMode, setThreeDSMode] = useState<"FULL_PAYMENT" | "HOTEL_PREAUTH">("FULL_PAYMENT");
+
   // 3D Secure 2.0 / Card Security states
   const [is3DSModalOpen, setIs3DSModalOpen] = useState<boolean>(false);
   const [otpCode, setOtpCode] = useState<string>("123456");
@@ -257,6 +265,39 @@ export const BookingBar: React.FC = () => {
     return () => clearInterval(interval);
   }, [isModalOpen, currentStep, paymentMethod, khqrTimer]);
 
+  // Fetch dynamic KHQR data for $10 Room Guarantee Deposit when hotel payment selected
+  useEffect(() => {
+    if (isModalOpen && currentStep === "payment" && paymentMethod === "hotel" && hotelGuaranteeType === "BAKONG_DEPOSIT") {
+      setHotelDepositError(null);
+      fetch("/api/booking/khqr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: 10,
+          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setHotelDepositKhqrData(data);
+          }
+        })
+        .catch((err) => console.error("Error generating hotel deposit KHQR:", err));
+    }
+  }, [isModalOpen, currentStep, paymentMethod, hotelGuaranteeType, guestDetails.firstName, guestDetails.lastName]);
+
+  // Timer countdown for hotel deposit KHQR
+  useEffect(() => {
+    let interval: any;
+    if (isModalOpen && currentStep === "payment" && paymentMethod === "hotel" && hotelDepositTimer > 0) {
+      interval = setInterval(() => {
+        setHotelDepositTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isModalOpen, currentStep, paymentMethod, hotelDepositTimer]);
+
   // Timer countdown for 3D Secure OTP
   useEffect(() => {
     let interval: any;
@@ -293,7 +334,31 @@ export const BookingBar: React.FC = () => {
       setCardError(lang === "km" ? "សូមបញ្ចូលលេខកូដសម្ងាត់ CVV ៣ខ្ទង់" : "Please enter 3-digit CVV");
       return;
     }
-    // Launch 3D Secure 2.0 Challenge
+    // Launch 3D Secure 2.2 Challenge for Full Card Payment
+    setThreeDSMode("FULL_PAYMENT");
+    setOtpTimer(180);
+    setOtpCode("123456");
+    setIs3DSModalOpen(true);
+  };
+
+  const handleInitiateHotelCardPreAuth = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCardError("");
+    const clean = cardNumber.replace(/\D/g, "");
+    if (clean.length < 8) {
+      setCardError(lang === "km" ? "សូមបញ្ចូលលេខកាតធនាគារឱ្យបានត្រឹមត្រូវ" : "Please enter a valid card number");
+      return;
+    }
+    if (!cardExpiry || !cardExpiry.includes("/")) {
+      setCardError(lang === "km" ? "សូមបញ្ចូលកាលបរិច្ឆេទផុតកំណត់ (MM/YY)" : "Please enter expiry date (MM/YY)");
+      return;
+    }
+    if (!cardCvv || cardCvv.trim().length < 3) {
+      setCardError(lang === "km" ? "សូមបញ្ចូលលេខកូដសម្ងាត់ CVV ៣ខ្ទង់" : "Please enter 3-digit CVV");
+      return;
+    }
+    // Launch 3D Secure 2.2 Challenge for Card Pre-Authorization Hold Guarantee
+    setThreeDSMode("HOTEL_PREAUTH");
     setOtpTimer(180);
     setOtpCode("123456");
     setIs3DSModalOpen(true);
@@ -312,13 +377,16 @@ export const BookingBar: React.FC = () => {
 
   const handleAuthorize3DSPayment = async () => {
     setIsAuthorizing3DS(true);
+    setCardError("");
     try {
+      const isPreAuth = threeDSMode === "HOTEL_PREAUTH";
       const res = await fetch("/api/booking/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           bookingRef: `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`,
-          paymentMethod: "CARD_3DSECURE_V2",
+          paymentMethod: isPreAuth ? "PAY_AT_HOTEL" : "CARD_3DSECURE_V2",
+          hotelGuaranteeType: isPreAuth ? "CARD_PREAUTH" : undefined,
           guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
           firstName: guestDetails.firstName,
           lastName: guestDetails.lastName,
@@ -339,11 +407,23 @@ export const BookingBar: React.FC = () => {
           amountUSD: totalAmountUSD,
           cardLast4: cardNumber.replace(/\D/g, "").slice(-4) || "8920",
           cardBrand: getCardBrandInfo(cardNumber).brand,
+          cardHolderName: cardName,
           otpVerified: true,
+          otpCode: otpCode,
           threeDSecureVersion: "2.2.0",
         }),
       });
       const data = await res.json();
+      if (!res.ok || !data.success) {
+        setCardError(
+          data.message?.[lang] ||
+            data.error ||
+            (lang === "km"
+              ? "ធនាគារបានបដិសេធប្រតិបត្តិការកាត់ប្រាក់៖ លេខកូដសម្ងាត់ OTP មិនត្រឹមត្រូវឡើយ (ត្រូវតែមាន ៦ខ្ទង់)!"
+              : "Bank authorization declined: Invalid 6-digit Security PIN / OTP.")
+        );
+        return;
+      }
       if (data.booking) {
         recordClientBooking(data.booking);
       }
@@ -351,9 +431,11 @@ export const BookingBar: React.FC = () => {
       setIs3DSModalOpen(false);
       setCurrentStep("confirmed");
     } catch {
-      alert("3DS Payment authorization completed.");
-      setIs3DSModalOpen(false);
-      setCurrentStep("confirmed");
+      setCardError(
+        lang === "km"
+          ? "មានបញ្ហាតភ្ជាប់ទៅកាន់ច្រកទូទាត់កាត់ប្រាក់ធនាគារ! សូមព្យាយាមម្តងទៀត។"
+          : "Network error connecting to bank card gateway. Please try again."
+      );
     } finally {
       setIsAuthorizing3DS(false);
     }
@@ -419,15 +501,18 @@ export const BookingBar: React.FC = () => {
     }
   };
 
-  const handleVerifyHotelPay = async () => {
-    setIsVerifyingPayment(true);
+  const handleVerifyHotelDepositPay = async () => {
+    setIsVerifyingHotelDeposit(true);
+    setHotelDepositError(null);
     try {
       const res = await fetch("/api/booking/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          bookingRef: `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`,
+          bookingRef: hotelDepositKhqrData?.bookingRef || `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`,
           paymentMethod: "PAY_AT_HOTEL",
+          hotelGuaranteeType: "BAKONG_DEPOSIT",
+          depositAmountUSD: 10,
           guestName: `${guestDetails.firstName} ${guestDetails.lastName}`.trim(),
           firstName: guestDetails.firstName,
           lastName: guestDetails.lastName,
@@ -446,19 +531,35 @@ export const BookingBar: React.FC = () => {
           children: totalChildren,
           includeBreakfast,
           amountUSD: totalAmountUSD,
-          otpVerified: false,
+          otpVerified: true,
+          md5Hash: hotelDepositKhqrData?.md5Hash,
+          manualApprovalCode: manualApprovalCode,
         }),
       });
       const data = await res.json();
+      if (!res.ok || !data.success) {
+        setHotelDepositError(
+          data.message?.[lang] ||
+            data.error ||
+            (lang === "km"
+              ? "ប្រព័ន្ធធនាគារជាតិបាគង មិនទាន់ទទួលបានប្រាក់កក់ធានាបន្ទប់ $10.00 ចូលក្នុងកុងនៅឡើយទេ! សូមពិនិត្យមើល App ធនាគាររបស់អ្នក រួចស្កេនបាញ់ប្រាក់កក់ជាមុនសិន។"
+              : "Room guarantee deposit of $10.00 not yet received in Bakong account. Please complete transfer first.")
+        );
+        return;
+      }
       if (data.booking) {
         recordClientBooking(data.booking);
       }
       setPaymentConfirmed(data);
       setCurrentStep("confirmed");
     } catch {
-      setCurrentStep("confirmed");
+      setHotelDepositError(
+        lang === "km"
+          ? "មានបញ្ហាតភ្ជាប់ទៅកាន់ប្រព័ន្ធផ្ទៀងផ្ទាត់ធនាគារបាគង! សូមព្យាយាមម្តងទៀត។"
+          : "Network error verifying guarantee deposit with Bakong. Please try again."
+      );
     } finally {
-      setIsVerifyingPayment(false);
+      setIsVerifyingHotelDeposit(false);
     }
   };
 
@@ -495,31 +596,6 @@ export const BookingBar: React.FC = () => {
     e.preventDefault();
     setIsModalOpen(true);
     setCurrentStep("options");
-  };
-
-  // Execute payment verification
-  const handleVerifyAndPay = async () => {
-    setIsVerifyingPayment(true);
-    try {
-      const res = await fetch("/api/booking/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bookingRef: `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`,
-          paymentMethod,
-          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-          amountUSD: totalAmountUSD,
-        }),
-      });
-      const data = await res.json();
-      setPaymentConfirmed(data);
-      setCurrentStep("confirmed");
-    } catch {
-      alert("Payment simulation completed.");
-      setCurrentStep("confirmed");
-    } finally {
-      setIsVerifyingPayment(false);
-    }
   };
 
   const formatTimer = (sec: number) => {
@@ -1459,29 +1535,266 @@ export const BookingBar: React.FC = () => {
 
                   {paymentMethod === "hotel" && (
                     <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200 text-xs space-y-4">
-                      <div className="flex items-start space-x-3">
-                        <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                        <div>
-                          <span className="font-bold text-sm text-gray-800 block">
-                            {lang === "km" ? "ទូទាត់ប្រាក់នៅពេលមកដល់សណ្ឋាគារ (Pay Upon Arrival)" : "Pay at the Hotel Upon Arrival"}
-                          </span>
-                          <p className="text-gray-600 mt-1 leading-relaxed">
-                            {lang === "km"
-                              ? "មិនតម្រូវឱ្យកាត់ប្រាក់ជាមុនឡើយ។ បន្ទប់របស់អ្នកនឹងត្រូវរក្សាទុកជូនរហូតដល់ម៉ោង ៦:០០ ល្ងាចនៃថ្ងៃចូលស្នាក់នៅ។"
-                              : "No prepayment required today. Your room is fully reserved and guaranteed until 6:00 PM on the arrival date."}
-                          </p>
+                      {/* Bank Room Guarantee Banner */}
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start space-x-2.5">
+                        <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                        <div className="text-[11px] text-amber-900 leading-relaxed">
+                          <strong className="block text-amber-950 font-bold">
+                            {lang === "km" ? "🛡️ គោលការណ៍ធានាបន្ទប់តាមស្ដង់ដារធនាគារ (Official Bank Room Guarantee Policy)" : "🛡️ Standard Bank Room Guarantee Policy"}
+                          </strong>
+                          {lang === "km"
+                            ? "ដើម្បីការពារការកក់បន្ទប់ក្លែងក្លាយ និងធានាសុពលភាពនៃការកក់ ប្រព័ន្ធតម្រូវឱ្យមានការផ្ទៀងផ្ទាត់ទិន្នន័យធនាគារពិតប្រាកដ (Bank Guarantee) មុនពេលបញ្ជាក់ការកក់ជោគជ័យ។ សូមជ្រើសរើសជម្រើសធានាខាងក្រោម៖"
+                            : "To prevent fraudulent bookings, hotel banking standards require official bank verification before reservation confirmation. Please choose a guarantee method below:"}
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={handleVerifyHotelPay}
-                        disabled={isVerifyingPayment}
-                        className="w-full bg-vvotel-navy hover:bg-vvotel-blue text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center space-x-2 shadow"
-                      >
-                        <Building className="w-4 h-4 text-vvotel-gold" />
-                        <span>{lang === "km" ? "បញ្ជាក់ការកក់ដោយទូទាត់ពេលមកដល់" : "Confirm Reservation (Pay at Hotel)"}</span>
-                      </button>
+                      {/* Guarantee Type Selector Tabs */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setHotelGuaranteeType("BAKONG_DEPOSIT")}
+                          className={`p-3 rounded-xl border-2 text-left transition ${
+                            hotelGuaranteeType === "BAKONG_DEPOSIT"
+                              ? "border-red-500 bg-red-50/50 text-red-900 font-bold shadow-sm"
+                              : "border-gray-200 bg-white hover:border-gray-300 text-gray-700"
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <span className="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black">KHQR</span>
+                            <span className="font-bold text-xs">{lang === "km" ? "ប្រាក់កក់ $10 តាម Bakong" : "$10 Bakong Deposit"}</span>
+                          </div>
+                          <span className="text-[10px] text-gray-500 block mt-1">
+                            {lang === "km" ? "បាញ់ប្រាក់កក់ $10 ចូលកុងបាគង (កាត់កងពេល Check-in)" : "Pay $10 deposit now; remainder paid at hotel"}
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setHotelGuaranteeType("CARD_PREAUTH")}
+                          className={`p-3 rounded-xl border-2 text-left transition ${
+                            hotelGuaranteeType === "CARD_PREAUTH"
+                              ? "border-blue-600 bg-blue-50/50 text-blue-900 font-bold shadow-sm"
+                              : "border-gray-200 bg-white hover:border-gray-300 text-gray-700"
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                            <span className="font-bold text-xs">{lang === "km" ? "ធានាតាមកាត Credit Card" : "Card Pre-Auth Hold"}</span>
+                          </div>
+                          <span className="text-[10px] text-gray-500 block mt-1">
+                            {lang === "km" ? "ធានាបន្ទប់ដោយ Pre-Auth Hold (មិនទាន់កាត់ប្រាក់)" : "Hold guarantee via card; pay full at hotel"}
+                          </span>
+                        </button>
+                      </div>
+
+                      {/* OPTION A: BAKONG DEPOSIT ($10) */}
+                      {hotelGuaranteeType === "BAKONG_DEPOSIT" && (
+                        <div className="p-4 bg-white rounded-xl border border-gray-200 space-y-4">
+                          <div className="flex flex-col sm:flex-row items-center gap-4">
+                            {/* KHQR Mini Card */}
+                            <div className="bg-white p-3 rounded-xl border-2 border-red-500 shadow text-center max-w-[210px] w-full space-y-1.5 shrink-0">
+                              <div className="bg-red-600 text-white font-extrabold text-[10px] py-0.5 px-2 rounded tracking-wider flex items-center justify-between">
+                                <span>KHQR DEPOSIT</span>
+                                <span className="text-[9px] font-mono bg-red-800 px-1 rounded">BAKONG</span>
+                              </div>
+                              <div className="space-y-0.5">
+                                <div className="text-[10px] font-bold text-gray-900 leading-tight">
+                                  {settings.bankAccountName || "VATTANAC HOTEL VVOTEL CO., LTD"}
+                                </div>
+                                <div className="text-[9px] text-gray-500 font-mono">
+                                  {settings.bankName || "ABA Bank"} • {settings.bankAccountNumber}
+                                </div>
+                              </div>
+                              <div className="p-2 bg-gray-50 rounded-lg border border-gray-200 inline-block">
+                                {settings.qrCustomImageUrl ? (
+                                  <img
+                                    src={settings.qrCustomImageUrl}
+                                    alt="Bakong Deposit KHQR"
+                                    className="w-28 h-28 object-contain rounded mx-auto"
+                                  />
+                                ) : (
+                                  <div className="w-28 h-28 mx-auto bg-gray-900 rounded flex items-center justify-center relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-[radial-gradient(#fff_2px,transparent_2px)] [background-size:6px_6px]" />
+                                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center font-black text-red-600 text-[9px] shadow z-10">
+                                      $10
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="text-sm font-extrabold text-gray-900">
+                                $10.00 USD
+                              </div>
+                              <div className="text-[10px] text-gray-500">
+                                ≈ 41,000 KHR
+                              </div>
+                              <div className="text-[9px] text-red-600 font-mono font-semibold flex items-center justify-center space-x-1 bg-red-50 py-0.5 rounded">
+                                <Clock className="w-2.5 h-2.5" />
+                                <span>Expires: {formatTimer(hotelDepositTimer)}</span>
+                              </div>
+                            </div>
+
+                            {/* Details and Verification */}
+                            <div className="space-y-2.5 text-xs flex-1">
+                              <div className="space-y-1">
+                                <span className="font-bold text-gray-900 text-xs block">
+                                  {lang === "km" ? "បាញ់ប្រាក់កក់ធានាបន្ទប់ $10.00 USD" : "Scan to Pay $10.00 Room Guarantee Deposit"}
+                                </span>
+                                <ul className="list-disc list-inside text-gray-600 space-y-0.5 text-[11px]">
+                                  <li>{lang === "km" ? "បើក App ធនាគារ (ABA, Bakong, ACLEDA, Canadia...)" : "Open any Cambodian banking app."}</li>
+                                  <li>{lang === "km" ? "ស្កេនរូប KHQR និងផ្ទេរប្រាក់កក់ $10 ចូលកុងសណ្ឋាគារ" : "Scan KHQR and transfer $10 deposit."}</li>
+                                  <li>
+                                    {lang === "km"
+                                      ? `ទឹកប្រាក់នៅសល់ $${Math.max(0, totalAmountUSD - 10)} USD ត្រូវទូទាត់ពេល Check-in`
+                                      : `Remaining $${Math.max(0, totalAmountUSD - 10)} USD paid upon check-in.`}
+                                  </li>
+                                </ul>
+                              </div>
+
+                              {/* Error Banner when money not in account */}
+                              {hotelDepositError && (
+                                <div className="p-2.5 bg-red-50 border-2 border-red-300 rounded-xl text-red-800 space-y-1 animate-in fade-in">
+                                  <div className="flex items-center space-x-1.5 font-bold text-red-900 text-[11px]">
+                                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                                    <span>{lang === "km" ? "មិនទាន់មានទិន្នន័យប្រាក់កក់ក្នុងកុងទេ!" : "Deposit Not Received Yet!"}</span>
+                                  </div>
+                                  <p className="text-[10px] leading-relaxed pl-5">{hotelDepositError}</p>
+                                </div>
+                              )}
+
+                              {/* Approval code input */}
+                              <div className="bg-gray-50 p-2 rounded-lg border border-gray-200 space-y-1">
+                                <label className="text-[10px] font-bold text-gray-700 block">
+                                  {lang === "km" ? "លេខកូដយោងប្រតិបត្តិការ (Approval Code បើមាន)៖" : "Transaction Ref / Approval Code (Optional):"}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={manualApprovalCode}
+                                  onChange={(e) => setManualApprovalCode(e.target.value)}
+                                  placeholder={lang === "km" ? "ឧ. 839201948 ឬលេខ Hash ធនាគារ" : "e.g. 839201948 or Bank Hash"}
+                                  className="w-full bg-white border border-gray-300 rounded px-2 py-1 text-xs font-mono text-gray-900 focus:outline-none focus:border-red-500"
+                                />
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={handleVerifyHotelDepositPay}
+                                disabled={isVerifyingHotelDeposit}
+                                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-extrabold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center space-x-2 shadow cursor-pointer"
+                              >
+                                <Smartphone className="w-4 h-4" />
+                                <span>
+                                  {isVerifyingHotelDeposit
+                                    ? (lang === "km" ? "កំពុងទាញទិន្នន័យពីបាគង NBC..." : "Verifying Bakong Deposit...")
+                                    : (lang === "km" ? "ផ្ទៀងផ្ទាត់ប្រាក់កក់ $10 ពីបាគង (Verify Deposit)" : "Verify $10 Bakong Deposit")}
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* OPTION B: CARD PRE-AUTHORIZATION HOLD */}
+                      {hotelGuaranteeType === "CARD_PREAUTH" && (
+                        <form onSubmit={handleInitiateHotelCardPreAuth} className="p-4 bg-white rounded-xl border border-gray-200 space-y-3">
+                          <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
+                            <span className="font-bold text-gray-800 text-xs">
+                              {lang === "km" ? "បញ្ចូលព័ត៌មានកាតធនាគារសម្រាប់ Pre-Auth Hold" : "Card Information for Pre-Authorization"}
+                            </span>
+                            <span className="text-[10px] text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                              Hold Guarantee Only
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-gray-500 leading-relaxed">
+                            {lang === "km"
+                              ? `ធនាគារនឹងធ្វើការ Hold ចំនួនទឹកប្រាក់ $${totalAmountUSD} USD ជាបណ្ដោះអាសន្នលើកាតរបស់អ្នក (មិនទាន់កាត់ប្រាក់ចេញពីកាតឡើយ)។ ទឹកប្រាក់នឹងត្រូវទូទាត់ជាក់ស្តែងពេលអ្នកមកដល់សណ្ឋាគារ។`
+                              : `A temporary pre-authorization hold of $${totalAmountUSD} USD will be placed on your card without debiting funds today. Final payment is settled at check-in.`}
+                          </p>
+
+                          {cardError && (
+                            <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl text-red-700 flex items-center space-x-2 text-[11px]">
+                              <AlertCircle className="w-4 h-4 shrink-0" />
+                              <span>{cardError}</span>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div className="sm:col-span-2">
+                              <label className="font-bold text-gray-700 block mb-0.5 text-[11px]">
+                                {lang === "km" ? "លេខកាតធនាគារ *" : "Card Number *"}
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={cardNumber}
+                                  maxLength={19}
+                                  onChange={(e) => setCardNumber(e.target.value)}
+                                  className="w-full p-2.5 font-mono rounded-lg border border-gray-300 focus:outline-none focus:border-vvotel-gold pl-9 text-xs"
+                                  placeholder="4532 •••• •••• 8920"
+                                  required
+                                />
+                                <CreditCard className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="font-bold text-gray-700 block mb-0.5 text-[11px]">
+                                {lang === "km" ? "ផុតកំណត់ (MM/YY) *" : "Expiry (MM/YY) *"}
+                              </label>
+                              <input
+                                type="text"
+                                value={cardExpiry}
+                                maxLength={5}
+                                onChange={(e) => setCardExpiry(e.target.value)}
+                                className="w-full p-2.5 font-mono rounded-lg border border-gray-300 focus:outline-none focus:border-vvotel-gold text-xs"
+                                placeholder="08/28"
+                                required
+                              />
+                            </div>
+
+                            <div>
+                              <label className="font-bold text-gray-700 block mb-0.5 text-[11px]">
+                                {lang === "km" ? "CVV / CVC *" : "CVV / CVC *"}
+                              </label>
+                              <input
+                                type="password"
+                                value={cardCvv}
+                                maxLength={4}
+                                onChange={(e) => setCardCvv(e.target.value)}
+                                className="w-full p-2.5 font-mono rounded-lg border border-gray-300 focus:outline-none focus:border-vvotel-gold text-xs"
+                                placeholder="•••"
+                                required
+                              />
+                            </div>
+
+                            <div className="sm:col-span-2">
+                              <label className="font-bold text-gray-700 block mb-0.5 text-[11px]">
+                                {lang === "km" ? "ឈ្មោះម្ចាស់កាត *" : "Cardholder Name *"}
+                              </label>
+                              <input
+                                type="text"
+                                value={cardName}
+                                onChange={(e) => setCardName(e.target.value)}
+                                className="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:border-vvotel-gold uppercase text-xs"
+                                placeholder="SOPHEAP CHAN"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center space-x-2 shadow cursor-pointer"
+                          >
+                            <ShieldCheck className="w-4 h-4" />
+                            <span>
+                              {lang === "km"
+                                ? "ផ្ទៀងផ្ទាត់ធានាបន្ទប់តាមកាត (Verify Card Pre-Auth via 3DS)"
+                                : "Authorize Room Guarantee Hold via 3DS"}
+                            </span>
+                          </button>
+                        </form>
+                      )}
                     </div>
                   )}
 
@@ -1553,6 +1866,37 @@ export const BookingBar: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Official Bank Debit / Settlement Receipt Badge */}
+                  {paymentConfirmed?.bankDebit && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-left max-w-lg mx-auto text-[11px] text-blue-900 space-y-1">
+                      <div className="flex items-center justify-between font-bold">
+                        <span className="flex items-center space-x-1 text-blue-800">
+                          <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                          <span>
+                            {paymentConfirmed.bankDebit.guaranteeType === "CARD_PREAUTH_HOLD"
+                              ? (lang === "km" ? "បង្កាន់ដៃធានាបន្ទប់ពីធនាគារ (Card Pre-Auth Hold)" : "Bank Pre-Auth Hold Receipt")
+                              : paymentConfirmed.bankDebit.guaranteeType === "BAKONG_DEPOSIT"
+                              ? (lang === "km" ? "បង្កាន់ដៃប្រាក់កក់ធានាបន្ទប់ (Bakong Deposit)" : "Bakong Guarantee Deposit Receipt")
+                              : (lang === "km" ? "បង្កាន់ដៃកាត់ប្រាក់ពីធនាគារ (Bank Debit Settlement)" : "Official Bank Debit Receipt")}
+                          </span>
+                        </span>
+                        <span className="text-[10px] bg-blue-200 text-blue-900 px-2 py-0.5 rounded font-mono font-bold">
+                          {paymentConfirmed.bankDebit.authCode || "APPROVED"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 text-[10px] text-gray-600 font-mono pt-1">
+                        <div>Merchant: <span className="text-gray-900 font-semibold">{paymentConfirmed.bankDebit.settledToMerchant || "VVOTEL KAMPONG CHAM"}</span></div>
+                        {paymentConfirmed.bankDebit.retrievalReferenceNumber && (
+                          <div>RRN: <span className="text-gray-900 font-semibold">{paymentConfirmed.bankDebit.retrievalReferenceNumber}</span></div>
+                        )}
+                        {paymentConfirmed.bankDebit.traceNumber && (
+                          <div>Trace: <span className="text-gray-900 font-semibold">{paymentConfirmed.bankDebit.traceNumber}</span></div>
+                        )}
+                        <div>Status: <span className="text-emerald-700 font-bold">{paymentConfirmed.bankDebit.bankResponse || "APPROVED & DEBITED"}</span></div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Digital Boarding Pass */}
                   <div className="bg-[#0c2340] text-white rounded-2xl p-6 text-left max-w-lg mx-auto shadow-xl relative overflow-hidden border border-vvotel-gold/30">
                     <div className="flex justify-between items-start border-b border-white/10 pb-4">
@@ -1569,7 +1913,13 @@ export const BookingBar: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <span className="text-[10px] text-gray-400 block">Status</span>
-                        <span className="text-xs font-bold text-emerald-400">CONFIRMED PAID</span>
+                        <span className="text-xs font-bold text-emerald-400">
+                          {paymentConfirmed?.bankDebit?.guaranteeType === "CARD_PREAUTH_HOLD"
+                            ? "GUARANTEED (HOLD)"
+                            : paymentConfirmed?.bankDebit?.guaranteeType === "BAKONG_DEPOSIT"
+                            ? "PARTIALLY PAID ($10 DEP)"
+                            : "CONFIRMED PAID"}
+                        </span>
                       </div>
                     </div>
 
@@ -1594,9 +1944,17 @@ export const BookingBar: React.FC = () => {
 
                     <div className="pt-4 flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] text-gray-400 block">Paid Amount</span>
+                        <span className="text-[10px] text-gray-400 block">
+                          {paymentConfirmed?.bankDebit?.guaranteeType === "BAKONG_DEPOSIT"
+                            ? "Deposit Paid (Balance at Hotel)"
+                            : paymentConfirmed?.bankDebit?.guaranteeType === "CARD_PREAUTH_HOLD"
+                            ? "Pre-Auth Guarantee Hold"
+                            : "Paid Amount"}
+                        </span>
                         <span className="text-base font-extrabold text-vvotel-gold">
-                          ${totalAmountUSD} USD ({totalAmountKHR.toLocaleString()} KHR)
+                          {paymentConfirmed?.bankDebit?.guaranteeType === "BAKONG_DEPOSIT"
+                            ? `$10.00 USD (Due: $${Math.max(0, totalAmountUSD - 10)} USD)`
+                            : `$${totalAmountUSD} USD (${totalAmountKHR.toLocaleString()} KHR)`}
                         </span>
                       </div>
                       <div className="w-12 h-12 bg-white rounded-lg p-1 flex items-center justify-center">
@@ -1679,8 +2037,16 @@ export const BookingBar: React.FC = () => {
                   3DS
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-sm">3D Secure 2.2 Authentication</h4>
-                  <p className="text-[10px] text-gray-300">Verified by Visa • Mastercard Identity Check</p>
+                  <h4 className="font-extrabold text-sm">
+                    {threeDSMode === "HOTEL_PREAUTH"
+                      ? (lang === "km" ? "ការធានាបន្ទប់តាមកាត (3DS Pre-Auth)" : "3D Secure 2.2 Room Hold")
+                      : (lang === "km" ? "ការទូទាត់កាត់ប្រាក់ពីកាត (3DS Debit)" : "3D Secure 2.2 Payment Authentication")}
+                  </h4>
+                  <p className="text-[10px] text-gray-300">
+                    {threeDSMode === "HOTEL_PREAUTH"
+                      ? "Pre-Authorization Guarantee • Verified by Visa / Mastercard"
+                      : "Direct Bank Settlement • Verified by Visa / Mastercard"}
+                  </p>
                 </div>
               </div>
               <button
@@ -1698,13 +2064,27 @@ export const BookingBar: React.FC = () => {
                 <Lock className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                 <div className="text-[11px] text-blue-900 leading-relaxed">
                   <span className="font-bold block">
-                    {lang === "km" ? "ការផ្ទៀងផ្ទាត់សុវត្ថិភាពម្ចាស់កាត" : "Cardholder Identity Verification"}
+                    {threeDSMode === "HOTEL_PREAUTH"
+                      ? (lang === "km" ? "ការធានាបន្ទប់ផ្លូវការ (Bank Pre-Auth Hold)" : "Room Guarantee Pre-Authorization")
+                      : (lang === "km" ? "ការផ្ទៀងផ្ទាត់សុវត្ថិភាពកាត់ប្រាក់ពីកាត" : "Cardholder Identity Verification")}
                   </span>
-                  {lang === "km"
-                    ? "លេខកូដសម្ងាត់ OTP ចំនួន ៦ខ្ទង់ ត្រូវបានផ្ញើតាមសារ SMS ទៅកាន់លេខទូរស័ព្ទរបស់អ្នក (+855 ••• ••• 678)។"
-                    : "A one-time passcode (OTP) has been sent to your registered phone number (+855 ••• ••• 678)."}
+                  {threeDSMode === "HOTEL_PREAUTH"
+                    ? (lang === "km"
+                        ? "ធនាគារនឹងធ្វើការផ្ទៀងផ្ទាត់លេខកូដសម្ងាត់ OTP ៦ខ្ទង់ ដើម្បីធានារក្សាទុកបន្ទប់ជូនអ្នក (មិនទាន់កាត់ប្រាក់ភ្លាមទេ)។"
+                        : "Bank is verifying your cardholder identity to secure a room guarantee hold without immediate debit.")
+                    : (lang === "km"
+                        ? "លេខកូដសម្ងាត់ OTP ចំនួន ៦ខ្ទង់ ត្រូវបានផ្ញើតាមសារ SMS ទៅកាន់លេខទូរស័ព្ទរបស់អ្នក ដើម្បីកាត់ប្រាក់ចេញពីកាត។"
+                        : "A one-time passcode (OTP) has been sent to your registered phone number (+855 ••• ••• 678).")}
                 </div>
               </div>
+
+              {/* Error message banner if bank rejected */}
+              {cardError && (
+                <div className="p-2.5 bg-red-50 border border-red-300 rounded-xl text-red-700 flex items-start space-x-2 text-[11px] font-semibold leading-relaxed animate-in fade-in">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+                  <span>{cardError}</span>
+                </div>
+              )}
 
               {/* Transaction details table */}
               <div className="bg-gray-50 rounded-xl p-3 border border-gray-200 space-y-2 text-[11px]">
@@ -1719,8 +2099,18 @@ export const BookingBar: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>Transaction Amount:</span>
-                  <span className="font-extrabold text-blue-700 text-sm">${totalAmountUSD} USD</span>
+                  <span>Operation Type:</span>
+                  <span className="font-bold text-gray-900">
+                    {threeDSMode === "HOTEL_PREAUTH"
+                      ? (lang === "km" ? "Pre-Auth Guarantee Hold (ធានាបន្ទប់)" : "Pre-Authorization Hold")
+                      : (lang === "km" ? "Electronic Debit & Settlement (កាត់ប្រាក់)" : "Direct Debit & Settlement")}
+                  </span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Amount:</span>
+                  <span className="font-extrabold text-blue-700 text-sm">
+                    ${totalAmountUSD} USD {threeDSMode === "HOTEL_PREAUTH" ? "(Hold)" : ""}
+                  </span>
                 </div>
               </div>
 
@@ -1769,19 +2159,21 @@ export const BookingBar: React.FC = () => {
                   type="button"
                   onClick={handleAuthorize3DSPayment}
                   disabled={isAuthorizing3DS || otpCode.length < 6}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50 cursor-pointer"
                 >
                   <ShieldCheck className="w-4 h-4" />
                   <span>
                     {isAuthorizing3DS
-                      ? (lang === "km" ? "កំពុងផ្ទៀងផ្ទាត់ហត្ថលេខា..." : "Authorizing Cryptographic Token...")
-                      : (lang === "km" ? "ផ្ទៀងផ្ទាត់ & កាត់ប្រាក់ (Confirm & Authorize)" : "Confirm & Authorize Payment")}
+                      ? (lang === "km" ? "កំពុងផ្ទៀងផ្ទាត់ជាមួយធនាគារ..." : "Authorizing with Bank Gateway...")
+                      : threeDSMode === "HOTEL_PREAUTH"
+                      ? (lang === "km" ? "ផ្ទៀងផ្ទាត់ & ធានាបន្ទប់ (Authorize Room Hold)" : "Authorize Room Guarantee Hold")
+                      : (lang === "km" ? "ផ្ទៀងផ្ទាត់ & កាត់ប្រាក់ (Confirm & Debit Account)" : "Confirm & Authorize Payment")}
                   </span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIs3DSModalOpen(false)}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition"
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer"
                 >
                   {lang === "km" ? "បោះបង់ (Cancel)" : "Cancel"}
                 </button>

@@ -1119,55 +1119,62 @@ export default function AdminPage() {
           </div>
 
           {/* Action Toolbar with Language Switcher */}
-          <div className="flex items-center flex-wrap gap-2 font-siemreap">
+          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 font-siemreap">
             {/* Language Switcher */}
-            <div className="bg-white border border-amber-200 rounded-xl p-1 flex items-center space-x-1 shadow-2xs text-xs">
+            <div className="bg-white border border-amber-200 rounded-xl p-0.5 sm:p-1 flex items-center space-x-1 shadow-2xs text-xs">
               <button
                 type="button"
                 onClick={() => switchLanguage("km")}
-                className={`px-2.5 py-1.5 rounded-lg font-bold transition ${
+                title="ភាសាខ្មែរ (Khmer)"
+                className={`px-2 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 ${
                   lang === "km"
                     ? "bg-[#0c2340] text-amber-300 shadow-sm"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                🇰🇭 ខ្មែរ
+                <span>🇰🇭</span>
+                <span className="hidden xl:inline">ខ្មែរ</span>
               </button>
               <button
                 type="button"
                 onClick={() => switchLanguage("en")}
-                className={`px-2.5 py-1.5 rounded-lg font-bold transition ${
+                title="English"
+                className={`px-2 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 ${
                   lang === "en"
                     ? "bg-[#0c2340] text-amber-300 shadow-sm"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                🇬🇧 EN
+                <span>🇬🇧</span>
+                <span className="hidden xl:inline">EN</span>
               </button>
             </div>
 
             {/* Audio Alert Toggle */}
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className={`text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition border ${
+              className={`p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1.5 transition border ${
                 soundEnabled
                   ? "bg-amber-50 text-amber-900 border-amber-300"
                   : "bg-gray-100 text-gray-500 border-gray-300"
               }`}
-              title={soundEnabled ? "Mute" : "Unmute"}
+              title={soundEnabled ? t.soundOn : t.soundOff}
+              aria-label="Sound alert toggle"
             >
-              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-amber-600" /> : <VolumeX className="w-3.5 h-3.5" />}
-              <span className="hidden sm:inline">{soundEnabled ? t.soundOn : t.soundOff}</span>
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-amber-600" /> : <VolumeX className="w-4 h-4" />}
+              <span className="hidden xl:inline text-xs font-bold">{soundEnabled ? t.soundOn : t.soundOff}</span>
             </button>
 
             {/* Telegram Bot Alert Test */}
             <button
               onClick={handleTestTelegram}
               disabled={telegramStatus.loading}
-              className="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition disabled:opacity-50"
+              className="bg-sky-600 hover:bg-sky-700 text-white p-2 xl:px-3.5 xl:py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition disabled:opacity-50"
+              title={t.sendTestAlert}
+              aria-label="Send test alert to @vvotel_bot"
             >
-              <Send className={`w-3.5 h-3.5 ${telegramStatus.loading ? "animate-spin" : ""}`} />
-              <span>{telegramStatus.loading ? t.sendingAlert : t.sendTestAlert}</span>
+              <Send className={`w-4 h-4 ${telegramStatus.loading ? "animate-spin" : ""}`} />
+              <span className="hidden xl:inline text-xs font-bold">{telegramStatus.loading ? t.sendingAlert : t.sendTestAlert}</span>
             </button>
 
             {/* Direct Link to Telegram Bot */}
@@ -1175,53 +1182,61 @@ export default function AdminPage() {
               href="https://t.me/vvotel_bot"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white hover:bg-amber-50 text-sky-700 border border-amber-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
+              className="bg-white hover:bg-amber-50 text-sky-700 border border-amber-200 p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
+              title="Open @vvotel_bot in Telegram"
+              aria-label="Telegram Bot"
             >
-              <span>Telegram Bot</span>
-              <ExternalLink className="w-3 h-3" />
+              <ExternalLink className="w-4 h-4 text-sky-600" />
+              <span className="hidden xl:inline text-xs font-bold">Telegram Bot</span>
             </a>
 
             {/* System Settings Shortcut Button */}
             <button
               onClick={() => setCurrentAdminTab(currentAdminTab === "settings" ? "dashboard" : "settings")}
-              className={`text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition border ${
+              className={`p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1.5 transition border ${
                 currentAdminTab === "settings"
                   ? "bg-[#0c2340] text-amber-300 border-amber-300 shadow-sm"
                   : "bg-white text-gray-700 border-amber-200 hover:bg-amber-50 shadow-sm"
               }`}
-              title="System Settings"
+              title={lang === "km" ? "ការកំណត់ប្រព័ន្ធ (Settings)" : "System Settings"}
+              aria-label="Settings"
             >
-              <Settings className="w-3.5 h-3.5 text-amber-600" />
-              <span className="hidden sm:inline">{lang === "km" ? "ការកំណត់" : "Settings"}</span>
+              <Settings className="w-4 h-4 text-amber-600" />
+              <span className="hidden xl:inline text-xs font-bold">{lang === "km" ? "ការកំណត់" : "Settings"}</span>
             </button>
 
             {/* Executive Administrative Reports Suite */}
             <button
               onClick={() => setIsReportModalOpen(true)}
-              className="bg-[#0c2340] hover:bg-[#12335e] text-amber-300 border border-amber-300/60 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition"
+              className="bg-[#0c2340] hover:bg-[#12335e] text-amber-300 border border-amber-300/60 p-2 xl:px-3.5 xl:py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition"
+              title={t.reportsBtn}
+              aria-label="Administrative Reports"
             >
-              <FileText className="w-3.5 h-3.5 text-amber-300" />
-              <span>{t.reportsBtn}</span>
+              <FileText className="w-4 h-4 text-amber-300" />
+              <span className="hidden xl:inline text-xs font-bold">{t.reportsBtn}</span>
             </button>
 
             {/* Refresh */}
             <button
               onClick={() => fetchBookings(false)}
               disabled={loading}
-              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 text-xs font-bold p-2 sm:px-3 sm:py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
+              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
               title={t.refreshData}
+              aria-label="Refresh Data"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-amber-600" : ""}`} />
-              <span className="hidden sm:inline">{t.refreshData}</span>
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-amber-600" : ""}`} />
+              <span className="hidden xl:inline text-xs font-bold">{t.refreshData}</span>
             </button>
 
             {/* Add Walk-in */}
             <button
               onClick={() => setIsNewBookingModalOpen(true)}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition"
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white p-2 xl:px-3.5 xl:py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition"
+              title={t.walkInBtn}
+              aria-label="Walk-in Booking"
             >
               <Plus className="w-4 h-4" />
-              <span>{t.walkInBtn}</span>
+              <span className="hidden xl:inline text-xs font-bold">{t.walkInBtn}</span>
             </button>
 
             {/* Accor PMS link */}
@@ -1229,28 +1244,34 @@ export default function AdminPage() {
               href="https://t.me/vvotel_bot?start=accor_pms"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition"
+              className="bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1.5 transition"
+              title={t.accorPmsBtn}
+              aria-label="ALL Accor PMS"
             >
-              <span>{t.accorPmsBtn}</span>
-              <ExternalLink className="w-3 h-3 text-purple-600" />
+              <Building className="w-4 h-4 text-purple-600" />
+              <span className="hidden xl:inline text-xs font-bold">{t.accorPmsBtn}</span>
             </a>
 
             {/* Public Website */}
             <Link
               href="/"
-              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 text-xs font-bold p-2 sm:px-3 sm:py-2 rounded-xl flex items-center space-x-1 transition"
+              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1 transition"
+              title={t.homeBtn}
+              aria-label="Public Website"
             >
-              <Home className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{t.homeBtn}</span>
+              <Home className="w-4 h-4" />
+              <span className="hidden xl:inline text-xs font-bold">{t.homeBtn}</span>
             </Link>
 
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1 transition"
+              className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1 transition"
+              title={t.logoutBtn}
+              aria-label="Logout"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{t.logoutBtn}</span>
+              <LogOut className="w-4 h-4" />
+              <span className="hidden xl:inline text-xs font-bold">{t.logoutBtn}</span>
             </button>
           </div>
         </div>
@@ -1322,27 +1343,29 @@ export default function AdminPage() {
           <button
             type="button"
             onClick={() => setCurrentAdminTab("dashboard")}
-            className={`px-4 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center space-x-2 transition ${
+            className={`flex-1 sm:flex-initial px-3 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center justify-center space-x-2 transition ${
               currentAdminTab === "dashboard"
                 ? "bg-[#0c2340] text-amber-300 shadow-md border border-amber-300/40"
                 : "bg-white text-gray-600 hover:text-gray-900 border border-gray-200/80 hover:bg-amber-50/50"
             }`}
           >
-            <SlidersHorizontal className="w-4 h-4 text-amber-400" />
-            <span>{lang === "km" ? "📊 ផ្ទាំងគ្រប់គ្រងទូទៅ (Dashboard)" : "📊 Operations Dashboard"}</span>
+            <SlidersHorizontal className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>{lang === "km" ? "📊 ផ្ទាំងគ្រប់គ្រង" : "📊 Dashboard"}</span>
+            <span className="hidden sm:inline">{lang === "km" ? "ទូទៅ (Dashboard)" : " Operations"}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setCurrentAdminTab("settings")}
-            className={`px-4 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center space-x-2 transition ${
+            className={`flex-1 sm:flex-initial px-3 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center justify-center space-x-2 transition ${
               currentAdminTab === "settings"
                 ? "bg-[#0c2340] text-amber-300 shadow-md border border-amber-300/40"
                 : "bg-white text-gray-600 hover:text-gray-900 border border-gray-200/80 hover:bg-amber-50/50"
             }`}
           >
-            <Settings className="w-4 h-4 text-amber-400" />
-            <span>{lang === "km" ? "⚙️ ការកំណត់ប្រព័ន្ធ (Settings)" : "⚙️ System Settings"}</span>
+            <Settings className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>{lang === "km" ? "⚙️ ការកំណត់" : "⚙️ Settings"}</span>
+            <span className="hidden sm:inline">{lang === "km" ? "ប្រព័ន្ធ (Settings)" : " System"}</span>
           </button>
         </div>
 

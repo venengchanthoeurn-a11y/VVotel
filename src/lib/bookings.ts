@@ -34,7 +34,7 @@ export interface BookingRecord {
   totalAmountUSD: number;
   totalAmountKHR: number;
   paymentMethod: string;
-  paymentStatus: "PAID" | "GUARANTEED" | "PENDING";
+  paymentStatus: "PAID" | "GUARANTEED" | "PENDING" | "PARTIALLY_PAID";
   transactionId: string;
   signatureHMAC: string;
   tamperProofHash: string;
