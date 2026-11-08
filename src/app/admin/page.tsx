@@ -43,6 +43,7 @@ import {
   Globe,
   SlidersHorizontal,
   Settings,
+  LayoutGrid,
 } from "lucide-react";
 import { BookingRecord } from "@/lib/bookings";
 import { PrintableReceipt } from "@/components/PrintableReceipt";
@@ -1090,12 +1091,12 @@ export default function AdminPage() {
   // =========================================================================
   return (
     <div className="min-h-screen w-full bg-[#FAF7F2] text-gray-900 flex flex-col font-siemreap antialiased overflow-x-hidden">
-      {/* Top Navigation Bar */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-amber-200/80 sticky top-0 z-30 px-4 sm:px-6 lg:px-8 xl:px-12 py-3 shadow-sm">
-        <div className="w-full flex flex-wrap items-center justify-between gap-4">
+      {/* Top Navigation Bar: Slim, Clean & Professional */}
+      <header className="bg-white/95 backdrop-blur-md border-b border-amber-200/80 sticky top-0 z-30 px-4 sm:px-6 lg:px-8 xl:px-12 py-2.5 shadow-xs">
+        <div className="w-full flex items-center justify-between gap-4">
           {/* Brand & Live Clock */}
-          <div className="flex items-center space-x-3.5">
-            <div className="w-10 h-10 rounded-xl bg-[#0c2340] border border-amber-300 flex items-center justify-center text-amber-300 font-mool text-xl shadow-sm shrink-0">
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0c2340] border border-amber-300 flex items-center justify-center text-amber-300 font-mool text-lg sm:text-xl shadow-sm shrink-0">
               V
             </div>
             <div>
@@ -1106,7 +1107,7 @@ export default function AdminPage() {
                 <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-siemreap">
                   Live System
                 </span>
-                <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full font-siemreap">
+                <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full font-siemreap hidden sm:inline-block">
                   {t.authorizedManager}
                 </span>
               </div>
@@ -1118,167 +1119,41 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Action Toolbar with Language Switcher */}
-          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 font-siemreap">
-            {/* Language Switcher */}
-            <div className="bg-white border border-amber-200 rounded-xl p-0.5 sm:p-1 flex items-center space-x-1 shadow-2xs text-xs">
-              <button
-                type="button"
-                onClick={() => switchLanguage("km")}
-                title="ភាសាខ្មែរ (Khmer)"
-                className={`px-2 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 ${
-                  lang === "km"
-                    ? "bg-[#0c2340] text-amber-300 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <span>🇰🇭</span>
-                <span className="hidden xl:inline">ខ្មែរ</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => switchLanguage("en")}
-                title="English"
-                className={`px-2 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 ${
-                  lang === "en"
-                    ? "bg-[#0c2340] text-amber-300 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <span>🇬🇧</span>
-                <span className="hidden xl:inline">EN</span>
-              </button>
-            </div>
-
-            {/* Audio Alert Toggle */}
-            <button
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              className={`p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1.5 transition border ${
-                soundEnabled
-                  ? "bg-amber-50 text-amber-900 border-amber-300"
-                  : "bg-gray-100 text-gray-500 border-gray-300"
-              }`}
-              title={soundEnabled ? t.soundOn : t.soundOff}
-              aria-label="Sound alert toggle"
-            >
-              {soundEnabled ? <Volume2 className="w-4 h-4 text-amber-600" /> : <VolumeX className="w-4 h-4" />}
-              <span className="hidden xl:inline text-xs font-bold">{soundEnabled ? t.soundOn : t.soundOff}</span>
-            </button>
-
-            {/* Telegram Bot Alert Test */}
-            <button
-              onClick={handleTestTelegram}
-              disabled={telegramStatus.loading}
-              className="bg-sky-600 hover:bg-sky-700 text-white p-2 xl:px-3.5 xl:py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition disabled:opacity-50"
-              title={t.sendTestAlert}
-              aria-label="Send test alert to @vvotel_bot"
-            >
-              <Send className={`w-4 h-4 ${telegramStatus.loading ? "animate-spin" : ""}`} />
-              <span className="hidden xl:inline text-xs font-bold">{telegramStatus.loading ? t.sendingAlert : t.sendTestAlert}</span>
-            </button>
-
-            {/* Direct Link to Telegram Bot */}
-            <a
-              href="https://t.me/vvotel_bot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white hover:bg-amber-50 text-sky-700 border border-amber-200 p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
-              title="Open @vvotel_bot in Telegram"
-              aria-label="Telegram Bot"
-            >
-              <ExternalLink className="w-4 h-4 text-sky-600" />
-              <span className="hidden xl:inline text-xs font-bold">Telegram Bot</span>
-            </a>
-
-            {/* System Settings Shortcut Button */}
+          {/* Quick Header Badges & Tab Switcher */}
+          <div className="flex items-center space-x-2 font-siemreap">
             <button
               onClick={() => setCurrentAdminTab(currentAdminTab === "settings" ? "dashboard" : "settings")}
-              className={`p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1.5 transition border ${
+              className={`px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition border text-xs font-bold ${
                 currentAdminTab === "settings"
                   ? "bg-[#0c2340] text-amber-300 border-amber-300 shadow-sm"
-                  : "bg-white text-gray-700 border-amber-200 hover:bg-amber-50 shadow-sm"
+                  : "bg-white text-gray-700 border-amber-200 hover:bg-amber-50 shadow-xs"
               }`}
-              title={lang === "km" ? "ការកំណត់ប្រព័ន្ធ (Settings)" : "System Settings"}
-              aria-label="Settings"
             >
-              <Settings className="w-4 h-4 text-amber-600" />
-              <span className="hidden xl:inline text-xs font-bold">{lang === "km" ? "ការកំណត់" : "Settings"}</span>
+              {currentAdminTab === "settings" ? (
+                <>
+                  <LayoutGrid className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden sm:inline">{lang === "km" ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard"}</span>
+                </>
+              ) : (
+                <>
+                  <Settings className="w-3.5 h-3.5 text-amber-600" />
+                  <span className="hidden sm:inline">{lang === "km" ? "ការកំណត់" : "Settings"}</span>
+                </>
+              )}
             </button>
 
-            {/* Executive Administrative Reports Suite */}
-            <button
-              onClick={() => setIsReportModalOpen(true)}
-              className="bg-[#0c2340] hover:bg-[#12335e] text-amber-300 border border-amber-300/60 p-2 xl:px-3.5 xl:py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition"
-              title={t.reportsBtn}
-              aria-label="Administrative Reports"
-            >
-              <FileText className="w-4 h-4 text-amber-300" />
-              <span className="hidden xl:inline text-xs font-bold">{t.reportsBtn}</span>
-            </button>
-
-            {/* Refresh */}
-            <button
-              onClick={() => fetchBookings(false)}
-              disabled={loading}
-              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1.5 transition shadow-sm"
-              title={t.refreshData}
-              aria-label="Refresh Data"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-amber-600" : ""}`} />
-              <span className="hidden xl:inline text-xs font-bold">{t.refreshData}</span>
-            </button>
-
-            {/* Add Walk-in */}
-            <button
-              onClick={() => setIsNewBookingModalOpen(true)}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white p-2 xl:px-3.5 xl:py-2 rounded-xl flex items-center space-x-1.5 shadow-sm transition"
-              title={t.walkInBtn}
-              aria-label="Walk-in Booking"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden xl:inline text-xs font-bold">{t.walkInBtn}</span>
-            </button>
-
-            {/* Accor PMS link */}
-            <a
-              href="https://t.me/vvotel_bot?start=accor_pms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1.5 transition"
-              title={t.accorPmsBtn}
-              aria-label="ALL Accor PMS"
-            >
-              <Building className="w-4 h-4 text-purple-600" />
-              <span className="hidden xl:inline text-xs font-bold">{t.accorPmsBtn}</span>
-            </a>
-
-            {/* Public Website */}
-            <Link
-              href="/"
-              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1 transition"
-              title={t.homeBtn}
-              aria-label="Public Website"
-            >
-              <Home className="w-4 h-4" />
-              <span className="hidden xl:inline text-xs font-bold">{t.homeBtn}</span>
-            </Link>
-
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 p-2 xl:px-3 xl:py-2 rounded-xl flex items-center space-x-1 transition"
-              title={t.logoutBtn}
-              aria-label="Logout"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden xl:inline text-xs font-bold">{t.logoutBtn}</span>
-            </button>
+            <span className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
+              {currentAdminTab === "settings"
+                ? (lang === "km" ? "⚙️ ការកំណត់" : "Settings")
+                : (lang === "km" ? `កក់សរុប: ${bookings.length}` : `Bookings: ${bookings.length}`)}
+            </span>
           </div>
         </div>
       </header>
 
-      {/* Main Fluid Content Area */}
-      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 flex-1 space-y-6 font-siemreap">
+      {/* Main Fluid Content Area (with bottom padding for fixed footer action bar) */}
+      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 flex-1 space-y-6 font-siemreap pb-28">
         {/* Real-time Dynamic Booking Alert Banner */}
         {newBookingAlert && (
           <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 text-white p-4 rounded-2xl shadow-lg border border-amber-300 flex items-center justify-between animate-in slide-in-from-top-3 duration-300 font-siemreap">
@@ -2282,6 +2157,174 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* ======================= FIXED BOTTOM ACTION FOOTER BAR ======================= */}
+      <footer className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t-2 border-amber-300 shadow-[0_-4px_25px_rgba(0,0,0,0.12)] py-2 px-3 sm:px-6 font-siemreap">
+        <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar">
+          {/* Group 1: Language & Admin Mode Switch */}
+          <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0">
+            {/* Language Switcher */}
+            <div className="bg-gray-100 border border-amber-200/80 rounded-xl p-0.5 flex items-center space-x-0.5 text-xs shadow-2xs">
+              <button
+                type="button"
+                onClick={() => switchLanguage("km")}
+                title="ភាសាខ្មែរ (Khmer)"
+                className={`px-2 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 ${
+                  lang === "km"
+                    ? "bg-[#0c2340] text-amber-300 shadow-xs"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <span>🇰🇭</span>
+                <span className="hidden lg:inline text-[11px]">ខ្មែរ</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => switchLanguage("en")}
+                title="English (EN)"
+                className={`px-2 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 ${
+                  lang === "en"
+                    ? "bg-[#0c2340] text-amber-300 shadow-xs"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <span>🇬🇧</span>
+                <span className="hidden lg:inline text-[11px]">EN</span>
+              </button>
+            </div>
+
+            {/* Dashboard / Settings Tab Toggle */}
+            <button
+              onClick={() => setCurrentAdminTab(currentAdminTab === "settings" ? "dashboard" : "settings")}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition border text-xs font-bold shrink-0 ${
+                currentAdminTab === "settings"
+                  ? "bg-[#0c2340] text-amber-300 border-amber-300 shadow-xs"
+                  : "bg-white text-gray-700 border-amber-200 hover:bg-amber-50 shadow-2xs"
+              }`}
+              title={currentAdminTab === "settings" ? (lang === "km" ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard") : (lang === "km" ? "ការកំណត់ប្រព័ន្ធ" : "Settings")}
+            >
+              {currentAdminTab === "settings" ? (
+                <>
+                  <LayoutGrid className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="hidden sm:inline">{lang === "km" ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard"}</span>
+                </>
+              ) : (
+                <>
+                  <Settings className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span className="hidden sm:inline">{lang === "km" ? "ការកំណត់" : "Settings"}</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Group 2: Core Admin Actions */}
+          <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0">
+            {/* Add Walk-in Booking */}
+            <button
+              onClick={() => setIsNewBookingModalOpen(true)}
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center space-x-1.5 shadow-xs transition text-xs font-bold shrink-0"
+              title={t.walkInBtn}
+            >
+              <Plus className="w-4 h-4 shrink-0" />
+              <span>{t.walkInBtn}</span>
+            </button>
+
+            {/* Executive Administrative Reports Suite */}
+            <button
+              onClick={() => setIsReportModalOpen(true)}
+              className="bg-[#0c2340] hover:bg-[#12335e] text-amber-300 border border-amber-300/60 px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center space-x-1.5 shadow-xs transition text-xs font-bold shrink-0"
+              title={t.reportsBtn}
+            >
+              <FileText className="w-4 h-4 text-amber-300 shrink-0" />
+              <span className="hidden sm:inline">{t.reportsBtn}</span>
+              <span className="sm:hidden">{lang === "km" ? "របាយការណ៍" : "Reports"}</span>
+            </button>
+
+            {/* Refresh Data */}
+            <button
+              onClick={() => fetchBookings(false)}
+              disabled={loading}
+              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 px-2 sm:px-2.5 py-1.5 rounded-xl flex items-center space-x-1 transition shadow-2xs text-xs font-bold shrink-0"
+              title={t.refreshData}
+            >
+              <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? "animate-spin text-amber-600" : ""}`} />
+              <span className="hidden md:inline">{t.refreshData}</span>
+            </button>
+          </div>
+
+          {/* Group 3: Real-Time Alerts, Telegram Bot & System Navigation */}
+          <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0">
+            {/* Audio Alert Toggle */}
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className={`p-1.5 sm:px-2 sm:py-1.5 rounded-xl flex items-center space-x-1 transition border text-xs font-bold shrink-0 ${
+                soundEnabled
+                  ? "bg-amber-50 text-amber-900 border-amber-300 shadow-2xs"
+                  : "bg-gray-100 text-gray-500 border-gray-300"
+              }`}
+              title={soundEnabled ? t.soundOn : t.soundOff}
+            >
+              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-amber-600 shrink-0" /> : <VolumeX className="w-3.5 h-3.5 shrink-0" />}
+              <span className="hidden xl:inline">{soundEnabled ? "ON" : "OFF"}</span>
+            </button>
+
+            {/* Telegram Bot Alert Test */}
+            <button
+              onClick={handleTestTelegram}
+              disabled={telegramStatus.loading}
+              className="bg-sky-600 hover:bg-sky-700 text-white p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl flex items-center space-x-1 shadow-2xs transition disabled:opacity-50 text-xs font-bold shrink-0"
+              title={t.sendTestAlert}
+            >
+              <Send className={`w-3.5 h-3.5 shrink-0 ${telegramStatus.loading ? "animate-spin" : ""}`} />
+              <span className="hidden lg:inline">{telegramStatus.loading ? t.sendingAlert : t.sendTestAlert}</span>
+            </button>
+
+            {/* Direct Link to Telegram Bot */}
+            <a
+              href="https://t.me/vvotel_bot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 p-1.5 sm:px-2 sm:py-1.5 rounded-xl flex items-center space-x-1 transition shadow-2xs text-xs font-bold shrink-0"
+              title="Open @vvotel_bot in Telegram"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+              <span className="hidden md:inline">@vvotel_bot</span>
+            </a>
+
+            {/* Accor PMS link */}
+            <a
+              href="https://t.me/vvotel_bot?start=accor_pms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 p-1.5 sm:px-2 sm:py-1.5 rounded-xl flex items-center space-x-1 transition text-xs font-bold shrink-0"
+              title={t.accorPmsBtn}
+            >
+              <Building className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+              <span className="hidden xl:inline">Accor PMS</span>
+            </a>
+
+            {/* Public Website */}
+            <Link
+              href="/"
+              className="bg-white hover:bg-amber-50 text-gray-700 border border-amber-200 p-1.5 sm:px-2 sm:py-1.5 rounded-xl flex items-center space-x-1 transition text-xs font-bold shrink-0"
+              title={t.homeBtn}
+            >
+              <Home className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden md:inline">{t.homeBtn}</span>
+            </Link>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 p-1.5 sm:px-2 sm:py-1.5 rounded-xl flex items-center space-x-1 transition text-xs font-bold shrink-0"
+              title={t.logoutBtn}
+            >
+              <LogOut className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden md:inline">{t.logoutBtn}</span>
+            </button>
+          </div>
+        </div>
+      </footer>
 
       {/* ======================= PRINTABLE RECEIPT MODAL ======================= */}
       <PrintableReceipt

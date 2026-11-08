@@ -13,8 +13,33 @@ export interface RoomSetting {
   bedTypeEn: string;
   viewKm: string;
   viewEn: string;
+  viewTypeKm?: string;
+  viewTypeEn?: string;
   imageUrl: string;
   availableCount: number;
+  descriptionKm?: string;
+  descriptionEn?: string;
+  enabled: boolean;
+}
+
+export interface DiningItemSetting {
+  id: string;
+  nameKm: string;
+  nameEn: string;
+  cuisineKm: string;
+  cuisineEn: string;
+  hoursKm: string;
+  hoursEn: string;
+  dressCodeKm: string;
+  dressCodeEn: string;
+  taglineKm: string;
+  taglineEn: string;
+  descriptionKm: string;
+  descriptionEn: string;
+  signatureDishesKm: string | string[];
+  signatureDishesEn: string | string[];
+  priceRangeUSD?: string;
+  imageUrl: string;
   enabled: boolean;
 }
 
@@ -69,7 +94,10 @@ export interface SiteSettings {
   rooms: RoomSetting[];
   breakfastPriceUSD: number;
 
-  // 4. Locations & Tourist Destinations
+  // 4. Dining & Restaurants
+  dining: DiningItemSetting[];
+
+  // 5. Locations & Tourist Destinations
   destinations: DestinationSetting[];
 
   // 5. Feature Toggles
@@ -194,6 +222,89 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       viewEn: "Full Mekong View with Dining Kitchen & Jacuzzi",
       imageUrl: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1200&q=80",
       availableCount: 4,
+      enabled: true,
+    },
+  ],
+
+  dining: [
+    {
+      id: "mekong-breeze",
+      nameKm: "ភោជនីយដ្ឋាន មេគង្គប្រ៊ីស",
+      nameEn: "Mekong Breeze Restaurant",
+      cuisineKm: "ម្ហូបខ្មែរបុរាណបែបព្រះបរមរាជវាំង & ម្ហូបអន្តរជាតិទំនើប",
+      cuisineEn: "Authentic Khmer Royal Cuisine & Contemporary International",
+      hoursKm: "អាហារពេលព្រឹក: ០៦:០០ - ១០:៣០ | ថ្ងៃត្រង់ & ពេលល្ងាច: ១១:៣០ - ២២:៣០",
+      hoursEn: "Breakfast: 06:00 - 10:30 | Lunch & Dinner: 11:30 - 22:30",
+      dressCodeKm: "សម្លៀកបំពាក់សមរម្យ",
+      dressCodeEn: "Smart Casual",
+      taglineKm: "ទទួលទានអាហារមាត់ទន្លេមេគង្គ ជាមួយត្រីទន្លេស្រស់ៗ និងបន្លែសរីរាង្គក្នុងតំបន់",
+      taglineEn: "All-day riverside dining celebrating the freshest Mekong fish and organic produce",
+      descriptionKm: "បែរមុខទៅរកផ្ទៃទន្លេមេគង្គ ភោជនីយដ្ឋាន មេគង្គប្រ៊ីស រួមបញ្ចូលគ្នានូវកេរដំណែលម្ហូបខ្មែរជាមួយរសជាតិបារាំងដ៏ឈ្ងុយឆ្ងាញ់។ ផ្តល់ជូនប៊ូហ្វេពេលព្រឹកស្រស់ៗ បង្កងទន្លេមេគង្គអាំង និងអាម៉ុកត្រីកែវប្រណីត។",
+      descriptionEn: "Overlooking the sweeping waters of the Mekong, Mekong Breeze blends the rich culinary heritage of Cambodia with French gastronomic precision. Savor live-station buffet breakfasts, succulent river lobsters, and our renowned Steamed Fish Amok.",
+      signatureDishesKm: "អាម៉ុកបង្កងទន្លេមេគង្គពិសេស, ការីសារ៉ាម៉ាន់សាច់គោផុយ, មឹកឆាម្រេចខ្ចីកំពត",
+      signatureDishesEn: "Signature Mekong River Prawn Amok, Slow-Braised Beef Saraman Curry, Kampot Pepper Wok-Fried Squid",
+      priceRangeUSD: "$12 - $45",
+      imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+      enabled: true,
+    },
+    {
+      id: "sunset-lounge",
+      nameKm: "សាន់សិត រីវើឡោញ & បារបារី",
+      nameEn: "Sunset River Lounge & Cigar Terrace",
+      cuisineKm: "ស្រាក្រឡុកប្រណីត អាហារសម្រន់តាប៉ាស & ស្រាទំពាំងបាយជូរ",
+      cuisineEn: "Artisan Cocktails, Tapas & Cellar Wines",
+      hoursKm: "រៀងរាល់ថ្ងៃ: ១៦:០០ - ០០:០០ (អធ្រាត្រ)",
+      hoursEn: "Daily: 16:00 - 00:00 (Midnight)",
+      dressCodeKm: "សម្លៀកបំពាក់សុភាពទាន់សម័យ",
+      dressCodeEn: "Casual Chic",
+      taglineKm: "ចំណុចទស្សនាថ្ងៃលិចដ៏ស្រស់ស្អាតបំផុតក្នុងខេត្តកំពង់ចាម ជាមួយស្រាក្រឡុក",
+      taglineEn: "The premier vantage point in Kampong Cham for golden sunset cocktails",
+      descriptionKm: "ស្ថិតនៅលើរានឈើបែបទំនើបមាត់ទន្លេ សាន់សិត រីវើឡោញ គឺជាទីតាំងដ៏ស័ក្តិសមសម្រាប់លំហែកាយពេលព្រលប់។ រីករាយជាមួយស្រាក្រឡុកផ្សំពីក្រូចថ្លុងកោះប៉ែន ស្លឹកគ្រៃ និងម្រេចកំពត។",
+      descriptionEn: "Perched above the riverfront with an open-air wooden deck, the Sunset Lounge is the ideal spot to unwind as the sky transforms into hues of violet and gold.",
+      signatureDishesKm: "ស្រាក្រឡុកក្រូចថ្លុងកំពង់ចាម, ណែមទាស្លឹកគ្រៃមេគង្គបំពង, ឈីស & សាច់ក្រកស្ងួតអន្តរជាតិ",
+      signatureDishesEn: "Kampong Cham Pomelo Spritz, Mekong Lemongrass Duck Spring Rolls, Artisan Cheese & Charcuterie Board",
+      priceRangeUSD: "$8 - $28",
+      imageUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80",
+      enabled: true,
+    },
+    {
+      id: "palm-pool-bar",
+      nameKm: "ផាម ភូលបារ & ហ្គ្រីល",
+      nameEn: "Palm Pool Bar & Grill",
+      cuisineKm: "ភេសជ្ជៈស្រស់ស្រាយ ទឹកផ្លែឈើស្រស់ & អាហារសម្រន់មាត់អាង",
+      cuisineEn: "Tropical Smoothies, Wood-Fired Pizza & Poolside Bites",
+      hoursKm: "រៀងរាល់ថ្ងៃ: ០៨:០០ - ២០:០០",
+      hoursEn: "Daily: 08:00 - 20:00",
+      dressCodeKm: "សម្លៀកបំពាក់ហែលទឹក / សមរម្យ",
+      dressCodeEn: "Swimwear / Resort Casual",
+      taglineKm: "សម្រាកក្បែរអាងហែលទឹកមាត់ទន្លេ ជាមួយដូងក្រអូប និងភីហ្សាដុតកម្តៅអុស",
+      taglineEn: "Sun-drenched relaxation beside the infinity pool overlooking the Mekong",
+      descriptionKm: "រីករាយជាមួយកម្តៅថ្ងៃក្បែរអាងហែលទឹកធំទូលាយ។ បម្រើជូនដូងស្រស់ពីកោះប៉ែន ស្រាក្រឡុកត្រូពិច ភីហ្សាដុតកម្តៅអុស និងប៊ឺហ្គឺសាច់គោប្រណីត។",
+      descriptionEn: "Relax beside our riverside infinity pool while enjoying fresh coconut, wood-fired pizzas, gourmet burgers, and tropical refreshments.",
+      signatureDishesKm: "ដូងស្រស់កោះប៉ែន, ភីហ្សាគ្រឿងសមុទ្រមេគង្គ, ប៊ឺហ្គឺសាច់គោវ៉ាក្យូអាំង",
+      signatureDishesEn: "Fresh Koh Pen Coconut, Mekong Seafood Pizza, Wagyu Beef Burger",
+      priceRangeUSD: "$6 - $22",
+      imageUrl: "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=1200&q=80",
+      enabled: true,
+    },
+    {
+      id: "artisan-bakery",
+      nameKm: "មេគង្គ អាទីសាន ខាហ្វេ & ប៊ែកខឺរី",
+      nameEn: "Mekong Artisan Cafe & French Bakery",
+      cuisineKm: "កាហ្វេតំបន់មណ្ឌលគិរី នំក្រូសង់បារាំង & តែរសជាតិខ្មែរ",
+      cuisineEn: "Mondulkiri Single-Origin Coffee & Fresh Viennoiserie",
+      hoursKm: "រៀងរាល់ថ្ងៃ: ០៦:៣០ - ១៨:០០",
+      hoursEn: "Daily: 06:30 - 18:00",
+      dressCodeKm: "សម្លៀកបំពាក់ធម្មតា",
+      dressCodeEn: "Casual",
+      taglineKm: "ក្លិនឈ្ងុយកាហ្វេស្រស់ និងនំប៉័ងដុតក្តៅៗរៀងរាល់ព្រឹក",
+      taglineEn: "Morning aromas of fresh artisanal bakes and rich Cambodian coffee",
+      descriptionKm: "កន្លែងទទួលទានកាហ្វេដ៏កក់ក្តៅ បម្រើជូនកាហ្វេប្រណីតពីខេត្តមណ្ឌលគិរី នំប៉័ងក្រូសង់បារាំងធ្វើថ្មីៗរាល់ថ្ងៃ និងបង្អែមខ្មែរទំនើប។",
+      descriptionEn: "A charming boutique cafe offering handcrafted Mondulkiri coffee, authentic French viennoiseries, and contemporary Khmer desserts.",
+      signatureDishesKm: "កាហ្វេទឹកដោះគោទឹកកកមណ្ឌលគិរី, នំក្រូសង់ប៊ឺរបារាំង, តាតផ្លែឈើត្រូពិច",
+      signatureDishesEn: "Iced Mondulkiri Drip Coffee, Pure Butter French Croissant, Tropical Fruit Tart",
+      priceRangeUSD: "$3.50 - $12",
+      imageUrl: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80",
       enabled: true,
     },
   ],

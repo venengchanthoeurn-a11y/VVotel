@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useSettings } from "@/context/SettingsContext";
 import {
   Utensils,
   Clock,
@@ -169,7 +170,39 @@ export const DINING_VENUES: DiningVenue[] = [
 
 export const DiningSection: React.FC = () => {
   const { lang, t } = useLanguage();
+  const { settings } = useSettings();
   const [activeReservation, setActiveReservation] = useState<DiningVenue | null>(null);
+
+  const venues: DiningVenue[] = (settings?.dining && settings.dining.length > 0)
+    ? settings.dining
+        .filter((d) => d.enabled)
+        .map((d) => ({
+          id: d.id,
+          name: { en: d.nameEn, km: d.nameKm },
+          cuisine: { en: d.cuisineEn, km: d.cuisineKm },
+          hours: { en: d.hoursEn, km: d.hoursKm },
+          dressCode: { en: d.dressCodeEn, km: d.dressCodeKm },
+          tagline: { en: d.taglineEn, km: d.taglineKm },
+          description: { en: d.descriptionEn, km: d.descriptionKm },
+          signatureDishes: (Array.isArray(d.signatureDishesEn)
+            ? d.signatureDishesEn
+            : typeof d.signatureDishesEn === "string"
+            ? (d.signatureDishesEn as string).split(",").map((s) => s.trim()).filter(Boolean)
+            : []
+          ).map((dishEn: string, idx: number) => {
+            const kmList = Array.isArray(d.signatureDishesKm)
+              ? d.signatureDishesKm
+              : typeof d.signatureDishesKm === "string"
+              ? (d.signatureDishesKm as string).split(",").map((s) => s.trim()).filter(Boolean)
+              : [];
+            return {
+              en: dishEn,
+              km: kmList[idx] || dishEn,
+            };
+          }),
+          imageUrl: d.imageUrl,
+        }))
+    : DINING_VENUES;
   const [guestCount, setGuestCount] = useState(2);
   const [resDate, setResDate] = useState("2026-11-04");
   const [resTime, setResTime] = useState("19:00");
@@ -262,7 +295,7 @@ export const DiningSection: React.FC = () => {
 
         {/* 4 Venues Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {DINING_VENUES.map((venue) => (
+          {venues.map((venue) => (
             <div
               key={venue.id}
               className="bg-[#fbfaf8] rounded-2xl overflow-hidden border border-gray-200/80 hover:border-vvotel-gold/50 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col group"

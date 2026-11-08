@@ -64,7 +64,7 @@ export const Header: React.FC = () => {
                     {settings.logoText?.slice(0, 1) || "V"}
                   </div>
                 )}
-                <div className="flex flex-col min-w-0">
+                <div className="hidden md:flex flex-col min-w-0">
                   <span className="font-extrabold text-xl sm:text-2xl tracking-tighter text-vvotel-navy leading-none truncate">
                     {settings.logoText || "VVOTEL"}
                   </span>

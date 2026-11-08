@@ -1,23 +1,26 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { SiteSettings, DEFAULT_SETTINGS } from "./settings";
 
-// Storage file location
-const SETTINGS_FILE = path.join(process.cwd(), "data", "settings.json");
+const SEED_SETTINGS_FILE = path.join(process.cwd(), "data", "settings.json");
+const TMP_SETTINGS_FILE = path.join(os.tmpdir(), "vvotel_settings.json");
 
-let memorySettingsCache: SiteSettings | null = null;
+declare global {
+  var _vvotelSettingsMemoryCache: SiteSettings | undefined;
+}
 
 export function getSiteSettings(): SiteSettings {
-  if (memorySettingsCache) {
-    return memorySettingsCache;
+  if (globalThis._vvotelSettingsMemoryCache) {
+    return globalThis._vvotelSettingsMemoryCache;
   }
 
+  // 1. Try reading from TMP_SETTINGS_FILE (persisted during container lifetime)
   try {
-    if (fs.existsSync(SETTINGS_FILE)) {
-      const raw = fs.readFileSync(SETTINGS_FILE, "utf-8");
+    if (fs.existsSync(TMP_SETTINGS_FILE)) {
+      const raw = fs.readFileSync(TMP_SETTINGS_FILE, "utf-8");
       const parsed = JSON.parse(raw);
-      // Merge with default in case new fields were added
-      memorySettingsCache = {
+      globalThis._vvotelSettingsMemoryCache = {
         ...DEFAULT_SETTINGS,
         ...parsed,
         features: {
@@ -25,14 +28,33 @@ export function getSiteSettings(): SiteSettings {
           ...(parsed.features || {}),
         },
       };
-      return memorySettingsCache!;
+      return globalThis._vvotelSettingsMemoryCache!;
     }
   } catch (err) {
-    console.error("Failed to read settings.json, using defaults:", err);
+    // Continue to seed file
   }
 
-  memorySettingsCache = { ...DEFAULT_SETTINGS };
-  return memorySettingsCache;
+  // 2. Try reading from project data/settings.json
+  try {
+    if (fs.existsSync(SEED_SETTINGS_FILE)) {
+      const raw = fs.readFileSync(SEED_SETTINGS_FILE, "utf-8");
+      const parsed = JSON.parse(raw);
+      globalThis._vvotelSettingsMemoryCache = {
+        ...DEFAULT_SETTINGS,
+        ...parsed,
+        features: {
+          ...DEFAULT_SETTINGS.features,
+          ...(parsed.features || {}),
+        },
+      };
+      return globalThis._vvotelSettingsMemoryCache!;
+    }
+  } catch (err) {
+    console.warn("Failed to read settings.json, using defaults:", err);
+  }
+
+  globalThis._vvotelSettingsMemoryCache = { ...DEFAULT_SETTINGS };
+  return globalThis._vvotelSettingsMemoryCache;
 }
 
 export function saveSiteSettings(newSettings: Partial<SiteSettings>): SiteSettings {
@@ -47,16 +69,24 @@ export function saveSiteSettings(newSettings: Partial<SiteSettings>): SiteSettin
     updatedAt: new Date().toISOString(),
   };
 
+  globalThis._vvotelSettingsMemoryCache = merged;
+
+  // 1. Write to /tmp for Vercel Serverless persistence
   try {
-    const dir = path.dirname(SETTINGS_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(merged, null, 2), "utf-8");
-    memorySettingsCache = merged;
+    const tmpDir = path.dirname(TMP_SETTINGS_FILE);
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+    fs.writeFileSync(TMP_SETTINGS_FILE, JSON.stringify(merged, null, 2), "utf-8");
   } catch (err) {
-    console.error("Failed to save settings.json:", err);
-    memorySettingsCache = merged;
+    console.warn("Failed to write to tmp settings file:", err);
+  }
+
+  // 2. Write to data/settings.json if writable (local dev, or during build)
+  try {
+    const dir = path.dirname(SEED_SETTINGS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(SEED_SETTINGS_FILE, JSON.stringify(merged, null, 2), "utf-8");
+  } catch (err) {
+    // Expected on Vercel Lambda read-only FS
   }
 
   return merged;

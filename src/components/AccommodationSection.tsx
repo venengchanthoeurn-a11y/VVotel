@@ -231,23 +231,51 @@ export const AccommodationSection: React.FC = () => {
   const { settings } = useSettings();
   const [activeModalRoom, setActiveModalRoom] = useState<RoomItem | null>(null);
 
-  const displayedRooms: RoomItem[] = ROOMS.map((staticRoom) => {
-    const match = settings?.rooms?.find((r) => r.id === staticRoom.id);
-    if (!match) return staticRoom;
-    return {
-      ...staticRoom,
-      pricePerNightUSD: typeof match.basePrice === "number" ? match.basePrice : staticRoom.pricePerNightUSD,
-      name: {
-        en: match.nameEn || staticRoom.name.en,
-        km: match.nameKm || staticRoom.name.km,
+  const displayedRooms: RoomItem[] = [
+    ...ROOMS.map((staticRoom) => {
+      const match = settings?.rooms?.find((r) => r.id === staticRoom.id);
+      if (!match) return staticRoom;
+      return {
+        ...staticRoom,
+        pricePerNightUSD: typeof match.basePrice === "number" ? match.basePrice : staticRoom.pricePerNightUSD,
+        name: {
+          en: match.nameEn || staticRoom.name.en,
+          km: match.nameKm || staticRoom.name.km,
+        },
+        category: {
+          en: match.categoryEn || staticRoom.category.en,
+          km: match.categoryKm || staticRoom.category.km,
+        },
+        imageUrl: match.imageUrl || staticRoom.imageUrl,
+        sizeSqm: match.sizeSqm || staticRoom.sizeSqm,
+      };
+    }),
+    ...(settings?.rooms?.filter((r) => !ROOMS.some((sr) => sr.id === r.id)) || []).map((customRoom) => ({
+      id: customRoom.id,
+      name: { en: customRoom.nameEn, km: customRoom.nameKm },
+      category: { en: customRoom.categoryEn || "Luxury", km: customRoom.categoryKm || "ប្រណីត" },
+      sizeSqm: customRoom.sizeSqm || 40,
+      bedType: { en: customRoom.bedTypeEn || "1 King Bed", km: customRoom.bedTypeKm || "គ្រែឃីង ១" },
+      maxOccupancy: {
+        en: `${customRoom.capacityAdults || 2} Adults, ${customRoom.capacityChildren || 1} Child`,
+        km: `មនុស្សចាស់ ${customRoom.capacityAdults || 2}, ក្មេង ${customRoom.capacityChildren || 1}`,
       },
-      category: {
-        en: match.categoryEn || staticRoom.category.en,
-        km: match.categoryKm || staticRoom.category.km,
+      pricePerNightUSD: customRoom.basePrice || 100,
+      view: { en: customRoom.viewEn || customRoom.viewTypeEn || "Mekong River View", km: customRoom.viewKm || customRoom.viewTypeKm || "ទេសភាពទន្លេមេគង្គ" },
+      tagline: { en: customRoom.nameEn, km: customRoom.nameKm },
+      description: {
+        en: customRoom.descriptionEn || "Luxury accommodation in Kampong Cham with river views and full amenities.",
+        km: customRoom.descriptionKm || "បន្ទប់ស្នាក់នៅប្រណីតកណ្តាលក្រុងកំពង់ចាម បែរមុខទៅទន្លេមេគង្គ ផាសុកភាពខ្ពស់។",
       },
-      imageUrl: match.imageUrl || staticRoom.imageUrl,
-    };
-  }).filter((r) => {
+      imageUrl: customRoom.imageUrl || "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
+      amenities: [
+        { en: "High-Speed WiFi 6 & Smart TV", km: "អ៊ីនធឺណិតល្បឿនលឿន WiFi 6 & Smart TV" },
+        { en: "Complimentary Breakfast", km: "អាហារពេលព្រឹកឥតគិតថ្លៃ" },
+        { en: "Air Conditioning & Mini Bar", km: "ម៉ាស៊ីនត្រជាក់ & ទូទឹកកកខ្នាតតូច" },
+      ],
+      highlight: { en: "Exclusive Comfort", km: "ផាសុកភាពខ្ពស់" },
+    })),
+  ].filter((r) => {
     const match = settings?.rooms?.find((s) => s.id === r.id);
     return match ? match.enabled !== false : true;
   });
