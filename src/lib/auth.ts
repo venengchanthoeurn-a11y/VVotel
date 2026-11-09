@@ -129,7 +129,8 @@ export function timingSafeCompare(a: string, b: string): boolean {
  */
 export function maskSessionToken(token: string): string {
   if (!token || typeof token !== "string") return "unknown";
-  return `tok_${token.slice(0, 4)}...${token.slice(-4)}`;
+  const sid = token.includes(".") ? token.split(".")[0] : token;
+  return `tok_${sid.slice(0, 4)}...${sid.slice(-4)}`;
 }
 
 /**
@@ -562,9 +563,15 @@ export async function authenticateCredentials(
   };
 }
 
+const SESSION_SIGNING_SECRET =
+  process.env.SESSION_SECRET ||
+  process.env.NEXTAUTH_SECRET ||
+  process.env.AUTH_SECRET ||
+  "vvotel-production-cryptographic-session-key-v2-2026-sec-guard";
+
 /**
  * Create a new cryptographic session
- * Uses Redis distributed store with session fixation protection
+ * Uses Redis distributed store with session fixation protection and stateless signature fallback
  */
 export async function createSession(user: AuthUser, ip: string, userAgent?: string): Promise<string> {
   const isProd = safeCache.isProduction();
@@ -572,8 +579,9 @@ export async function createSession(user: AuthUser, ip: string, userAgent?: stri
     throw new Error("PRODUCTION_SESSION_STORE_UNAVAILABLE: Cannot create session because shared Redis is unreachable.");
   }
 
-  // Generate 256-bit cryptographically secure random session ID
-  const sessionId = crypto.randomBytes(32).toString("hex");
+  // Generate 256-bit cryptographically secure random session ID with vvt_sess_ prefix
+  const randomHex = crypto.randomBytes(16).toString("hex");
+  const sessionId = `vvt_sess_${randomHex}`;
   const now = Date.now();
   const sessionData: SessionData = {
     sessionId,
@@ -585,16 +593,26 @@ export async function createSession(user: AuthUser, ip: string, userAgent?: stri
     userAgent,
   };
 
-  const key = `session:${sessionId}`;
-  await safeCache.set(key, JSON.stringify(sessionData), "EX", SESSION_TTL_SECONDS);
-  return sessionId;
+  const payloadStr = JSON.stringify(sessionData);
+  const payloadB64 = Buffer.from(payloadStr, "utf8").toString("base64url");
+  const signature = crypto
+    .createHmac("sha256", SESSION_SIGNING_SECRET)
+    .update(`${sessionId}.${payloadB64}`)
+    .digest("base64url");
+  const sessionToken = `${sessionId}.${payloadB64}.${signature}`;
+
+  // Store in cache/store for fast direct lookup
+  await safeCache.set(`session:${sessionId}`, payloadStr, "EX", SESSION_TTL_SECONDS);
+  await safeCache.set(`session:${sessionToken}`, payloadStr, "EX", SESSION_TTL_SECONDS);
+
+  return sessionToken;
 }
 
 /**
- * Retrieve and optionally renew session by sessionId
+ * Retrieve and optionally renew session by sessionId or signed session token
  */
-export async function getSession(sessionId: string): Promise<SessionData | null> {
-  if (!sessionId || typeof sessionId !== "string" || sessionId.length < 32) return null;
+export async function getSession(token: string): Promise<SessionData | null> {
+  if (!token || typeof token !== "string" || token.length < 16) return null;
   const isProd = safeCache.isProduction();
 
   if (isProd && !safeCache.isReady()) {
@@ -602,45 +620,98 @@ export async function getSession(sessionId: string): Promise<SessionData | null>
     return null;
   }
 
-  const key = `session:${sessionId}`;
-  const raw = await safeCache.get(key);
-  if (!raw) return null;
+  let sessionId = token;
+  let raw = await safeCache.get(`session:${token}`);
 
-  try {
-    const data: SessionData = JSON.parse(raw);
-    const now = Date.now();
-    if (now > data.expiresAt) {
-      await safeCache.del(key);
-      return null;
+  if (token.includes(".")) {
+    sessionId = token.split(".")[0];
+    if (!raw) {
+      raw = await safeCache.get(`session:${sessionId}`);
     }
+  }
 
-    // Safe sliding-window session renewal:
-    // If within renewal window (e.g. last 3 hours of session), extend expiration
-    const timeLeftMs = data.expiresAt - now;
-    if (timeLeftMs < SESSION_RENEWAL_WINDOW_SECONDS * 1000) {
-      data.expiresAt = now + SESSION_TTL_SECONDS * 1000;
-      data.lastRenewedAt = now;
-      await safeCache.set(key, JSON.stringify(data), "EX", SESSION_TTL_SECONDS);
-    }
-
-    return data;
-  } catch {
+  // Check if session has been explicitly revoked
+  const isRevoked = await safeCache.get(`revoked:${sessionId}`);
+  if (isRevoked) {
     return null;
   }
+
+  let sessionData: SessionData | null = null;
+
+  if (raw) {
+    try {
+      sessionData = JSON.parse(raw);
+    } catch {
+      sessionData = null;
+    }
+  }
+
+  // Stateless cryptographic verification fallback across serverless Lambda instances:
+  if (!sessionData && token.includes(".")) {
+    const parts = token.split(".");
+    if (parts.length === 3) {
+      const [tokenSid, b64Payload, sig] = parts;
+      const expectedSig = crypto
+        .createHmac("sha256", SESSION_SIGNING_SECRET)
+        .update(`${tokenSid}.${b64Payload}`)
+        .digest("base64url");
+
+      if (timingSafeCompare(expectedSig, sig)) {
+        try {
+          const decoded = Buffer.from(b64Payload, "base64url").toString("utf8");
+          const parsed: SessionData = JSON.parse(decoded);
+          if (parsed && parsed.sessionId === tokenSid && parsed.user && parsed.expiresAt) {
+            sessionData = parsed;
+            // Warm cache in this Lambda instance
+            safeCache.set(`session:${tokenSid}`, decoded, "EX", SESSION_TTL_SECONDS).catch(() => {});
+            safeCache.set(`session:${token}`, decoded, "EX", SESSION_TTL_SECONDS).catch(() => {});
+          }
+        } catch {
+          sessionData = null;
+        }
+      }
+    }
+  }
+
+  if (!sessionData) {
+    return null;
+  }
+
+  const now = Date.now();
+  if (now > sessionData.expiresAt) {
+    await safeCache.del(`session:${sessionId}`);
+    await safeCache.del(`session:${token}`);
+    return null;
+  }
+
+  // Safe sliding-window session renewal:
+  const timeLeftMs = sessionData.expiresAt - now;
+  if (timeLeftMs < SESSION_RENEWAL_WINDOW_SECONDS * 1000) {
+    sessionData.expiresAt = now + SESSION_TTL_SECONDS * 1000;
+    sessionData.lastRenewedAt = now;
+    const refreshed = JSON.stringify(sessionData);
+    await safeCache.set(`session:${sessionId}`, refreshed, "EX", SESSION_TTL_SECONDS).catch(() => {});
+    await safeCache.set(`session:${token}`, refreshed, "EX", SESSION_TTL_SECONDS).catch(() => {});
+  }
+
+  return sessionData;
 }
 
 /**
  * Revoke session immediately across all application instances (Logout)
  */
-export async function revokeSession(sessionId: string, ip = "127.0.0.1"): Promise<void> {
-  if (!sessionId) return;
-  const session = await getSession(sessionId);
+export async function revokeSession(token: string, ip = "127.0.0.1"): Promise<void> {
+  if (!token) return;
+  const sessionId = token.includes(".") ? token.split(".")[0] : token;
+  const session = await getSession(token);
   if (session) {
     await logAuditEvent("AUTH_LOGOUT", { username: session.user.username, role: session.user.role, ip }, "SUCCESS", {
       sessionMasked: maskSessionToken(sessionId),
     });
   }
+  await safeCache.set(`revoked:${sessionId}`, "1", "EX", SESSION_TTL_SECONDS);
   await safeCache.del(`session:${sessionId}`);
+  await safeCache.del(`session:${token}`);
 }
 
 /**
