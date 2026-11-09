@@ -14,14 +14,14 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://vvhotel.vercel.app"),
-  title: "Destination Guide - Vattanac Hotel (VVotel) Kampong Cham Cambodia",
+  title: "Vattanac",
   description:
     "Discover Kampong Cham with Vattanac Hotel (VVotel) located at No. 2052, Preah Monivong St., Phum 7, 030402, Kampong Cham City. Explore Wat Nokor Bachey, Koh Pen Bamboo Bridge, Phnom Hanchey, Mekong sunset cruises, fine dining, and luxury accommodation.",
   manifest: "/manifest.json?v=2",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "VVotel",
+    title: "Vattanac",
   },
   icons: {
     icon: [
@@ -34,6 +34,7 @@ export const metadata: Metadata = {
     apple: [{ url: "/icons/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" }],
   },
   keywords: [
+    "Vattanac",
     "សណ្ឋាគារ វឌ្ឍនៈ",
     "VVotel",
     "Vattanac Hotel",
@@ -48,17 +49,17 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Vattanac Hotel (VVotel) Group" }],
   openGraph: {
-    title: "Destination Guide - Vattanac Hotel (VVotel) Kampong Cham Cambodia",
+    title: "Vattanac",
     description:
       "Explore Cambodia's Legendary Mekong Heartland with Vattanac Hotel (VVotel) Kampong Cham. Located at No. 2052, Preah Monivong St., Phum 7, 030402.",
     url: "https://vvhotel.vercel.app",
-    siteName: "Vattanac Hotel (VVotel) Kampong Cham",
+    siteName: "Vattanac",
     images: [
       {
         url: "/icons/icon-512.png?v=2",
         width: 512,
         height: 512,
-        alt: "Vattanac Hotel (VVotel) Logo",
+        alt: "Vattanac Logo",
       },
     ],
     locale: "km_KH",
@@ -66,7 +67,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Vattanac Hotel (VVotel) Kampong Cham",
+    title: "Vattanac",
     description: "5-Star Luxury Riverside Resort & Spa in Kampong Cham, Cambodia",
     images: ["/icons/icon-512.png?v=2"],
   },

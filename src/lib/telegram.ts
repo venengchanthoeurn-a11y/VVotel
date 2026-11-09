@@ -121,7 +121,7 @@ export async function sendTelegramMessage(
   }
 }
 
-export const VVOTEL_LOGO_URL = "https://vvhotel.vercel.app/icons/icon-512.png";
+export const VVOTEL_LOGO_URL = "https://vvhotel.vercel.app/icons/icon-512.png?v=2";
 export const HOTEL_FACADE_URL = "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80";
 
 /**
