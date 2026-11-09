@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { verifyPayWayWebhook, PayWayCallbackPayload } from "@/lib/payway";
+import {
+  verifyPayWayWebhook,
+  PayWayCallbackPayload,
+  recordPaymentReconciliation,
+} from "@/lib/payway";
 import { getBookingByIdAsync, updateBookingPaymentStatus } from "@/lib/bookings";
 import { safeCache } from "@/lib/redis";
 import { logAuditEvent } from "@/lib/auditLog";
@@ -52,7 +56,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ status: 0, description: "Already processed" });
     }
 
-    // 5. Update Payment State Machine
+    // 5. Record Independent Payment Reconciliation Entry (Control B)
+    await recordPaymentReconciliation({
+      bookingReference: booking.id,
+      provider: "ABA_PAYWAY",
+      providerTransactionId: payload.tran_id,
+      expectedAmount,
+      expectedCurrency: "USD",
+      actualSettledAmount: callbackAmount,
+      actualSettledCurrency: payload.currency as "USD" | "KHR",
+      providerVerificationTimestamp: new Date().toISOString(),
+      settlementStatus: payload.status === 0 ? "SETTLED" : "REJECTED",
+      refundStatus: "NONE",
+      reconciliationOutcome: "MATCH",
+      details: {
+        approvalCode: payload.apv,
+        paymentType: payload.payment_type,
+      },
+    });
+
+    // 6. Update Payment State Machine
     if (payload.status === 0) {
       updateBookingPaymentStatus(booking.id, "PAID", payload.tran_id);
 

@@ -12,6 +12,7 @@ import {
   saveBookingPostgres,
   withTransaction,
 } from "./db";
+import { dispatchSecurityAlert } from "./monitoring";
 
 export interface PriceSnapshot {
   currency: "USD";
@@ -447,11 +448,28 @@ export async function createBooking(data: Partial<BookingRecord>): Promise<Booki
       reservationTime: data.reservationTime || data.checkInTime,
     };
 
-    // 5. Authoritative PostgreSQL Transactional Persistence
+    // 5. Authoritative PostgreSQL Transactional Persistence (Control A: Fail Closed)
     if (isPostgresConfigured()) {
-      await withTransaction(async (client) => {
-        await saveBookingPostgres(client, newBooking);
-      });
+      try {
+        await withTransaction(async (client) => {
+          await saveBookingPostgres(client, newBooking);
+        });
+      } catch (dbErr: any) {
+        dispatchSecurityAlert({
+          category: "POSTGRES_CONNECTION_FAILURE",
+          severity: "CRITICAL",
+          title: `PostgreSQL Transaction Failed for Booking ${newBooking.id}`,
+          details: {
+            error: dbErr.message,
+            bookingRef: newBooking.id,
+            action: "FAIL_CLOSED_PREVENTING_SILENT_REDIS_DESYNC",
+          },
+        }).catch(() => {});
+
+        throw new Error(
+          `DATABASE_COMMIT_FAILED: Primary database transaction could not be committed (${dbErr.message}). Booking rejected to prevent unsynchronized state.`
+        );
+      }
     }
 
     // Add to top of list

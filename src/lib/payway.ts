@@ -165,3 +165,45 @@ export async function checkPayWayTransactionStatus(
     };
   }
 }
+
+export interface PaymentReconciliationRecord {
+  bookingReference: string;
+  provider: "ABA_PAYWAY" | "NBC_BAKONG";
+  providerTransactionId: string;
+  expectedAmount: number;
+  expectedCurrency: "USD" | "KHR";
+  actualSettledAmount: number;
+  actualSettledCurrency: "USD" | "KHR";
+  providerVerificationTimestamp: string;
+  settlementStatus: "SETTLED" | "PENDING" | "MISMATCH" | "REJECTED";
+  refundStatus: "NONE" | "REQUESTED" | "REFUNDED";
+  reconciliationOutcome: "MATCH" | "DISCREPANCY" | "DUPLICATE";
+  details?: Record<string, any>;
+}
+
+declare global {
+  var _vvotelReconciliationLedger: Map<string, PaymentReconciliationRecord> | undefined;
+}
+
+if (!globalThis._vvotelReconciliationLedger) {
+  globalThis._vvotelReconciliationLedger = new Map();
+}
+
+/**
+ * Record payment reconciliation entry in durable ledger
+ */
+export async function recordPaymentReconciliation(
+  record: PaymentReconciliationRecord
+): Promise<PaymentReconciliationRecord> {
+  globalThis._vvotelReconciliationLedger?.set(record.bookingReference, record);
+  return record;
+}
+
+/**
+ * Retrieve payment reconciliation entry
+ */
+export function getPaymentReconciliation(
+  bookingRef: string
+): PaymentReconciliationRecord | null {
+  return globalThis._vvotelReconciliationLedger?.get(bookingRef) || null;
+}

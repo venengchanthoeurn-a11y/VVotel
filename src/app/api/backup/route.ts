@@ -132,10 +132,22 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "restore") {
-      // System restore is a highly privileged operation: requires backup:restore (Admin, Super Admin)
+      // System restore is a highly privileged operation: requires backup:restore (Super Admin only)
       const auth = await verifyAuth(request, "backup:restore");
       if (!auth.authorized) {
         return auth.errorResponse!;
+      }
+
+      // Control C requirement: Restore operations strictly restricted to SUPER_ADMIN role
+      if (auth.user?.role !== "SUPER_ADMIN") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "SUPERADMIN_ROLE_REQUIRED",
+            message: "Disaster recovery restore is strictly restricted to authorized Super Administrators.",
+          },
+          { status: 403 }
+        );
       }
 
       const snapshot: BackupSnapshot = body.snapshot;
@@ -146,9 +158,30 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Control C requirement: High-water mark protection prevents overwriting newer records with stale backup
+      const currentBookings = getAllBookings();
+      const newestExistingDate = currentBookings.reduce((max, b) => {
+        const t = new Date(b.createdAt).getTime();
+        return t > max ? t : max;
+      }, 0);
+
+      const snapshotDate = snapshot.timestamp ? new Date(snapshot.timestamp).getTime() : 0;
+      if (newestExistingDate > 0 && snapshotDate < newestExistingDate && !body.forceOlderSnapshot) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "STALE_SNAPSHOT_OVERWRITE_PREVENTED",
+            message:
+              "High-water mark protection: Snapshot is older than the newest existing database records. To prevent data loss, set forceOlderSnapshot: true if this rollback is intentional.",
+            newestExistingRecordDate: new Date(newestExistingDate).toISOString(),
+            snapshotDate: snapshot.timestamp,
+          },
+          { status: 409 }
+        );
+      }
+
       // Safety: Create pre-restore snapshot first before overwriting
       const currentSettings = getSiteSettings();
-      const currentBookings = getAllBookings();
       const preRestoreSnapshot = createBackupSnapshot(
         currentSettings,
         currentBookings,
