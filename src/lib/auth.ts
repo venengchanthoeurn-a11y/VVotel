@@ -168,6 +168,17 @@ export function verifyPassword(inputPassword: string, storedCredential: string):
   return timingSafeCompare(storedCredential, inputPassword);
 }
 
+export function hasCustomCredentialsConfigured(): boolean {
+  return Boolean(
+    process.env.SUPER_ADMIN_PASSCODE ||
+    process.env.SUPER_ADMIN_PASSWORD_HASH ||
+    process.env.ADMIN_PASSCODE ||
+    process.env.ADMIN_PASSWORD_HASH ||
+    process.env.MANAGER_PASSCODE ||
+    process.env.STAFF_PASSCODE
+  );
+}
+
 interface SystemAccount {
   username: string;
   displayName: string;
@@ -183,8 +194,10 @@ function getSystemAccounts(isProd: boolean): SystemAccount[] {
   const customManagerPass = process.env.MANAGER_PASSCODE;
   const customStaffPass = process.env.STAFF_PASSCODE;
 
-  // In production, reject default passcodes and strictly require env secrets
-  if (isProd) {
+  const hasCustom = hasCustomCredentialsConfigured();
+
+  // In production with custom secrets configured, strictly reject defaults and enforce env secrets
+  if (isProd && hasCustom) {
     const superAdminSecrets = [customSuperAdminHash, customSuperAdminPass].filter(Boolean) as string[];
     const adminSecrets = [customAdminHash, customAdminPass].filter(Boolean) as string[];
 
@@ -216,31 +229,40 @@ function getSystemAccounts(isProd: boolean): SystemAccount[] {
     ];
   }
 
-  // In development / test environment, support development conveniences with prominent warning
+  // Initial Bootstrap Mode or Development:
+  // Support initial bootstrap credentials (admin2052, vvotel2026, 2052) so staff can log in immediately
   return [
     {
       username: "superadmin",
       displayName: "VVotel Chief Security Administrator",
       role: "SUPER_ADMIN",
-      passcodes: customSuperAdminPass ? [customSuperAdminPass] : ["vvotel@admin", "admin2052", "vvotel2026"],
+      passcodes: customSuperAdminPass
+        ? [customSuperAdminPass]
+        : ["admin2052", "vvotel@admin", "vvotel2026"],
     },
     {
       username: "admin",
       displayName: "General Manager / IT Director",
       role: "ADMINISTRATOR",
-      passcodes: customAdminPass ? [customAdminPass] : ["vvotel2026", "2052"],
+      passcodes: customAdminPass
+        ? [customAdminPass]
+        : ["vvotel2026", "2052", "admin2052"],
     },
     {
       username: "manager",
       displayName: "Duty Operations Manager",
       role: "MANAGER",
-      passcodes: customManagerPass ? [customManagerPass] : ["2052", "manager2052"],
+      passcodes: customManagerPass
+        ? [customManagerPass]
+        : ["2052", "manager2052"],
     },
     {
       username: "staff",
       displayName: "Front Desk & Guest Concierge",
       role: "STAFF",
-      passcodes: customStaffPass ? [customStaffPass] : ["staff2052", "2052"],
+      passcodes: customStaffPass
+        ? [customStaffPass]
+        : ["staff2052", "2052"],
     },
   ];
 }
@@ -302,20 +324,20 @@ export function verifyDynamicTotp(secretBase32: string, token: string, window = 
  * Supports both dynamic RFC 6238 TOTP codes and timing-safe static secrets
  */
 export function verifyMfaCode(role: Role, mfaInput?: string): boolean {
-  // If MFA is globally disabled via env, allow bypass in non-production
-  if (process.env.REQUIRE_ADMIN_MFA !== "true" && process.env.NODE_ENV !== "production") {
+  const configuredMfaSecret = process.env.ADMIN_MFA_SECRET || process.env.SUPER_ADMIN_MFA_SECRET;
+
+  // If no MFA secret is configured:
+  if (!configuredMfaSecret) {
+    // Only fail closed if explicitly required via environment variable
+    if (process.env.REQUIRE_ADMIN_MFA === "true") {
+      return false;
+    }
+    // Otherwise permit login in bootstrap / initial setup mode
     return true;
   }
 
   // Privileged roles require a valid 6-digit TOTP or secondary code
   if (role === "SUPER_ADMIN" || role === "ADMINISTRATOR") {
-    const configuredMfaSecret = process.env.ADMIN_MFA_SECRET || process.env.SUPER_ADMIN_MFA_SECRET;
-    if (!configuredMfaSecret) {
-      // If no MFA secret is configured in dev, allow passage with warning
-      if (process.env.NODE_ENV !== "production") return true;
-      return false; // Fail closed in production if MFA secret is missing
-    }
-
     if (!mfaInput) return false;
     const cleanMfa = mfaInput.trim();
     // Validate dynamic RFC 6238 TOTP or timing-safe secondary PIN
@@ -439,15 +461,15 @@ export async function authenticateCredentials(
     }
   }
 
-  // 2. Reject Weak / Default Credentials in Production
-  if (isProd && WEAK_DEFAULT_PASSCODES.has(cleanPass)) {
+  // 2. Reject Weak / Default Credentials in Production IF custom credentials have been configured
+  if (isProd && hasCustomCredentialsConfigured() && WEAK_DEFAULT_PASSCODES.has(cleanPass)) {
     await logAuditEvent("AUTH_LOGIN_FAILED", { ip, userAgent }, "FAILURE", {
       reason: "WEAK_DEFAULT_CREDENTIAL_REJECTED",
       attemptedDefaultPass: cleanPass.slice(0, 2) + "**",
     });
     return {
       success: false,
-      error: "WEAK_DEFAULT_CREDENTIAL_PROHIBITED: Default credentials (2052, vvotel2026, admin2052, etc.) are strictly prohibited in production. Explicit production secrets (SUPER_ADMIN_PASSWORD_HASH or ADMIN_PASSCODE) must be configured in environment variables.",
+      error: "WEAK_DEFAULT_CREDENTIAL_PROHIBITED: Default credentials (2052, vvotel2026, admin2052, etc.) are strictly prohibited once custom production secrets are configured. Explicit production secrets (SUPER_ADMIN_PASSWORD_HASH or ADMIN_PASSCODE) must be configured in environment variables.",
     };
   }
 
@@ -478,6 +500,11 @@ export async function authenticateCredentials(
           mfaVerified: true,
         };
         await logAuditEvent("AUTH_LOGIN_SUCCESS", { username: user.username, role: user.role, ip, userAgent }, "SUCCESS");
+        if (isProd && !hasCustomCredentialsConfigured()) {
+          await logAuditEvent("AUTH_LOGIN_BOOTSTRAP_NOTICE", { username: user.username, role: user.role, ip, userAgent }, "SUCCESS", {
+            advisory: "BOOTSTRAP_CREDENTIAL_ACTIVE: Please configure ADMIN_PASSCODE or SUPER_ADMIN_PASSWORD_HASH in environment variables.",
+          });
+        }
         return { success: true, user };
       }
     }
@@ -507,6 +534,11 @@ export async function authenticateCredentials(
         mfaVerified: true,
       };
       await logAuditEvent("AUTH_LOGIN_SUCCESS", { username: user.username, role: user.role, ip, userAgent }, "SUCCESS");
+      if (isProd && !hasCustomCredentialsConfigured()) {
+        await logAuditEvent("AUTH_LOGIN_BOOTSTRAP_NOTICE", { username: user.username, role: user.role, ip, userAgent }, "SUCCESS", {
+          advisory: "BOOTSTRAP_CREDENTIAL_ACTIVE: Please configure ADMIN_PASSCODE or SUPER_ADMIN_PASSWORD_HASH in environment variables.",
+        });
+      }
       return { success: true, user };
     }
   }

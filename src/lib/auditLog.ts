@@ -7,6 +7,7 @@ import { safeCache } from "./redis";
 export type AuditEventType =
   | "AUTH_LOGIN_SUCCESS"
   | "AUTH_LOGIN_FAILED"
+  | "AUTH_LOGIN_BOOTSTRAP_NOTICE"
   | "AUTH_LOGOUT"
   | "AUTH_LOCKOUT"
   | "AUTH_MFA_CHALLENGE"
