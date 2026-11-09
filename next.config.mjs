@@ -5,11 +5,11 @@ const ContentSecurityPolicy = `
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net;
   img-src 'self' data: blob: https:;
   font-src 'self' data: https://fonts.gstatic.com;
-  connect-src 'self' https://api-bakong.nbc.gov.kh https://api.telegram.org https://maps.googleapis.com https://nominatim.openstreetmap.org;
+  connect-src 'self' https://api-bakong.nbc.gov.kh https://api.telegram.org https://maps.googleapis.com https://nominatim.openstreetmap.org https://checkout.payway.com.kh https://checkout-sandbox.payway.com.kh;
   frame-ancestors 'none';
   object-src 'none';
   base-uri 'self';
-  form-action 'self';
+  form-action 'self' https://checkout.payway.com.kh https://checkout-sandbox.payway.com.kh;
 `.replace(/\s{2,}/g, " ").trim();
 
 const securityHeaders = [

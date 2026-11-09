@@ -586,7 +586,10 @@ async function runAllPhase2Tests() {
     const testRef = `VVT-P2-${Date.now().toString().slice(-6)}`;
     const verifyRes = await fetch(`${BASE_URL}/api/booking/verify`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-forwarded-for": "198.51.100.99",
+      },
       body: JSON.stringify({
         bookingRef: testRef,
         paymentMethod: "PAY_AT_HOTEL",
@@ -595,8 +598,8 @@ async function runAllPhase2Tests() {
         otpCode: "123456",
         roomType: "superior-river",
         roomCount: 1,
-        checkIn: "2026-12-01",
-        checkOut: "2026-12-04",
+        checkIn: "2027-05-01",
+        checkOut: "2027-05-04",
         adults: 2,
         includeBreakfast: true,
         guestName: "Phase 2 Security Test",

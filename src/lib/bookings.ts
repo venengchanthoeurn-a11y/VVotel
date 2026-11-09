@@ -5,6 +5,13 @@ import os from "os";
 import { sendTelegramBookingAlert } from "./telegram";
 import { getSiteSettings } from "./settings-server";
 import { safeCache } from "./redis";
+import {
+  isPostgresConfigured,
+  getBookingsPostgres,
+  getBookingByIdPostgres,
+  saveBookingPostgres,
+  withTransaction,
+} from "./db";
 
 export interface PriceSnapshot {
   currency: "USD";
@@ -131,10 +138,26 @@ export function getAllBookings(): BookingRecord[] {
 }
 
 /**
- * Distributed Async Bookings Retrieval: Fetches authoritative state from Redis primary store
- * across multi-instance serverless deployments before falling back to local files.
+ * Distributed Async Bookings Retrieval: Fetches authoritative state from PostgreSQL
+ * primary store or Redis cache across multi-instance serverless deployments before falling back to local files.
  */
 export async function getAllBookingsAsync(): Promise<BookingRecord[]> {
+  // 1. Authoritative PostgreSQL source of truth (when DATABASE_URL configured)
+  if (isPostgresConfigured()) {
+    try {
+      const pgBookings = await getBookingsPostgres();
+      if (pgBookings && pgBookings.length > 0) {
+        globalThis._vvotelBookingsCache = pgBookings;
+        // Keep Redis high-performance read-through cache synchronized with PG truth
+        safeCache.set(PRIMARY_REDIS_BOOKINGS_KEY, JSON.stringify(pgBookings)).catch(() => {});
+        return pgBookings;
+      }
+    } catch (pgErr: any) {
+      console.warn("PostgreSQL read failed, falling back to distributed cache:", pgErr.message);
+    }
+  }
+
+  // 2. Distributed Redis cache
   try {
     const raw = await safeCache.get(PRIMARY_REDIS_BOOKINGS_KEY);
     if (raw) {
@@ -209,6 +232,12 @@ export function getBookingById(id: string): BookingRecord | null {
 
 export async function getBookingByIdAsync(id: string): Promise<BookingRecord | null> {
   if (!id) return null;
+  if (isPostgresConfigured()) {
+    try {
+      const pgBooking = await getBookingByIdPostgres(id);
+      if (pgBooking) return pgBooking;
+    } catch {}
+  }
   const bookings = await getAllBookingsAsync();
   return bookings.find((b) => b.id.toLowerCase() === id.toLowerCase()) || null;
 }
@@ -418,6 +447,13 @@ export async function createBooking(data: Partial<BookingRecord>): Promise<Booki
       reservationTime: data.reservationTime || data.checkInTime,
     };
 
+    // 5. Authoritative PostgreSQL Transactional Persistence
+    if (isPostgresConfigured()) {
+      await withTransaction(async (client) => {
+        await saveBookingPostgres(client, newBooking);
+      });
+    }
+
     // Add to top of list
     bookings.unshift(newBooking);
     await saveAllBookingsAsync(bookings);
@@ -475,6 +511,15 @@ export function updateBookingStayStatus(
   }
 
   saveAllBookings(bookings);
+
+  if (isPostgresConfigured()) {
+    withTransaction(async (client) => {
+      await saveBookingPostgres(client, bookings[index]);
+    }).catch((err) => {
+      console.warn("PostgreSQL stay status update sync failed:", err.message);
+    });
+  }
+
   return bookings[index];
 }
 
@@ -508,5 +553,14 @@ export function updateBookingPaymentStatus(
   }
 
   saveAllBookings(bookings);
+
+  if (isPostgresConfigured()) {
+    withTransaction(async (client) => {
+      await saveBookingPostgres(client, bookings[index]);
+    }).catch((err) => {
+      console.warn("PostgreSQL payment status update sync failed:", err.message);
+    });
+  }
+
   return bookings[index];
 }

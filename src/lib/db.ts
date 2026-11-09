@@ -228,3 +228,93 @@ export async function runDatabaseMigrations(): Promise<{ success: boolean; appli
     client.release();
   }
 }
+
+function rowToBookingRecord(row: any): BookingRecord {
+  return {
+    id: row.id || row.booking_reference,
+    createdAt: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+    bookingCategory: row.booking_category || "ROOM",
+    guestName: row.guest_name,
+    email: row.email,
+    phone: row.phone,
+    roomType: row.room_type_id,
+    roomNameKm: row.room_type_id,
+    roomNameEn: row.room_type_id,
+    roomCount: Number(row.room_count) || 1,
+    roomNumber: row.room_number || undefined,
+    basePrice: Number(row.base_rate_cents || 12500) / 100,
+    checkIn: typeof row.check_in === "string" ? row.check_in : row.check_in?.toISOString?.().split("T")[0] || "",
+    checkOut: typeof row.check_out === "string" ? row.check_out : row.check_out?.toISOString?.().split("T")[0] || "",
+    checkInTime: "14:00",
+    checkOutTime: "12:00",
+    nights: Number(row.nights) || 1,
+    adults: Number(row.adults) || 2,
+    children: Number(row.children) || 0,
+    includeBreakfast: Boolean(row.include_breakfast),
+    breakfastCost: Number(row.breakfast_cents || 0) / 100,
+    subtotal: (Number(row.base_rate_cents || 12500) * Number(row.nights || 1) * Number(row.room_count || 1)) / 100,
+    discount: Number(row.discount_cents || 0) / 100,
+    totalAmountUSD: Number(row.total_amount_usd) || 0,
+    totalAmountKHR: Number(row.total_amount_khr) || 0,
+    priceSnapshot: typeof row.price_snapshot === "string" ? JSON.parse(row.price_snapshot) : row.price_snapshot,
+    paymentMethod: row.payment_method,
+    paymentStatus: row.payment_status,
+    transactionId: row.transaction_id,
+    signatureHMAC: row.signature_hmac,
+    tamperProofHash: `sha256:${(row.signature_hmac || "").slice(0, 32)}...`,
+    stayStatus: row.stay_status,
+    actualCheckInAt: row.actual_check_in_at ? new Date(row.actual_check_in_at).toISOString() : null,
+    actualCheckOutAt: row.actual_check_out_at ? new Date(row.actual_check_out_at).toISOString() : null,
+    specialRequests: row.special_requests || "",
+  };
+}
+
+/**
+ * Retrieve authoritative bookings list from PostgreSQL
+ */
+export async function getBookingsPostgres(): Promise<BookingRecord[]> {
+  if (!pool) return [];
+  try {
+    const res = await pool.query("SELECT * FROM bookings ORDER BY created_at DESC;");
+    return res.rows.map(rowToBookingRecord);
+  } catch (err: any) {
+    console.warn("PostgreSQL getBookings query failed, falling back to cache:", err.message);
+    return [];
+  }
+}
+
+/**
+ * Retrieve single booking by reference from PostgreSQL
+ */
+export async function getBookingByIdPostgres(id: string): Promise<BookingRecord | null> {
+  if (!pool || !id) return null;
+  try {
+    const res = await pool.query("SELECT * FROM bookings WHERE id = $1 OR booking_reference = $1 LIMIT 1;", [id]);
+    if (res.rows.length === 0) return null;
+    return rowToBookingRecord(res.rows[0]);
+  } catch (err: any) {
+    console.warn("PostgreSQL getBookingById query failed:", err.message);
+    return null;
+  }
+}
+
+/**
+ * Reconcile Redis cache using PostgreSQL as the authoritative source of truth
+ */
+export async function reconcilePostgresToRedis(
+  safeCacheInstance: any,
+  redisKey: string
+): Promise<{ reconciled: boolean; count: number }> {
+  if (!pool) return { reconciled: false, count: 0 };
+  try {
+    const pgBookings = await getBookingsPostgres();
+    if (pgBookings && pgBookings.length > 0) {
+      await safeCacheInstance.set(redisKey, JSON.stringify(pgBookings));
+      return { reconciled: true, count: pgBookings.length };
+    }
+  } catch (err: any) {
+    console.warn("Reconciliation from PostgreSQL to Redis failed:", err.message);
+  }
+  return { reconciled: false, count: 0 };
+}
+
