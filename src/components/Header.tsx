@@ -61,7 +61,7 @@ export const Header: React.FC = () => {
                   />
                 ) : (
                   <img
-                    src="/icons/icon-192.png"
+                    src="/icons/icon-192.png?v=2"
                     alt={settings.hotelNameEn}
                     className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain shadow-md border border-vvotel-gold/30 shrink-0 group-hover:scale-105 transition-transform"
                   />

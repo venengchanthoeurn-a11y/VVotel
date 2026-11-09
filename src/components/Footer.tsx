@@ -31,7 +31,7 @@ export const Footer: React.FC = () => {
                 />
               ) : (
                 <img
-                  src="/icons/icon-192.png"
+                  src="/icons/icon-192.png?v=2"
                   alt={hotelNameEn}
                   className="w-10 h-10 rounded-xl object-contain shadow border border-vvotel-gold/40"
                 />

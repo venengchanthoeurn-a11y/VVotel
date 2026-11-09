@@ -57,9 +57,11 @@ export const MenuSidebar: React.FC<MenuSidebarProps> = ({
         {/* Top Header */}
         <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#08182b]">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-vvotel-gold text-vvotel-navy flex items-center justify-center font-black text-xl shadow">
-              V
-            </div>
+            <img
+              src="/icons/icon-192.png?v=2"
+              alt="Logo"
+              className="w-10 h-10 rounded-xl object-contain shadow border border-vvotel-gold/40 shrink-0"
+            />
             <div>
               <div className="text-base font-extrabold tracking-tight text-white leading-tight">
                 {lang === "km" ? "សណ្ឋាគារ វឌ្ឍនៈ (VVotel)" : "VATTANAC HOTEL (VVOTEL)"}

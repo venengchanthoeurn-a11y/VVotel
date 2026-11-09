@@ -23,16 +23,28 @@ export const PwaInstallPrompt: React.FC = () => {
   const [showAndroidModal, setShowAndroidModal] = useState(false);
 
   useEffect(() => {
-    // 1. Register Service Worker
-    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((reg) => {
-          console.log("Service Worker registered successfully:", reg.scope);
-        })
-        .catch((err) => {
-          console.warn("Service Worker registration failed:", err);
+    // 1. Register Service Worker and purge obsolete caches
+    if (typeof window !== "undefined") {
+      if ("caches" in window) {
+        caches.keys().then((names) => {
+          names.forEach((name) => {
+            if (name === "vvotel-v1") {
+              caches.delete(name);
+            }
+          });
         });
+      }
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/sw.js?v=2")
+          .then((reg) => {
+            reg.update();
+            console.log("Service Worker registered and refreshed:", reg.scope);
+          })
+          .catch((err) => {
+            console.warn("Service Worker registration failed:", err);
+          });
+      }
     }
 
     // 2. Check if already installed / in standalone mode
@@ -131,9 +143,11 @@ export const PwaInstallPrompt: React.FC = () => {
         <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 max-w-md w-full animate-in slide-in-from-bottom-5 duration-300">
           <div className="bg-[#0c2340] text-white p-4 sm:p-5 rounded-2xl shadow-2xl border-2 border-vvotel-gold/60 backdrop-blur-md flex items-center justify-between gap-3">
             <div className="flex items-center space-x-3 min-w-0">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-vvotel-gold text-vvotel-navy font-black text-xl sm:text-2xl flex items-center justify-center shrink-0 shadow-lg border border-white/20">
-                V
-              </div>
+              <img
+                src="/icons/icon-192.png?v=2"
+                alt="VVotel App"
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-contain shrink-0 shadow-lg border border-vvotel-gold/50 bg-white p-0.5"
+              />
               <div className="min-w-0">
                 <div className="flex items-center space-x-1.5">
                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-vvotel-gold">
@@ -184,9 +198,11 @@ export const PwaInstallPrompt: React.FC = () => {
             </button>
 
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-vvotel-navy text-vvotel-gold flex items-center justify-center font-black text-2xl shadow-md border border-vvotel-gold/30">
-                V
-              </div>
+              <img
+                src="/icons/icon-192.png?v=2"
+                alt="VVotel App"
+                className="w-12 h-12 rounded-2xl object-contain shadow-md border border-vvotel-gold/50 bg-white p-1 shrink-0"
+              />
               <div>
                 <h3 className="font-extrabold text-base text-vvotel-navy">
                   {lang === "km" ? "ដំឡើង VVotel លើ iPhone / iPad" : "Install VVotel on iPhone & iPad"}
@@ -289,9 +305,11 @@ export const PwaInstallPrompt: React.FC = () => {
             </button>
 
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-vvotel-navy text-vvotel-gold flex items-center justify-center font-black text-2xl shadow-md border border-vvotel-gold/30">
-                V
-              </div>
+              <img
+                src="/icons/icon-192.png?v=2"
+                alt="VVotel App"
+                className="w-12 h-12 rounded-2xl object-contain shadow-md border border-vvotel-gold/50 bg-white p-1 shrink-0"
+              />
               <div>
                 <h3 className="font-extrabold text-base text-vvotel-navy">
                   {lang === "km" ? "ដំឡើងកម្មវិធី VVotel" : "Install VVotel Application"}

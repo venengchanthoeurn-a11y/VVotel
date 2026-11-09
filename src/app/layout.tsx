@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "Destination Guide - Vattanac Hotel (VVotel) Kampong Cham Cambodia",
   description:
     "Discover Kampong Cham with Vattanac Hotel (VVotel) located at No. 2052, Preah Monivong St., Phum 7, 030402, Kampong Cham City. Explore Wat Nokor Bachey, Koh Pen Bamboo Bridge, Phnom Hanchey, Mekong sunset cruises, fine dining, and luxury accommodation.",
-  manifest: "/manifest.json",
+  manifest: "/manifest.json?v=2",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -25,13 +25,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico" },
-      { url: "/images/vvotel-logo.svg", type: "image/svg+xml" },
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.ico?v=2" },
+      { url: "/images/vvotel-logo.svg?v=2", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png?v=2", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png?v=2", sizes: "512x512", type: "image/png" },
     ],
-    shortcut: "/favicon.ico",
-    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: "/favicon.ico?v=2",
+    apple: [{ url: "/icons/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" }],
   },
   keywords: [
     "សណ្ឋាគារ វឌ្ឍនៈ",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     siteName: "Vattanac Hotel (VVotel) Kampong Cham",
     images: [
       {
-        url: "/icons/icon-512.png",
+        url: "/icons/icon-512.png?v=2",
         width: 512,
         height: 512,
         alt: "Vattanac Hotel (VVotel) Logo",
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Vattanac Hotel (VVotel) Kampong Cham",
     description: "5-Star Luxury Riverside Resort & Spa in Kampong Cham, Cambodia",
-    images: ["/icons/icon-512.png"],
+    images: ["/icons/icon-512.png?v=2"],
   },
 };
 
@@ -80,10 +80,13 @@ export default function RootLayout({
   return (
     <html lang="km">
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" type="image/svg+xml" href="/images/vvotel-logo.svg" />
-        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
+        <link rel="shortcut icon" href="/favicon.ico?v=2" />
+        <link rel="icon" type="image/svg+xml" href="/images/vvotel-logo.svg?v=2" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png?v=2" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-192.png?v=2" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png?v=2" />
+        <link rel="manifest" href="/manifest.json?v=2" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -103,8 +106,8 @@ export default function RootLayout({
               "name": "Vattanac Hotel (VVotel) Kampong Cham",
               "alternateName": "សណ្ឋាគារ វឌ្ឍនៈ (VVotel)",
               "url": "https://vvhotel.vercel.app",
-              "logo": "https://vvhotel.vercel.app/icons/icon-512.png",
-              "image": "https://vvhotel.vercel.app/icons/icon-512.png",
+              "logo": "https://vvhotel.vercel.app/icons/icon-512.png?v=2",
+              "image": "https://vvhotel.vercel.app/icons/icon-512.png?v=2",
               "description": "5-Star Luxury Riverside Resort & Spa in Kampong Cham City, Cambodia.",
               "address": {
                 "@type": "PostalAddress",

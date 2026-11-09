@@ -72,7 +72,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         className: "custom-hotel-pin",
         html: `
           <div style="background-color: #0c2340; border: 3px solid #c5a059; width: 44px; height: 44px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 14px rgba(0,0,0,0.5);">
-            <div style="transform: rotate(45deg); color: #c5a059; font-weight: 900; font-size: 18px;">V</div>
+            <img src="/icons/icon-192.png?v=2" alt="Logo" style="width: 24px; height: 24px; border-radius: 6px; transform: rotate(45deg); object-fit: contain;" />
           </div>
         `,
         iconSize: [44, 44],

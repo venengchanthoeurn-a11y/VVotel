@@ -848,7 +848,7 @@ export default function AdminPage() {
                 </div>
               ) : (
                 <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-300 p-1 flex items-center justify-center shadow-xl shrink-0">
-                  <img src="/icons/icon-192.png" alt="Logo" className="w-full h-full object-contain" />
+                  <img src="/icons/icon-192.png?v=2" alt="Logo" className="w-full h-full object-contain" />
                 </div>
               )}
               <div>
@@ -980,7 +980,7 @@ export default function AdminPage() {
                 </div>
               ) : (
                 <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-300 p-1 flex items-center justify-center shadow-md mx-auto">
-                  <img src="/icons/icon-192.png" alt="Logo" className="w-full h-full object-contain" />
+                  <img src="/icons/icon-192.png?v=2" alt="Logo" className="w-full h-full object-contain" />
                 </div>
               )}
               <span className="text-[11px] font-bold tracking-widest uppercase text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 inline-block font-siemreap">
@@ -1120,7 +1120,7 @@ export default function AdminPage() {
               />
             ) : (
               <img
-                src="/icons/icon-192.png"
+                src="/icons/icon-192.png?v=2"
                 alt="Logo"
                 className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl border border-amber-300 shadow-xs shrink-0 bg-white p-0.5"
               />

@@ -1,10 +1,13 @@
-const CACHE_NAME = 'vvotel-v1';
+const CACHE_NAME = 'vvotel-v2';
 const PRECACHE_ASSETS = [
   '/',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/favicon.ico',
+  '/manifest.json?v=2',
+  '/icons/icon-192.png?v=2',
+  '/icons/icon-512.png?v=2',
+  '/icons/icon-maskable.png?v=2',
+  '/icons/apple-touch-icon.png?v=2',
+  '/images/vvotel-logo.svg?v=2',
+  '/favicon.ico?v=2',
 ];
 
 // Install event
@@ -17,13 +20,14 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event
+// Activate event: Force purge all old caches (including vvotel-v1)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((name) => {
           if (name !== CACHE_NAME) {
+            console.log('[SW] Purging old cache:', name);
             return caches.delete(name);
           }
         })
@@ -44,10 +48,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Favicon, manifest, and icons: ALWAYS network-first to ensure new branding displays immediately
+  if (
+    url.pathname.includes('favicon') ||
+    url.pathname.includes('manifest.json') ||
+    url.pathname.includes('/icons/') ||
+    url.pathname.includes('vvotel-logo')
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // Cache valid responses
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {

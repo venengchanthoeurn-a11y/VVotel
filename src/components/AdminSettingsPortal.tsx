@@ -752,7 +752,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                     ) : (
                       <div className="w-14 h-14 rounded-xl border-2 border-amber-300 overflow-hidden bg-white p-1 shadow-sm flex items-center justify-center">
                         <img
-                          src="/icons/icon-192.png"
+                          src="/icons/icon-192.png?v=2"
                           alt="Logo Preview"
                           className="w-full h-full object-contain"
                         />
