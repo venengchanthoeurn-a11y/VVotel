@@ -610,18 +610,18 @@ export const BookingBar: React.FC = () => {
         <form onSubmit={handleInitialSubmit} className="space-y-4">
           {/* Top Info Header */}
           <div className="flex flex-wrap items-center justify-between pb-3 border-b border-white/10 gap-2">
-            <div className="flex items-center space-x-3">
-              <span className="font-extrabold text-sm tracking-wider uppercase text-vvotel-gold flex items-center space-x-1.5">
-                <Sparkles className="w-4 h-4 text-vvotel-gold" />
-                <span>{t("bookYourStay")}</span>
+            <div className="flex items-center space-x-2 sm:space-x-3 whitespace-nowrap overflow-x-auto">
+              <span className="font-extrabold text-sm tracking-wider uppercase text-vvotel-gold flex items-center space-x-1.5 whitespace-nowrap">
+                <Sparkles className="w-4 h-4 text-vvotel-gold shrink-0" />
+                <span className="whitespace-nowrap">{t("bookYourStay")}</span>
               </span>
               <span className="text-gray-400 hidden sm:inline">•</span>
-              <span className="text-xs text-emerald-400 font-semibold flex items-center space-x-1">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>{t("bestRateGuaranteed")}</span>
+              <span className="text-xs text-emerald-400 font-semibold flex items-center space-x-1 whitespace-nowrap">
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">{t("bestRateGuaranteed")}</span>
               </span>
               <span className="text-gray-400 hidden md:inline">•</span>
-              <span className="text-xs text-gray-300 hidden md:inline">
+              <span className="text-xs text-gray-300 hidden md:inline whitespace-nowrap">
                 {nights} {lang === "km" ? "យប់" : "Nights"}
               </span>
             </div>

@@ -242,9 +242,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           popupAnchor: [0, -34],
         });
 
-        // Exact official Google Maps place search and navigation links using coordinates
-        const googlePlaceSearchUrl = `https://www.google.com/maps/search/?api=1&query=${dest.latitude},${dest.longitude}`;
-        const directionUrl = `https://www.google.com/maps/dir/?api=1&origin=${HOTEL_INFO.latitude},${HOTEL_INFO.longitude}&destination=${dest.latitude},${dest.longitude}`;
+        // Exact official Google Maps place search and navigation links using verified place name
+        const landmarkQuery = encodeURIComponent(`${dest.title.en}, Kampong Cham`);
+        const googlePlaceSearchUrl = `https://www.google.com/maps/search/?api=1&query=${landmarkQuery}`;
+        const directionUrl = `https://www.google.com/maps/dir/?api=1&origin=${HOTEL_INFO.latitude},${HOTEL_INFO.longitude}&destination=${landmarkQuery}`;
 
         const popupContent = `
           <div style="width: 270px; font-family: sans-serif; overflow: hidden; border-radius: 8px;">
@@ -396,7 +397,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             allowFullScreen
             src={`https://maps.google.com/maps?q=${
               activeDestination
-                ? `${activeDestination.latitude},${activeDestination.longitude}`
+                ? encodeURIComponent(`${activeDestination.title.en}, Kampong Cham`)
                 : `${HOTEL_INFO.latitude},${HOTEL_INFO.longitude}`
             }&t=&z=16&ie=UTF8&iwloc=&output=embed`}
             className="w-full h-full"
@@ -414,7 +415,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               <a
                 href={
                   activeDestination
-                    ? `https://www.google.com/maps/search/?api=1&query=${activeDestination.latitude},${activeDestination.longitude}`
+                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${activeDestination.title.en}, Kampong Cham`)}`
                     : `https://www.google.com/maps/place/VV+Hotel+Kampong+Cham/@${HOTEL_INFO.latitude},${HOTEL_INFO.longitude},17z`
                 }
                 target="_blank"

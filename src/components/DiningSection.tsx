@@ -272,7 +272,7 @@ export const DiningSection: React.FC = () => {
               <ChefHat className="w-4 h-4 text-amber-600" />
               <span>{lang === "km" ? "ភោជនីយដ្ឋាន & បារប្រណីត" : "Restaurants & Bars"}</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-vvotel-navy tracking-tight">
+            <h2 className="text-[clamp(1.15rem,2.6vw,2.2rem)] font-black text-vvotel-navy tracking-tight whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
               {lang === "km"
                 ? "រសជាតិដ៏វិសេសវិសាលជាប់មាត់ទន្លេមេគង្គ"
                 : "Culinary Excellence on the Riverfront"}

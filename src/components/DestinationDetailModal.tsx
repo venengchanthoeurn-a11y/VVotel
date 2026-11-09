@@ -149,15 +149,27 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="p-4 sm:p-6 border-t border-gray-100 bg-gray-50 flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0">
+        <div className="p-4 sm:p-6 border-t border-gray-100 bg-gray-50 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 shrink-0">
           <a
             href={destination.googleMapsUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex-1 bg-vvotel-navy hover:bg-vvotel-blue text-white font-bold py-3.5 px-4 rounded-xl text-center text-xs uppercase tracking-wider transition flex items-center justify-center space-x-2 shadow"
+            className="flex-1 bg-vvotel-navy hover:bg-[#14325c] text-white font-bold py-3.5 px-4 rounded-xl text-center text-xs uppercase tracking-wider transition flex items-center justify-center space-x-2 shadow cursor-pointer whitespace-nowrap"
+            title={lang === "km" ? "នាំផ្លូវតាម Google Maps ពីសណ្ឋាគារ VVotel" : "Turn-by-turn driving navigation from VVotel"}
           >
-            <Navigation className="w-4 h-4 text-vvotel-gold" />
+            <Navigation className="w-4 h-4 text-vvotel-gold shrink-0" />
             <span>{t("getDirections")}</span>
+          </a>
+
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination.title.en + ", Kampong Cham")}`}
+            target="_blank"
+            rel="noreferrer"
+            className="px-3.5 sm:px-4 py-3.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center space-x-1.5 cursor-pointer whitespace-nowrap"
+            title={lang === "km" ? "មើលទីតាំងលើ Google Maps" : "View Landmark on Google Maps"}
+          >
+            <MapPin className="w-4 h-4 text-amber-700 shrink-0" />
+            <span>{lang === "km" ? "មើលលើ Maps" : "View Map"}</span>
           </a>
 
           {destination.websiteUrl && (
@@ -165,7 +177,7 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
               href={destination.websiteUrl}
               target="_blank"
               rel="noreferrer"
-              className="px-5 py-3.5 bg-white hover:bg-gray-100 text-vvotel-navy font-bold rounded-xl border border-gray-200 text-xs uppercase tracking-wider transition flex items-center space-x-1.5"
+              className="px-4 py-3.5 bg-white hover:bg-gray-100 text-vvotel-navy font-bold rounded-xl border border-gray-200 text-xs uppercase tracking-wider transition flex items-center space-x-1.5"
             >
               <span>{t("visitWebsite")}</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -174,7 +186,7 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
 
           <button
             onClick={onClose}
-            className="px-6 py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl text-xs uppercase tracking-wider transition"
+            className="px-5 py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl text-xs uppercase tracking-wider transition cursor-pointer"
           >
             {t("close")}
           </button>
