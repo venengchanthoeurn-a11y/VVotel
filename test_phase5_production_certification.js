@@ -398,6 +398,9 @@ async function runPhase5Certification() {
 
     // 6.4 Live Booking Verification Workflow
     const bookingRef = `VVT-P5-${Date.now().toString().slice(-6)}`;
+    const randomDay = 10 + Math.floor(Math.random() * 15);
+    const checkInDate = `2028-11-${randomDay.toString().padStart(2, "0")}`;
+    const checkOutDate = `2028-11-${(randomDay + 3).toString().padStart(2, "0")}`;
     const verifyRes = await fetch(`${BASE_URL}/api/booking/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -409,8 +412,8 @@ async function runPhase5Certification() {
         otpCode: "123456",
         roomType: "superior-river",
         roomCount: 1,
-        checkIn: "2026-12-10",
-        checkOut: "2026-12-13",
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
         adults: 2,
         includeBreakfast: true,
         guestName: "Phase 5 Certification Guest",
