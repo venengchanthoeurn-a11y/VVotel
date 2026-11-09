@@ -80,7 +80,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         popupAnchor: [0, -44],
       });
 
-      const hotelSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Vattanac Hotel (VVotel), No. 2052 Preah Monivong St, Kampong Cham, Cambodia")}`;
+      const hotelSearchUrl = `https://www.google.com/maps/place/VV+Hotel+Kampong+Cham/@11.9906698,105.4629776,17z`;
 
       const hotelPopup = `
         <div style="width: 270px; font-family: sans-serif; padding: 12px;">
@@ -242,9 +242,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           popupAnchor: [0, -34],
         });
 
-        // Exact official Google Maps place search and navigation links
-        const googlePlaceSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${dest.title.en}, Kampong Cham, Cambodia`)}`;
-        const directionUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent("Vattanac Hotel (VVotel), No. 2052 Preah Monivong St, Kampong Cham, Cambodia")}&destination=${encodeURIComponent(`${dest.title.en}, Kampong Cham, Cambodia`)}`;
+        // Exact official Google Maps place search and navigation links using coordinates
+        const googlePlaceSearchUrl = `https://www.google.com/maps/search/?api=1&query=${dest.latitude},${dest.longitude}`;
+        const directionUrl = `https://www.google.com/maps/dir/?api=1&origin=${HOTEL_INFO.latitude},${HOTEL_INFO.longitude}&destination=${dest.latitude},${dest.longitude}`;
 
         const popupContent = `
           <div style="width: 270px; font-family: sans-serif; overflow: hidden; border-radius: 8px;">
@@ -394,11 +394,11 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             style={{ border: 0 }}
             loading="lazy"
             allowFullScreen
-            src={`https://maps.google.com/maps?q=${encodeURIComponent(
+            src={`https://maps.google.com/maps?q=${
               activeDestination
-                ? `${activeDestination.title.en}, Kampong Cham, Cambodia`
-                : "Vattanac Hotel (VVotel), No. 2052 Preah Monivong St, Kampong Cham, Cambodia"
-            )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                ? `${activeDestination.latitude},${activeDestination.longitude}`
+                : `${HOTEL_INFO.latitude},${HOTEL_INFO.longitude}`
+            }&t=&z=16&ie=UTF8&iwloc=&output=embed`}
             className="w-full h-full"
           />
           <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-lg border border-gray-200 flex flex-wrap items-center justify-between gap-2 z-20">
@@ -414,8 +414,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               <a
                 href={
                   activeDestination
-                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${activeDestination.title.en}, Kampong Cham, Cambodia`)}`
-                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Vattanac Hotel (VVotel), No. 2052 Preah Monivong St, Kampong Cham, Cambodia")}`
+                    ? `https://www.google.com/maps/search/?api=1&query=${activeDestination.latitude},${activeDestination.longitude}`
+                    : `https://www.google.com/maps/place/VV+Hotel+Kampong+Cham/@${HOTEL_INFO.latitude},${HOTEL_INFO.longitude},17z`
                 }
                 target="_blank"
                 rel="noopener noreferrer"

@@ -18,6 +18,7 @@ import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { DESTINATIONS, Destination } from "@/data/destinations";
 import { useLanguage } from "@/context/LanguageContext";
+import { useSettings } from "@/context/SettingsContext";
 import {
   Compass,
   Search,
@@ -34,15 +35,70 @@ import {
 
 export default function HomePage() {
   const { lang, t } = useLanguage();
+  const { settings } = useSettings();
 
   // Filter and search state
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
 
+  // Merge static DESTINATIONS with any custom destinations configured in Settings
+  const allDestinations: Destination[] = useMemo(() => {
+    const list: Destination[] = [...DESTINATIONS];
+    if (settings?.destinations && settings.destinations.length > 0) {
+      settings.destinations.forEach((custom) => {
+        const existingIdx = list.findIndex((d) => d.id === custom.id || d.slug === custom.slug);
+        const mapped: Destination = {
+          id: custom.id,
+          slug: custom.slug,
+          category: custom.category,
+          categoryName: {
+            en: custom.categoryNameEn || "Attraction",
+            km: custom.categoryNameKm || "រមណីយដ្ឋាន",
+          },
+          title: {
+            en: custom.nameEn,
+            km: custom.nameKm,
+          },
+          tagline: {
+            en: custom.taglineEn || custom.nameEn,
+            km: custom.taglineKm || custom.nameKm,
+          },
+          summary: {
+            en: custom.descriptionEn || "",
+            km: custom.descriptionKm || "",
+          },
+          fullDescription: {
+            en: custom.descriptionEn || "",
+            km: custom.descriptionKm || "",
+          },
+          distanceFromHotel: {
+            en: `${custom.travelTimeMinutes || 10} mins from hotel`,
+            km: `${custom.travelTimeMinutes || 10} នាទីពីសណ្ឋាគារ`,
+          },
+          address: {
+            en: "Kampong Cham Province, Cambodia",
+            km: "ខេត្តកំពង់ចាម, ប្រទេសកម្ពុជា",
+          },
+          latitude: custom.latitude,
+          longitude: custom.longitude,
+          googleMapsUrl: custom.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${custom.latitude},${custom.longitude}`,
+          imageUrl: custom.imageUrl || "/images/destinations/koh-pen-beach.jpg",
+          travelTimeMinutes: custom.travelTimeMinutes || 10,
+        };
+        if (existingIdx !== -1) {
+          list[existingIdx] = { ...list[existingIdx], ...mapped };
+        } else if (custom.enabled !== false) {
+          list.push(mapped);
+        }
+      });
+    }
+    return list;
+  }, [settings?.destinations]);
+
   // Filtered destinations
   const filteredDestinations = useMemo(() => {
-    return DESTINATIONS.filter((item) => {
+    return allDestinations.filter((item) => {
       const matchCategory =
         selectedCategory === "all" || item.category === selectedCategory;
 
@@ -59,18 +115,18 @@ export default function HomePage() {
 
       return matchCategory && matchSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [allDestinations, selectedCategory, searchQuery]);
 
   // Counts by category
   const categoryCounts = useMemo(() => {
     return {
-      all: DESTINATIONS.length,
-      "beaches-nature": DESTINATIONS.filter((d) => d.category === "beaches-nature").length,
-      restaurants: DESTINATIONS.filter((d) => d.category === "restaurants").length,
-      "culture-local-life": DESTINATIONS.filter((d) => d.category === "culture-local-life").length,
-      "sports-activities": DESTINATIONS.filter((d) => d.category === "sports-activities").length,
+      all: allDestinations.length,
+      "beaches-nature": allDestinations.filter((d) => d.category === "beaches-nature").length,
+      restaurants: allDestinations.filter((d) => d.category === "restaurants").length,
+      "culture-local-life": allDestinations.filter((d) => d.category === "culture-local-life").length,
+      "sports-activities": allDestinations.filter((d) => d.category === "sports-activities").length,
     };
-  }, []);
+  }, [allDestinations]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fbfaf8] text-[#1e293b]">

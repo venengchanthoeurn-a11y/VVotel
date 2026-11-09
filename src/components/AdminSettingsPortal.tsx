@@ -30,9 +30,22 @@ import {
   Upload,
   Edit2,
   UtensilsCrossed,
+  Database,
+  HardDrive,
+  RotateCcw,
+  FileJson,
+  Download,
+  History,
 } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
 import { SiteSettings, RoomSetting, DestinationSetting, DiningItemSetting } from "@/lib/settings";
+import { BackupSnapshot } from "@/lib/backupTypes";
+import {
+  recordClientAutoBackup,
+  getClientBackupHistory,
+  downloadSnapshotJson,
+} from "@/lib/clientBackup";
+import { BookingRecord } from "@/lib/bookings";
 
 interface AdminSettingsPortalProps {
   lang: "km" | "en";
@@ -42,13 +55,151 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
   const { settings, updateSettings, refreshSettings } = useSettings();
   const [formSettings, setFormSettings] = useState<SiteSettings>(settings);
   const [activeTab, setActiveTab] = useState<
-    "general" | "banking" | "rooms" | "dining" | "destinations" | "features" | "telegram"
+    "general" | "banking" | "rooms" | "dining" | "destinations" | "features" | "telegram" | "backup"
   >("general");
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState("");
   const [showApiToken, setShowApiToken] = useState(false);
   const [showBotToken, setShowBotToken] = useState(false);
+
+  // Auto Backup & Snapshot States
+  const [backupSnapshots, setBackupSnapshots] = useState<BackupSnapshot[]>([]);
+  const [isTakingSnapshot, setIsTakingSnapshot] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [backupNotice, setBackupNotice] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+
+  const loadSnapshots = async () => {
+    try {
+      const localList = getClientBackupHistory();
+      const res = await fetch("/api/backup?action=list");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.snapshots)) {
+          const map = new Map<string, BackupSnapshot>();
+          for (const s of localList) map.set(s.id, s);
+          for (const s of data.snapshots) if (!map.has(s.id)) map.set(s.id, s);
+          const combined = Array.from(map.values()).sort(
+            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          );
+          setBackupSnapshots(combined);
+          return;
+        }
+      }
+      setBackupSnapshots(localList);
+    } catch (e) {
+      setBackupSnapshots(getClientBackupHistory());
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "backup") {
+      loadSnapshots();
+    }
+  }, [activeTab]);
+
+  const handleTakeInstantSnapshot = async () => {
+    setIsTakingSnapshot(true);
+    try {
+      let clientBookings: BookingRecord[] = [];
+      if (typeof window !== "undefined") {
+        const raw = localStorage.getItem("vvotel_client_bookings");
+        if (raw) clientBookings = JSON.parse(raw);
+      }
+      const snapshot = recordClientAutoBackup(
+        formSettings,
+        clientBookings,
+        "manual",
+        "ការបម្រុងទុកដោយដៃ (Manual Snapshot ដោយ Manager)"
+      );
+      setBackupNotice({
+        type: "success",
+        msg: lang === "km" ? `បានបង្កើត Snapshot ដោយជោគជ័យ! (${snapshot.id})` : `Snapshot created! (${snapshot.id})`,
+      });
+      await loadSnapshots();
+    } catch (e) {
+      setBackupNotice({ type: "error", msg: "Failed to take snapshot" });
+    } finally {
+      setIsTakingSnapshot(false);
+      setTimeout(() => setBackupNotice(null), 5000);
+    }
+  };
+
+  const handleDownloadFullBackup = () => {
+    let clientBookings: BookingRecord[] = [];
+    if (typeof window !== "undefined") {
+      const raw = localStorage.getItem("vvotel_client_bookings");
+      if (raw) clientBookings = JSON.parse(raw);
+    }
+    const snapshot = recordClientAutoBackup(
+      formSettings,
+      clientBookings,
+      "manual",
+      "Full Database JSON Export"
+    );
+    downloadSnapshotJson(snapshot);
+  };
+
+  const handleRestoreSnapshot = async (snapshot: BackupSnapshot) => {
+    const confirmMsg = lang === "km"
+      ? `តើអ្នកពិតជាចង់ស្ដារទិន្នន័យពី Snapshot នេះមែនទេ? (${snapshot.timestamp})\nបន្ទប់: ${snapshot.stats.roomCount}, ម្ហូប: ${snapshot.stats.diningCount}, ទីតាំង: ${snapshot.stats.destinationCount}, ការកក់: ${snapshot.stats.bookingCount}`
+      : `Restore this backup snapshot from ${snapshot.timestamp}?`;
+    if (!confirm(confirmMsg)) return;
+
+    setIsRestoring(true);
+    try {
+      // 1. Restore settings in context & local state
+      await updateSettings(snapshot.settings);
+      setFormSettings(snapshot.settings);
+
+      // 2. Restore bookings to localStorage
+      if (Array.isArray(snapshot.bookings) && typeof window !== "undefined") {
+        localStorage.setItem("vvotel_client_bookings", JSON.stringify(snapshot.bookings));
+        window.dispatchEvent(new CustomEvent("vvotel-booking-updated"));
+      }
+
+      // 3. Inform server API
+      await fetch("/api/backup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "restore", snapshot }),
+      });
+
+      setBackupNotice({
+        type: "success",
+        msg: lang === "km" ? "🎉 ស្ដារទិន្នន័យបានជោគជ័យពេញលេញ!" : "🎉 Data successfully restored!",
+      });
+      await refreshSettings();
+      await loadSnapshots();
+    } catch (e) {
+      setBackupNotice({ type: "error", msg: "Error restoring snapshot" });
+    } finally {
+      setIsRestoring(false);
+      setTimeout(() => setBackupNotice(null), 5000);
+    }
+  };
+
+  const handleUploadBackupFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const parsed: BackupSnapshot = JSON.parse(text);
+        if (!parsed.settings) {
+          alert(lang === "km" ? "ឯកសារនេះមិនមែនជាទម្រង់ Backup ត្រឹមត្រូវទេ!" : "Invalid backup file format");
+          return;
+        }
+        await handleRestoreSnapshot(parsed);
+      } catch (err) {
+        alert("Error parsing backup JSON file");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
 
   // Client-Side Image Upload with Canvas Compression
   const handleImageUpload = (
@@ -580,6 +731,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
           { key: "destinations", labelKm: "🗺️ ទីតាំងទេសចរណ៍ & ផែនទី", labelEn: "🗺️ Destinations & Map" },
           { key: "features", labelKm: "🎛️ បើក/បិទ មុខងារប្រព័ន្ធ", labelEn: "🎛️ Feature Toggles" },
           { key: "telegram", labelKm: "🤖 Telegram Bot", labelEn: "🤖 Telegram Bot" },
+          { key: "backup", labelKm: "💾 បម្រុងទុក & ស្ដារ (Auto Backup)", labelEn: "💾 Auto Backup & Restore" },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -1750,6 +1902,280 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================= TAB 8: AUTO BACKUP & RESTORE ======================= */}
+      {activeTab === "backup" && (
+        <div className="bg-white border border-amber-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          {/* Header */}
+          <div className="border-b border-gray-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center space-x-2">
+                <h3 className="font-mool text-base sm:text-lg text-[#0c2340]">
+                  {lang === "km" ? "ប្រព័ន្ធបម្រុងទុកទិន្នន័យស្វ័យប្រវត្តិ (Auto Backup)" : "Automatic Continuous Data Backup & Restore"}
+                </h3>
+                <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase flex items-center space-x-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+                  <span>Active 24/7</span>
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {lang === "km"
+                  ? "ទិន្នន័យទាំងអស់ (បន្ទប់, មុខម្ហូប, ទីតាំង, ការកក់ និងការកំណត់) ត្រូវបានថតបម្រុងទុកជាប្រចាំដោយស្វ័យប្រវត្តិ ជាប់រហូតមិនបាត់បង់ឡើយ។"
+                  : "All data including rooms, menus, locations, bookings and settings are continuously backed up and preserved."}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={loadSnapshots}
+              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition self-start sm:self-auto"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-gray-600" />
+              <span>{lang === "km" ? "Refresh បញ្ជី" : "Refresh List"}</span>
+            </button>
+          </div>
+
+          {/* Backup Notice Alert */}
+          {backupNotice && (
+            <div
+              className={`p-4 rounded-2xl text-xs sm:text-sm font-bold flex items-center justify-between shadow-xs animate-in fade-in ${
+                backupNotice.type === "success"
+                  ? "bg-emerald-50 border border-emerald-300 text-emerald-900"
+                  : "bg-red-50 border border-red-300 text-red-900"
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                {backupNotice.type === "success" ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                )}
+                <span>{backupNotice.msg}</span>
+              </div>
+              <button
+                onClick={() => setBackupNotice(null)}
+                className="text-gray-500 hover:text-gray-800 p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* Active Protection Card */}
+          <div className="p-5 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 rounded-2xl space-y-3">
+            <div className="flex items-start space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                <HardDrive className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2">
+                  <h4 className="font-mool text-sm text-emerald-950">
+                    {lang === "km" ? "ដំណើរការការពារទិន្នន័យស្វ័យប្រវត្ត (Continuous Auto-Backup Active)" : "Continuous Data Protection Active"}
+                  </h4>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+                <p className="text-xs text-emerald-900/80 leading-relaxed">
+                  {lang === "km"
+                    ? "រាល់ពេលមានការផ្លាស់ប្តូរទិន្នន័យ (Add, Update, Edit, Delete បន្ទប់, មុខម្ហូប, ទីតាំង, ការកក់) ប្រព័ន្ធនឹងថត Snapshot រក្សាទុកដោយស្វ័យប្រវត្តិភ្លាមៗ ទាំងក្នុង Local Device និង Server Disk។ លើសពីនេះ ប្រព័ន្ធក៏ធ្វើការ Auto-Backup រៀងរាល់ ៥ នាទីម្តងជាប្រចាំ។"
+                    : "Every modification (rooms, foods, destinations, bookings) is instantly auto-saved to disk and browser storage, plus a 5-minute background interval."}
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-emerald-200/60 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-emerald-800 font-bold">
+              <div className="flex items-center space-x-1.5">
+                <span>⚡ ស្វ័យប្រវត្តពេលកែប្រែទិន្នន័យ</span>
+              </div>
+              <div className="flex items-center space-x-1.5">
+                <span>⏱️ Backup រៀងរាល់ ៥ នាទី</span>
+              </div>
+              <div className="flex items-center space-x-1.5">
+                <span>🛡️ Snapshot ការពារមុនពេល Restore</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3 Main Action Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Action 1: Download Full Backup JSON */}
+            <div className="p-5 bg-gradient-to-b from-blue-50/70 to-white border border-blue-200 rounded-2xl space-y-3 flex flex-col justify-between shadow-2xs hover:border-blue-400 transition">
+              <div className="space-y-1.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                  <Download className="w-4 h-4" />
+                </div>
+                <h4 className="font-mool text-xs sm:text-sm text-[#0c2340]">
+                  {lang === "km" ? "ទាញយក Backup ពេញលេញ" : "Export Full Backup"}
+                </h4>
+                <p className="text-[11px] text-gray-600 leading-relaxed">
+                  {lang === "km"
+                    ? "ទាញយកទិន្នន័យប្រព័ន្ធទាំងអស់ជាឯកសារ .json ទុកក្នុងកុំព្យូទ័រផ្ទាល់ខ្លួនដើម្បីសុវត្ថិភាព។"
+                    : "Download complete database as a .json file to your computer drive."}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleDownloadFullBackup}
+                className="w-full py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow transition"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{lang === "km" ? "ទាញយក File .json" : "Download .json"}</span>
+              </button>
+            </div>
+
+            {/* Action 2: Create Instant Snapshot */}
+            <div className="p-5 bg-gradient-to-b from-amber-50/70 to-white border border-amber-200 rounded-2xl space-y-3 flex flex-col justify-between shadow-2xs hover:border-amber-400 transition">
+              <div className="space-y-1.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                  <HardDrive className="w-4 h-4" />
+                </div>
+                <h4 className="font-mool text-xs sm:text-sm text-[#0c2340]">
+                  {lang === "km" ? "បង្កើត Snapshot ថ្មីឥឡូវនេះ" : "Create Instant Snapshot"}
+                </h4>
+                <p className="text-[11px] text-gray-600 leading-relaxed">
+                  {lang === "km"
+                    ? "ថត Snapshot រក្សាទុកទិន្នន័យជាក់ស្តែងពេលនេះភ្លាមៗ ដើម្បីអាចស្ដារឡើងវិញបានគ្រប់ពេល។"
+                    : "Freeze current system state into a new snapshot right now."}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleTakeInstantSnapshot}
+                disabled={isTakingSnapshot}
+                className="w-full py-2.5 px-3 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow transition"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isTakingSnapshot ? "animate-spin" : ""}`} />
+                <span>{isTakingSnapshot ? (lang === "km" ? "កំពុងបង្កើត..." : "Saving...") : (lang === "km" ? "បង្កើត Snapshot ភ្លាមៗ" : "Create Snapshot")}</span>
+              </button>
+            </div>
+
+            {/* Action 3: Restore From File */}
+            <div className="p-5 bg-gradient-to-b from-purple-50/70 to-white border border-purple-200 rounded-2xl space-y-3 flex flex-col justify-between shadow-2xs hover:border-purple-400 transition">
+              <div className="space-y-1.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                  <RotateCcw className="w-4 h-4" />
+                </div>
+                <h4 className="font-mool text-xs sm:text-sm text-[#0c2340]">
+                  {lang === "km" ? "ស្ដារឡើងវិញពី File .json" : "Restore From File"}
+                </h4>
+                <p className="text-[11px] text-gray-600 leading-relaxed">
+                  {lang === "km"
+                    ? "ជ្រើសរើសឯកសារ Backup .json ពីកុំព្យូទ័រ ដើម្បីស្ដារប្រព័ន្ធ និងទិន្នន័យទាំងមូលឡើងវិញភ្លាមៗ។"
+                    : "Upload a previously saved .json backup file to restore all data."}
+                </p>
+              </div>
+              <label className="w-full py-2.5 px-3 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow transition cursor-pointer text-center">
+                <Upload className="w-3.5 h-3.5" />
+                <span>{lang === "km" ? "ជ្រើសរើស File Restore..." : "Select File to Restore..."}</span>
+                <input
+                  type="file"
+                  accept=".json,application/json"
+                  className="hidden"
+                  onChange={handleUploadBackupFile}
+                  disabled={isRestoring}
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Recent Snapshots History Table */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <h4 className="font-mool text-xs sm:text-sm text-[#0c2340] flex items-center space-x-2">
+                <History className="w-4 h-4 text-amber-600" />
+                <span>{lang === "km" ? "បញ្ជី Snapshot បម្រុងទុកទិន្នន័យថ្មីៗ" : "Recent Backup Snapshots"}</span>
+                <span className="text-xs font-mono font-normal text-gray-500">({backupSnapshots.length})</span>
+              </h4>
+              <span className="text-[11px] text-gray-500 italic">
+                {lang === "km" ? "ចុចប៊ូតុង \"ស្ដារទិន្នន័យ\" ដើម្បីត្រឡប់ទៅរក្សាទុកចាស់" : "Click Restore to rollback to any snapshot"}
+              </span>
+            </div>
+
+            {backupSnapshots.length === 0 ? (
+              <div className="p-8 text-center bg-gray-50 border border-gray-200 rounded-2xl space-y-2">
+                <Database className="w-8 h-8 text-gray-400 mx-auto" />
+                <p className="text-xs text-gray-600 font-bold">
+                  {lang === "km" ? "មិនទាន់មាន Snapshot ទេ! សូមចុចបង្កើត Snapshot ថ្មីខាងលើ។" : "No snapshots recorded yet."}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {backupSnapshots.map((snap) => {
+                  const dateStr = new Date(snap.timestamp).toLocaleString("km-KH", {
+                    timeZone: "Asia/Phnom_Penh",
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  });
+
+                  return (
+                    <div
+                      key={snap.id}
+                      className="p-4 bg-white border border-gray-200 hover:border-amber-300 rounded-2xl transition flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold text-xs text-[#0c2340]">{snap.title}</span>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              snap.reason === "auto_change"
+                                ? "bg-blue-100 text-blue-800"
+                                : snap.reason === "interval"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : snap.reason === "manual"
+                                ? "bg-amber-100 text-amber-900"
+                                : "bg-purple-100 text-purple-900"
+                            }`}
+                          >
+                            {snap.reason}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-500 font-mono">
+                          <span>{snap.id}</span>
+                          <span>•</span>
+                          <span>{dateStr}</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-600 pt-0.5 font-bold">
+                          <span>🛏️ បន្ទប់: {snap.stats?.roomCount ?? snap.settings?.rooms?.length ?? 0}</span>
+                          <span>🍽️ ម្ហូប: {snap.stats?.diningCount ?? snap.settings?.dining?.length ?? 0}</span>
+                          <span>🗺️ ទីតាំង: {snap.stats?.destinationCount ?? snap.settings?.destinations?.length ?? 0}</span>
+                          <span>📑 ការកក់: {snap.stats?.bookingCount ?? snap.bookings?.length ?? 0}</span>
+                          {snap.stats?.totalRevenueUSD !== undefined && (
+                            <span className="text-emerald-700">${snap.stats.totalRevenueUSD.toFixed(2)}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => downloadSnapshotJson(snap)}
+                          className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold flex items-center space-x-1 transition"
+                          title="Download Snapshot JSON"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>.json</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRestoreSnapshot(snap)}
+                          disabled={isRestoring}
+                          className="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow transition"
+                        >
+                          <RotateCcw className={`w-3.5 h-3.5 ${isRestoring ? "animate-spin" : ""}`} />
+                          <span>{lang === "km" ? "ស្ដារទិន្នន័យ (Restore)" : "Restore"}</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}

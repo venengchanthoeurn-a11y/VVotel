@@ -31,6 +31,7 @@ export interface RoomItem {
   tagline: { en: string; km: string };
   description: { en: string; km: string };
   imageUrl: string;
+  galleryImages?: string[];
   amenities: { en: string; km: string }[];
   highlight: { en: string; km: string };
 }
@@ -68,8 +69,13 @@ export const ROOMS: RoomItem[] = [
       en: "Designed for business or leisure travelers, our Standard Room features plush signature bedding, an ergonomic workstation, high-speed Wi-Fi, and expansive soundproof windows overlooking the vibrant streetscapes of Kampong Cham.",
       km: "រចនាឡើងយ៉ាងស័ក្តិសមសម្រាប់ភ្ញៀវទេសចរនិងធុរកិច្ច បន្ទប់ស្តង់ដារបំពាក់ដោយពូកប្រណីត តុធ្វើការ អ៊ីនធឺណិតល្បឿនលឿន និងបង្អួចកញ្ចក់ការពារសំឡេងយ៉ាងទូលាយមើលឃើញទិដ្ឋភាពក្រុងកំពង់ចាម។",
     },
-    imageUrl:
-      "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80",
+    imageUrl: "/images/rooms/vv_standard_king.jpg",
+    galleryImages: [
+      "/images/rooms/vv_standard_king.jpg",
+      "/images/rooms/vv_deluxe_double.jpg",
+      "/images/rooms/vv_room_bathroom.jpg",
+      "/images/rooms/vv_room_view.jpg",
+    ],
     highlight: {
       en: "Best Value",
       km: "តម្លៃសន្សំសំចៃបំផុត",
@@ -115,8 +121,13 @@ export const ROOMS: RoomItem[] = [
       en: "Indulge in peaceful mornings watching traditional longboats glide across the golden waters of the Mekong. Features a private furnished balcony, marble bathroom with deep soaking tub, and premium French linen.",
       km: "ទទួលអារម្មណ៍ស្រស់ស្រាយនាពេលព្រឹកព្រលឹមគយគន់ទូកនេសាទលើទន្លេមេគង្គ។ មានយ៉រឯកជន បន្ទប់ទឹកថ្មម៉ាបជាមួយអាងត្រាំទឹកធំទូលាយ និងកម្រាលពូកកប្បាសបារាំងប្រណីត។",
     },
-    imageUrl:
-      "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=1200&q=80",
+    imageUrl: "/images/rooms/vv_superior_bed.jpg",
+    galleryImages: [
+      "/images/rooms/vv_superior_bed.jpg",
+      "/images/rooms/vv_deluxe_twin.jpg",
+      "/images/rooms/vv_room_interior_1.jpg",
+      "/images/rooms/vv_room_bathroom.jpg",
+    ],
     highlight: {
       en: "Most Popular",
       km: "ពេញនិយមបំផុត",
@@ -162,8 +173,13 @@ export const ROOMS: RoomItem[] = [
       en: "A refined residential haven boasting a private living salon, executive dining table, freestanding stone bathtub facing the river, and VIP privileges including afternoon tea and sunset cocktails at the Club Lounge.",
       km: "លំនៅឋានដ៏ប្រណីតដែលមានបន្ទប់ទទួលភ្ញៀវធំទូលាយ តុទទួលទានអាហារ អាងត្រាំទឹកបែរមុខទៅទន្លេ និងសិទ្ធិពិសេស VIP ទទួលទានតែពេលរសៀល និងស្រាក្រឡុកពេលថ្ងៃលិចនៅ Club Lounge។",
     },
-    imageUrl:
-      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
+    imageUrl: "/images/rooms/vv_suite_bedroom.jpg",
+    galleryImages: [
+      "/images/rooms/vv_suite_bedroom.jpg",
+      "/images/rooms/vv_executive_living.jpg",
+      "/images/rooms/vv_room_interior_2.jpg",
+      "/images/rooms/vv_room_bathroom.jpg",
+    ],
     highlight: {
       en: "VIP Club Privileges",
       km: "សិទ្ធិពិសេស VIP",
@@ -209,8 +225,13 @@ export const ROOMS: RoomItem[] = [
       en: "Our flagship accommodation provides ultimate space and privacy for families. Features two expansive ensuite bedrooms, kids’ welcome gifts, fully equipped kitchenette, dining table for 6, and wraparound terrace over the Mekong.",
       km: "បន្ទប់លំដាប់កំពូលផ្តល់ភាពឯកជននិងផាសុកភាពសម្រាប់គ្រួសារធំ។ មានបន្ទប់គេងភ្ជាប់បន្ទប់ទឹកចំនួន ២ កាដូស្វាគមន៍សម្រាប់កុមារ ផ្ទះបាយខ្នាតតូច តុអាហារសម្រាប់ ៦ នាក់ និងរាបធំទូលាយគយគន់ទន្លេមេគង្គ។",
     },
-    imageUrl:
-      "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=1200&q=80",
+    imageUrl: "/images/rooms/vv_family_space.jpg",
+    galleryImages: [
+      "/images/rooms/vv_family_space.jpg",
+      "/images/rooms/vv_real_room_1280_2.jpg",
+      "/images/rooms/vv_real_room_1280_3.jpg",
+      "/images/rooms/vv_hotel_main_facade.jpg",
+    ],
     highlight: {
       en: "Ultimate Family Luxury",
       km: "ល្អបំផុតសម្រាប់គ្រួសារ",
@@ -230,6 +251,7 @@ export const AccommodationSection: React.FC = () => {
   const { lang, t } = useLanguage();
   const { settings } = useSettings();
   const [activeModalRoom, setActiveModalRoom] = useState<RoomItem | null>(null);
+  const [selectedModalPhoto, setSelectedModalPhoto] = useState<string | null>(null);
 
   const displayedRooms: RoomItem[] = [
     ...ROOMS.map((staticRoom) => {
@@ -402,7 +424,10 @@ export const AccommodationSection: React.FC = () => {
                 {/* Action buttons */}
                 <div className="pt-2 flex items-center space-x-2">
                   <button
-                    onClick={() => setActiveModalRoom(room)}
+                    onClick={() => {
+                      setActiveModalRoom(room);
+                      setSelectedModalPhoto(room.imageUrl);
+                    }}
                     className="flex-1 py-2.5 px-3 rounded-xl border border-gray-300 hover:border-vvotel-navy text-vvotel-navy text-xs font-bold transition hover:bg-gray-50 text-center"
                   >
                     {lang === "km" ? "ព័ត៌មានលម្អិត" : "Details"}
@@ -426,22 +451,47 @@ export const AccommodationSection: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 flex flex-col animate-in zoom-in-95 duration-200">
             {/* Modal Image */}
-            <div className="relative aspect-[16/9] w-full">
+            <div className="relative aspect-[16/9] w-full bg-slate-900">
               <img
-                src={activeModalRoom.imageUrl}
+                src={selectedModalPhoto || activeModalRoom.imageUrl}
                 alt={lang === "km" ? activeModalRoom.name.km : activeModalRoom.name.en}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-all duration-300"
               />
               <button
-                onClick={() => setActiveModalRoom(null)}
+                onClick={() => {
+                  setActiveModalRoom(null);
+                  setSelectedModalPhoto(null);
+                }}
                 className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center transition"
               >
                 <X className="w-5 h-5" />
               </button>
-              <div className="absolute bottom-4 left-4 bg-vvotel-navy/95 text-white px-4 py-1.5 rounded-xl text-xs font-black">
+              <div className="absolute bottom-4 left-4 bg-vvotel-navy/95 text-white px-4 py-1.5 rounded-xl text-xs font-black shadow border border-vvotel-gold/40">
                 ${activeModalRoom.pricePerNightUSD} / {lang === "km" ? "យប់" : "night"}
               </div>
             </div>
+
+            {/* Gallery Thumbnails if available */}
+            {activeModalRoom.galleryImages && activeModalRoom.galleryImages.length > 1 && (
+              <div className="px-6 pt-3 pb-1 flex items-center gap-2 overflow-x-auto bg-gray-50 border-b border-gray-200">
+                <span className="text-[10px] uppercase font-bold text-gray-500 shrink-0">
+                  {lang === "km" ? "រូបភាពបន្ទប់ពិត:" : "Photos:"}
+                </span>
+                {activeModalRoom.galleryImages.map((gImg, gIdx) => (
+                  <button
+                    key={gIdx}
+                    onClick={() => setSelectedModalPhoto(gImg)}
+                    className={`relative w-14 h-10 rounded-lg overflow-hidden shrink-0 border-2 transition ${
+                      (selectedModalPhoto || activeModalRoom.imageUrl) === gImg
+                        ? "border-vvotel-gold ring-2 ring-vvotel-navy/30 scale-105"
+                        : "border-transparent opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <img src={gImg} alt="Thumbnail" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Modal Content */}
             <div className="p-6 space-y-6">

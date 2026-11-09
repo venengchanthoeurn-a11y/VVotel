@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { SiteSettings, DEFAULT_SETTINGS } from "@/lib/settings";
+import { recordClientAutoBackup } from "@/lib/clientBackup";
+import { BookingRecord } from "@/lib/bookings";
 
 const PERSISTED_SETTINGS_KEY = "vvotel_persisted_site_settings";
 
@@ -133,10 +135,21 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     });
 
+    // Background continuous auto-backup interval: every 5 minutes
+    const backupInterval = setInterval(() => {
+      try {
+        let currentBookings: BookingRecord[] = [];
+        const raw = localStorage.getItem("vvotel_client_bookings");
+        if (raw) currentBookings = JSON.parse(raw);
+        recordClientAutoBackup(settings, currentBookings, "interval", "ការបម្រុងទុកស្វ័យប្រវត្តរៀងរាល់ ៥ នាទី (5-Min Auto Backup)");
+      } catch (e) {}
+    }, 5 * 60 * 1000);
+
     return () => {
       window.removeEventListener("vvotel-settings-updated", handleSettingsUpdated);
+      clearInterval(backupInterval);
     };
-  }, []);
+  }, [settings]);
 
   const updateSettings = async (newSettings: Partial<SiteSettings>): Promise<boolean> => {
     try {
@@ -157,6 +170,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           localStorage.setItem(PERSISTED_SETTINGS_KEY, JSON.stringify(merged));
           localStorage.setItem("vvotel_settings_sync", Date.now().toString());
           window.dispatchEvent(new CustomEvent("vvotel-settings-updated"));
+
+          // Auto-backup snapshot on every change
+          let clientBookings: BookingRecord[] = [];
+          const rawB = localStorage.getItem("vvotel_client_bookings");
+          if (rawB) clientBookings = JSON.parse(rawB);
+          recordClientAutoBackup(merged, clientBookings, "auto_change", "កែប្រែការកំណត់ប្រព័ន្ធ (Settings Updated)");
         } catch (e) {}
       }
 

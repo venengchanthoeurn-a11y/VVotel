@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import {
   Building,
@@ -49,6 +49,8 @@ import { BookingRecord } from "@/lib/bookings";
 import { PrintableReceipt } from "@/components/PrintableReceipt";
 import { AdminSettingsPortal } from "@/components/AdminSettingsPortal";
 import { useSettings } from "@/context/SettingsContext";
+import { ReportPeriod, filterBookingsByPeriod, PERIOD_TITLES } from "@/lib/reportsShared";
+import { recordClientAutoBackup } from "@/lib/clientBackup";
 
 // Dual Language Translations Dictionary for Admin Portal & Login Screen
 const ADMIN_I18N = {
@@ -310,6 +312,77 @@ export default function AdminPage() {
   // New Walk-in Booking modal state
   const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState<boolean>(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
+  const [selectedReportPeriod, setSelectedReportPeriod] = useState<ReportPeriod>("daily");
+  const [downloadingReport, setDownloadingReport] = useState<string | null>(null);
+
+  // Filtered bookings & KPIs for selected period
+  const periodReportData = useMemo(() => {
+    return filterBookingsByPeriod(bookings, selectedReportPeriod, new Date());
+  }, [bookings, selectedReportPeriod]);
+
+  const periodBookings = periodReportData.filtered;
+  const periodRoomBookings = useMemo(
+    () => periodBookings.filter((b) => b.bookingCategory !== "DINING" && !b.id.startsWith("DIN")),
+    [periodBookings]
+  );
+  const periodDiningBookings = useMemo(
+    () => periodBookings.filter((b) => b.bookingCategory === "DINING" || b.id.startsWith("DIN")),
+    [periodBookings]
+  );
+  const periodInHouseGuests = useMemo(
+    () => periodBookings.filter((b) => b.stayStatus === "CHECKED_IN" || b.stayStatus === "SEATED"),
+    [periodBookings]
+  );
+  const periodRevenueUSD = useMemo(
+    () => periodBookings.reduce((sum, b) => sum + (Number(b.totalAmountUSD) || 0), 0),
+    [periodBookings]
+  );
+
+  const handleDownloadReport = async (format: "docx" | "xlsx" | "html" | "csv") => {
+    try {
+      setDownloadingReport(format);
+      const res = await fetch("/api/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format,
+          period: selectedReportPeriod,
+          bookings,
+          refDate: new Date().toISOString(),
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to generate report");
+
+      if (format === "html") {
+        const htmlText = await res.text();
+        const printWin = window.open("", "_blank");
+        if (printWin) {
+          printWin.document.open();
+          printWin.document.write(htmlText);
+          printWin.document.close();
+        } else {
+          window.location.href = `/api/reports?format=html&period=${selectedReportPeriod}`;
+        }
+      } else {
+        const blob = await res.blob();
+        const ext = format === "docx" ? "docx" : format === "xlsx" ? "xlsx" : "csv";
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Vattanac_${selectedReportPeriod}_Report_${new Date().toISOString().split("T")[0]}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error("Report generation error:", err);
+      window.open(`/api/reports?format=${format}&period=${selectedReportPeriod}`, "_blank");
+    } finally {
+      setDownloadingReport(null);
+    }
+  };
   const [newBookingData, setNewBookingData] = useState({
     bookingCategory: "ROOM" as "ROOM" | "DINING",
     guestName: "",
@@ -548,6 +621,12 @@ export default function AdminPage() {
                 list[idx].stayStatus = nextStatus;
                 list[idx].roomNumber = assignedRoomNumber || list[idx].roomNumber;
                 localStorage.setItem("vvotel_client_bookings", JSON.stringify(list));
+                recordClientAutoBackup(
+                  settings,
+                  list,
+                  "auto_change",
+                  `បច្ចុប្បន្នភាពភ្ញៀវ Check-In / Seated (${checkInModalBooking.id})`
+                );
               }
             }
           } catch (e) {}
@@ -588,6 +667,12 @@ export default function AdminPage() {
               if (idx !== -1) {
                 list[idx].stayStatus = nextStatus;
                 localStorage.setItem("vvotel_client_bookings", JSON.stringify(list));
+                recordClientAutoBackup(
+                  settings,
+                  list,
+                  "auto_change",
+                  `បច្ចុប្បន្នភាព Check-Out / Completed (${id})`
+                );
               }
             }
           } catch (e) {}
@@ -629,6 +714,12 @@ export default function AdminPage() {
               const list = raw ? JSON.parse(raw) : [];
               list.unshift(data.booking);
               localStorage.setItem("vvotel_client_bookings", JSON.stringify(list));
+              recordClientAutoBackup(
+                settings,
+                list,
+                "auto_change",
+                `កក់តុអាហារថ្មី (Walk-in Dining ${data.booking.id})`
+              );
             } catch (e) {}
           }
           setIsNewBookingModalOpen(false);
@@ -692,6 +783,12 @@ export default function AdminPage() {
               const list = raw ? JSON.parse(raw) : [];
               list.unshift(data.booking);
               localStorage.setItem("vvotel_client_bookings", JSON.stringify(list));
+              recordClientAutoBackup(
+                settings,
+                list,
+                "auto_change",
+                `កក់បន្ទប់ថ្មី (Walk-in Room ${data.booking.id})`
+              );
             } catch (e) {}
           }
           setIsNewBookingModalOpen(false);
@@ -2179,31 +2276,79 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Real-time Metrics Snapshot */}
+              {/* Multi-Period Selector Tabs */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-gray-700 flex items-center space-x-1.5">
+                    <span>ជ្រើសរើសប្រភេទរបាយការណ៍៖</span>
+                  </span>
+                  <span className="text-[11px] text-amber-800 font-mono font-bold bg-amber-100/80 px-2 py-0.5 rounded-md">
+                    {periodReportData.dateRangeText}
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 no-scrollbar">
+                  {[
+                    { key: "daily", icon: "📅", labelKm: "ប្រចាំថ្ងៃ", labelEn: "Daily" },
+                    { key: "weekly", icon: "📆", labelKm: "ប្រចាំសប្តាហ៍", labelEn: "Weekly" },
+                    { key: "monthly", icon: "📊", labelKm: "ប្រចាំខែ", labelEn: "Monthly" },
+                    { key: "quarterly", icon: "📈", labelKm: "ប្រចាំត្រីមាស", labelEn: "Quarterly" },
+                    { key: "semi_annual", icon: "🏛️", labelKm: "ប្រចាំឆមាស", labelEn: "Semi-Annual" },
+                    { key: "annual", icon: "🌟", labelKm: "ប្រចាំឆ្នាំ", labelEn: "Annual" },
+                    { key: "all", icon: "🌐", labelKm: "សរុបរួមទាំងអស់", labelEn: "All-Time" },
+                  ].map((p) => (
+                    <button
+                      key={p.key}
+                      type="button"
+                      onClick={() => setSelectedReportPeriod(p.key as ReportPeriod)}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shrink-0 ${
+                        selectedReportPeriod === p.key
+                          ? "bg-[#0c2340] text-amber-300 shadow-md border border-amber-300/40"
+                          : "bg-gray-100 hover:bg-amber-50 text-gray-700 border border-gray-200/80"
+                      }`}
+                    >
+                      <span>{p.icon}</span>
+                      <span>{lang === "km" ? p.labelKm : p.labelEn}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dynamic Real-time Metrics Snapshot for Selected Period */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl">
-                  <span className="text-[11px] text-blue-700 font-bold block">ការកក់សរុប</span>
-                  <span className="text-xl font-bold text-blue-950 font-mono">{bookings.length}</span>
-                  <span className="text-[10px] text-gray-500 block">បន្ទប់ {roomBookings.length} | តុ {diningBookings.length}</span>
+                  <span className="text-[11px] text-blue-700 font-bold block">
+                    {lang === "km" ? "ការកក់ក្នុងកាលបរិច្ឆេទ" : "Period Bookings"}
+                  </span>
+                  <span className="text-xl font-bold text-blue-950 font-mono">{periodBookings.length}</span>
+                  <span className="text-[10px] text-gray-500 block">បន្ទប់ {periodRoomBookings.length} | តុ {periodDiningBookings.length}</span>
                 </div>
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                  <span className="text-[11px] text-emerald-700 font-bold block">កំពុងស្នាក់នៅ</span>
-                  <span className="text-xl font-bold text-emerald-950 font-mono">{inHouseGuests.length}</span>
-                  <span className="text-[10px] text-gray-500 block">In-House</span>
+                  <span className="text-[11px] text-emerald-700 font-bold block">
+                    {lang === "km" ? "ភ្ញៀវស្នាក់នៅ/ទទួលតុ" : "In-House / Seated"}
+                  </span>
+                  <span className="text-xl font-bold text-emerald-950 font-mono">{periodInHouseGuests.length}</span>
+                  <span className="text-[10px] text-gray-500 block">Active Guests</span>
                 </div>
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                  <span className="text-[11px] text-amber-700 font-bold block">ចំណូលសរុប ($)</span>
-                  <span className="text-xl font-bold text-amber-950 font-mono">${totalRevenueUSD.toFixed(2)}</span>
+                  <span className="text-[11px] text-amber-700 font-bold block">
+                    {lang === "km" ? "ចំណូលសរុប ($)" : "Revenue ($)"}
+                  </span>
+                  <span className="text-xl font-bold text-amber-950 font-mono">${periodRevenueUSD.toFixed(2)}</span>
                   <span className="text-[10px] text-gray-500 block">USD</span>
                 </div>
                 <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl">
-                  <span className="text-[11px] text-purple-700 font-bold block">ចំណូលសរុប (៛)</span>
-                  <span className="text-base sm:text-lg font-bold text-purple-950 font-mono">{Math.round(totalRevenueUSD * 4100).toLocaleString()} ៛</span>
+                  <span className="text-[11px] text-purple-700 font-bold block">
+                    {lang === "km" ? "ចំណូលសរុប (៛)" : "Revenue (KHR)"}
+                  </span>
+                  <span className="text-base sm:text-lg font-bold text-purple-950 font-mono">
+                    {Math.round(periodRevenueUSD * 4100).toLocaleString()} ៛
+                  </span>
                   <span className="text-[10px] text-gray-500 block">KHR</span>
                 </div>
               </div>
 
-              {/* 3 Executive Download Options */}
+              {/* 3 Executive Download Options with Dynamic Live Aggregation */}
               <div className="space-y-3">
                 {/* 1. Word Document */}
                 <div className="p-4 bg-white border-2 border-blue-200 hover:border-blue-400 rounded-2xl transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
@@ -2212,18 +2357,25 @@ export default function AdminPage() {
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-mool text-sm text-[#0c2340]">{t.reportWordTitle}</h4>
+                      <h4 className="font-mool text-sm text-[#0c2340]">
+                        {t.reportWordTitle} • {PERIOD_TITLES[selectedReportPeriod]?.km || ""}
+                      </h4>
                       <p className="text-xs text-gray-600 mt-0.5">{t.reportWordDesc}</p>
                     </div>
                   </div>
-                  <a
-                    href="/api/reports?format=docx"
-                    download
-                    className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition shrink-0"
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadReport("docx")}
+                    disabled={downloadingReport !== null}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition shrink-0 cursor-pointer"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Word (.docx)</span>
-                  </a>
+                    {downloadingReport === "docx" ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5" />
+                    )}
+                    <span>{downloadingReport === "docx" ? "កំពុងទាញយក..." : "Word (.docx)"}</span>
+                  </button>
                 </div>
 
                 {/* 2. Excel Spreadsheet */}
@@ -2233,18 +2385,25 @@ export default function AdminPage() {
                       <FileSpreadsheet className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-mool text-sm text-[#0c2340]">{t.reportExcelTitle}</h4>
+                      <h4 className="font-mool text-sm text-[#0c2340]">
+                        {t.reportExcelTitle} • {PERIOD_TITLES[selectedReportPeriod]?.km || ""}
+                      </h4>
                       <p className="text-xs text-gray-600 mt-0.5">{t.reportExcelDesc}</p>
                     </div>
                   </div>
-                  <a
-                    href="/api/reports?format=excel"
-                    download
-                    className="w-full sm:w-auto px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition shrink-0"
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadReport("xlsx")}
+                    disabled={downloadingReport !== null}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition shrink-0 cursor-pointer"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Excel (.xlsx)</span>
-                  </a>
+                    {downloadingReport === "xlsx" ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5" />
+                    )}
+                    <span>{downloadingReport === "xlsx" ? "កំពុងទាញយក..." : "Excel (.xlsx)"}</span>
+                  </button>
                 </div>
 
                 {/* 3. Official Printable PDF */}
@@ -2254,19 +2413,25 @@ export default function AdminPage() {
                       <Printer className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-mool text-sm text-[#0c2340]">{t.reportPdfTitle}</h4>
+                      <h4 className="font-mool text-sm text-[#0c2340]">
+                        {t.reportPdfTitle} • {PERIOD_TITLES[selectedReportPeriod]?.km || ""}
+                      </h4>
                       <p className="text-xs text-gray-600 mt-0.5">{t.reportPdfDesc}</p>
                     </div>
                   </div>
-                  <a
-                    href="/api/reports?format=html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full sm:w-auto px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition shrink-0"
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadReport("html")}
+                    disabled={downloadingReport !== null}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition shrink-0 cursor-pointer"
                   >
-                    <Printer className="w-3.5 h-3.5" />
+                    {downloadingReport === "html" ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Printer className="w-3.5 h-3.5" />
+                    )}
                     <span>{t.viewPrintPdfBtn}</span>
-                  </a>
+                  </button>
                 </div>
               </div>
 

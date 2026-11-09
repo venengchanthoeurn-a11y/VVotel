@@ -4,40 +4,31 @@ import { Document, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, Al
 import ExcelJS from "exceljs";
 import { BookingRecord } from "./bookings";
 
-/**
- * Convert Arabic digits to Khmer numerals
- */
-export function toKhmerNum(val: number | string): string {
-  const khmerDigits = ["០", "១", "២", "៣", "៤", "៥", "៦", "៧", "៨", "៩"];
-  return String(val).replace(/\d/g, (d) => khmerDigits[parseInt(d, 10)]);
-}
+import {
+  toKhmerNum,
+  getOfficialKhmerDate,
+  PERIOD_TITLES,
+  filterBookingsByPeriod,
+  ReportPeriod,
+} from "./reportsShared";
 
-/**
- * Format date into official Cambodian administrative date string
- */
-export function getOfficialKhmerDate(d: Date = new Date()) {
-  const days = ["អាទិត្យ", "ច័ន្ទ", "អង្គារ", "ពុធ", "ព្រហស្បតិ៍", "សុក្រ", "សៅរ៍"];
-  const months = [
-    "មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា",
-    "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"
-  ];
+export {
+  toKhmerNum,
+  getOfficialKhmerDate,
+  PERIOD_TITLES,
+  filterBookingsByPeriod,
+};
+export type { ReportPeriod };
 
-  const dayName = days[d.getDay()];
-  const dayNum = toKhmerNum(String(d.getDate()).padStart(2, "0"));
-  const monthName = months[d.getMonth()];
-  const yearNum = toKhmerNum(d.getFullYear());
 
-  return {
-    fullSolarDate: `ថ្ងៃ${dayName} ទី${dayNum} ខែ${monthName} ឆ្នាំ${yearNum}`,
-    standardHeaderDate: `កំពង់ចាម, ថ្ងៃទី${dayNum} ខែ${monthName} ឆ្នាំ${yearNum}`,
-    shortDate: `${dayNum}/${toKhmerNum(String(d.getMonth() + 1).padStart(2, "0"))}/${yearNum}`,
-    isoDate: d.toISOString().split("T")[0],
-  };
-}
+
+
+
 
 /**
  * Compute key administrative metrics from bookings
  */
+
 export function computeReportMetrics(bookings: BookingRecord[]) {
   const totalBookings = bookings.length;
   const roomBookings = bookings.filter(
@@ -77,8 +68,14 @@ export function computeReportMetrics(bookings: BookingRecord[]) {
  * Strictly follows Kingdom of Cambodia administrative standards,
  * with Khmer Mool for headers, Khmer OS Siemreap for body, official tables & signature blocks.
  */
-export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<Buffer> {
-  const dateInfo = getOfficialKhmerDate();
+export async function generateOfficialDocx(
+  rawBookings: BookingRecord[],
+  period: ReportPeriod = "all",
+  refDate?: Date
+): Promise<Buffer> {
+  const dateInfo = getOfficialKhmerDate(refDate);
+  const periodInfo = filterBookingsByPeriod(rawBookings, period, refDate);
+  const bookings = periodInfo.filtered;
   const metrics = computeReportMetrics(bookings);
 
   // Load official logo for administrative header
@@ -248,7 +245,7 @@ export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<B
             alignment: AlignmentType.CENTER,
             children: [
               new TextRun({
-                text: "របាយការណ៍បូកសរុប",
+                text: periodInfo.periodLabelKm,
                 font: FONT_MOOL,
                 size: 28,
                 bold: true,
@@ -258,13 +255,26 @@ export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<B
           }),
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: { after: 240 },
+            spacing: { after: 120 },
             children: [
               new TextRun({
                 text: "ស្តីពី ប្រតិបត្តិការអាជីវកម្មស្នាក់នៅ និងភោជនីយដ្ឋាន",
                 font: FONT_MOOL,
-                size: 22,
+                size: 21,
                 color: "0C2340",
+              }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 240 },
+            children: [
+              new TextRun({
+                text: periodInfo.dateRangeText,
+                font: FONT_BODY,
+                size: 19,
+                color: "8B5E3C",
+                bold: true,
               }),
             ],
           }),
@@ -808,8 +818,14 @@ export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<B
  * Generates an executive workbook with stylized header banners,
  * summary cards, formatted transaction columns, sums and official footer.
  */
-export async function generateOfficialExcel(bookings: BookingRecord[]): Promise<Buffer> {
-  const dateInfo = getOfficialKhmerDate();
+export async function generateOfficialExcel(
+  rawBookings: BookingRecord[],
+  period: ReportPeriod = "all",
+  refDate?: Date
+): Promise<Buffer> {
+  const dateInfo = getOfficialKhmerDate(refDate);
+  const periodInfo = filterBookingsByPeriod(rawBookings, period, refDate);
+  const bookings = periodInfo.filtered;
   const metrics = computeReportMetrics(bookings);
 
   const workbook = new ExcelJS.Workbook();
@@ -874,7 +890,7 @@ export async function generateOfficialExcel(bookings: BookingRecord[]): Promise<
   // 3. Report Main Title
   worksheet.mergeCells("A4:O4");
   const cellA4 = worksheet.getCell("A4");
-  cellA4.value = "របាយការណ៍បូកសរុបប្រតិបត្តិការអាជីវកម្មស្នាក់នៅ និងភោជនីយដ្ឋាន (VVotel PMS Hub)";
+  cellA4.value = `${periodInfo.periodLabelKm} ស្តីពី ប្រតិបត្តិការអាជីវកម្មស្នាក់នៅ និងភោជនីយដ្ឋាន (${periodInfo.dateRangeText})`;
   cellA4.font = { name: "Khmer OS Siemreap", size: 14, bold: true, color: { argb: "FF0C2340" } };
   cellA4.alignment = { horizontal: "center", vertical: "middle" };
   worksheet.getRow(4).height = 28;
@@ -1058,8 +1074,14 @@ export async function generateOfficialExcel(bookings: BookingRecord[]): Promise<
 /**
  * 3. GENERATE PRINTABLE OFFICIAL A4 ADMINISTRATIVE HTML REPORT (For PDF Download & Browser Print)
  */
-export function generateOfficialHtmlReport(bookings: BookingRecord[]): string {
-  const dateInfo = getOfficialKhmerDate();
+export function generateOfficialHtmlReport(
+  rawBookings: BookingRecord[],
+  period: ReportPeriod = "all",
+  refDate?: Date
+): string {
+  const dateInfo = getOfficialKhmerDate(refDate);
+  const periodInfo = filterBookingsByPeriod(rawBookings, period, refDate);
+  const bookings = periodInfo.filtered;
   const metrics = computeReportMetrics(bookings);
 
   const tableRows = bookings
@@ -1148,10 +1170,10 @@ export function generateOfficialHtmlReport(bookings: BookingRecord[]): string {
       <button onclick="window.print()" class="px-4 py-2 bg-[#0c2340] text-amber-300 rounded-xl font-bold text-xs hover:bg-[#12335e] flex items-center space-x-1.5 shadow">
         <span>🖨️ បោះពុម្ព / រក្សាទុកជា PDF</span>
       </button>
-      <a href="/api/reports?format=docx" class="px-3.5 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-700 flex items-center space-x-1 shadow">
+      <a href="/api/reports?format=docx&period=${period}" class="px-3.5 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-700 flex items-center space-x-1 shadow">
         <span>📄 ទាញយក Word (.docx)</span>
       </a>
-      <a href="/api/reports?format=excel" class="px-3.5 py-2 bg-emerald-700 text-white rounded-xl font-bold text-xs hover:bg-emerald-800 flex items-center space-x-1 shadow">
+      <a href="/api/reports?format=excel&period=${period}" class="px-3.5 py-2 bg-emerald-700 text-white rounded-xl font-bold text-xs hover:bg-emerald-800 flex items-center space-x-1 shadow">
         <span>📊 ទាញយក Excel (.xlsx)</span>
       </a>
     </div>
@@ -1186,10 +1208,12 @@ export function generateOfficialHtmlReport(bookings: BookingRecord[]): string {
     </div>
 
     <!-- Official Report Title -->
-    <div class="text-center my-6 space-y-1">
-      <h1 class="font-mool text-xl sm:text-2xl text-[#0c2340] uppercase tracking-wide">របាយការណ៍បូកសរុប</h1>
+    <div class="text-center my-6 space-y-2">
+      <h1 class="font-mool text-xl sm:text-2xl text-[#0c2340] uppercase tracking-wide">${periodInfo.periodLabelKm}</h1>
       <h2 class="font-mool text-sm sm:text-base text-gray-800">ស្តីពី ប្រតិបត្តិការអាជីវកម្មស្នាក់នៅ និងភោជនីយដ្ឋាន</h2>
-      <p class="text-xs text-gray-500 font-mono font-bold">VVOTEL PMS CENTRAL REVENUE & OCCUPANCY EXECUTIVE REPORT</p>
+      <div class="inline-block bg-amber-50 text-amber-900 border border-amber-300 px-4 py-1 rounded-full text-xs font-bold font-siemreap shadow-xs">
+        ${periodInfo.dateRangeText}
+      </div>
     </div>
 
     <!-- Administrative Directives -->
