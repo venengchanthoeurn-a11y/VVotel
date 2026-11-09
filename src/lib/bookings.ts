@@ -130,6 +130,26 @@ export function getAllBookings(): BookingRecord[] {
   return [];
 }
 
+/**
+ * Distributed Async Bookings Retrieval: Fetches authoritative state from Redis primary store
+ * across multi-instance serverless deployments before falling back to local files.
+ */
+export async function getAllBookingsAsync(): Promise<BookingRecord[]> {
+  try {
+    const raw = await safeCache.get(PRIMARY_REDIS_BOOKINGS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        globalThis._vvotelBookingsCache = parsed;
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not fetch bookings from Redis, falling back to local disk replica:", err);
+  }
+  return getAllBookings();
+}
+
 export function saveAllBookings(bookings: BookingRecord[]) {
   globalThis._vvotelBookingsCache = bookings;
 
@@ -157,18 +177,47 @@ export function saveAllBookings(bookings: BookingRecord[]) {
   }
 }
 
+/**
+ * Asynchronous atomic persistence to Redis primary store with disk replica
+ */
+export async function saveAllBookingsAsync(bookings: BookingRecord[]): Promise<void> {
+  globalThis._vvotelBookingsCache = bookings;
+  try {
+    await safeCache.set(PRIMARY_REDIS_BOOKINGS_KEY, JSON.stringify(bookings));
+  } catch (err) {
+    console.warn("Async sync to Redis failed:", err);
+  }
+
+  try {
+    const tmpDir = path.dirname(TMP_BOOKINGS_FILE);
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+    fs.writeFileSync(TMP_BOOKINGS_FILE, JSON.stringify(bookings, null, 2), "utf-8");
+  } catch {}
+
+  try {
+    const dir = path.dirname(SEED_BOOKINGS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(SEED_BOOKINGS_FILE, JSON.stringify(bookings, null, 2), "utf-8");
+  } catch {}
+}
+
 export function getBookingById(id: string): BookingRecord | null {
   if (!id) return null;
   const bookings = getAllBookings();
   return bookings.find((b) => b.id.toLowerCase() === id.toLowerCase()) || null;
 }
 
+export async function getBookingByIdAsync(id: string): Promise<BookingRecord | null> {
+  if (!id) return null;
+  const bookings = await getAllBookingsAsync();
+  return bookings.find((b) => b.id.toLowerCase() === id.toLowerCase()) || null;
+}
+
 /**
- * Concurrency & Double-Booking Prevention:
- * Check if the requested room type has available physical inventory for the target date range.
- * Ensures room inventory can never become negative or over-allocated.
+ * Internal Availability Check over an arbitrary bookings list
  */
-export function checkRoomAvailability(
+function checkRoomAvailabilityInternal(
+  bookings: BookingRecord[],
   roomType: string,
   checkIn: string,
   checkOut: string,
@@ -181,8 +230,6 @@ export function checkRoomAvailability(
   );
 
   const maxAvailable = roomSetting ? roomSetting.availableCount : 10;
-  const bookings = getAllBookings();
-
   const reqStart = new Date(checkIn).getTime();
   const reqEnd = new Date(checkOut).getTime();
 
@@ -216,6 +263,35 @@ export function checkRoomAvailability(
 }
 
 /**
+ * Concurrency & Double-Booking Prevention:
+ * Synchronous availability check over current cached bookings.
+ */
+export function checkRoomAvailability(
+  roomType: string,
+  checkIn: string,
+  checkOut: string,
+  requestedCount: number,
+  excludeBookingId?: string
+): { available: boolean; bookedCount: number; maxAvailable: number; remaining: number } {
+  const bookings = getAllBookings();
+  return checkRoomAvailabilityInternal(bookings, roomType, checkIn, checkOut, requestedCount, excludeBookingId);
+}
+
+/**
+ * Asynchronous authoritative availability check: reads fresh distributed state from Redis
+ */
+export async function checkRoomAvailabilityAsync(
+  roomType: string,
+  checkIn: string,
+  checkOut: string,
+  requestedCount: number,
+  excludeBookingId?: string
+): Promise<{ available: boolean; bookedCount: number; maxAvailable: number; remaining: number }> {
+  const bookings = await getAllBookingsAsync();
+  return checkRoomAvailabilityInternal(bookings, roomType, checkIn, checkOut, requestedCount, excludeBookingId);
+}
+
+/**
  * Atomic Booking Creation with Distributed Mutex Locking
  */
 export async function createBooking(data: Partial<BookingRecord>): Promise<BookingRecord> {
@@ -231,8 +307,15 @@ export async function createBooking(data: Partial<BookingRecord>): Promise<Booki
     await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
   }
 
+  // In production mode, failing to acquire the distributed mutex lock must fail closed
+  if (!acquired && safeCache.isProduction() && safeCache.isReady()) {
+    throw new Error(
+      `CONCURRENT_BOOKING_LOCK_FAILED: Resource lock '${lockResource}' could not be acquired within timeout. Another booking transaction is actively processing. Please retry.`
+    );
+  }
+
   try {
-    const bookings = getAllBookings();
+    const bookings = await getAllBookingsAsync();
     const id = data.id || `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`;
 
     // 1. Idempotency Check under Lock
@@ -248,7 +331,7 @@ export async function createBooking(data: Partial<BookingRecord>): Promise<Booki
 
     // 2. Atomic Inventory Availability Check under Lock
     if (isRoomBooking) {
-      const avail = checkRoomAvailability(roomType, cIn, cOut, roomCount);
+      const avail = checkRoomAvailabilityInternal(bookings, roomType, cIn, cOut, roomCount);
       if (!avail.available) {
         throw new Error(
           `ROOM_CAPACITY_EXCEEDED: Requested ${roomCount} room(s) exceeds available physical inventory (${avail.remaining} remaining of ${avail.maxAvailable}).`
@@ -337,7 +420,7 @@ export async function createBooking(data: Partial<BookingRecord>): Promise<Booki
 
     // Add to top of list
     bookings.unshift(newBooking);
-    saveAllBookings(bookings);
+    await saveAllBookingsAsync(bookings);
 
     // Trigger Telegram alert asynchronously
     try {

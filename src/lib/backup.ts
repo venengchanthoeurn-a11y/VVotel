@@ -10,52 +10,56 @@ import {
 } from "./backupTypes";
 import { getSiteSettings, saveSiteSettings } from "./settings-server";
 
+import os from "os";
+import { safeCache } from "./redis";
+
 export type { BackupStats, BackupSnapshot };
 export { computeBackupStats, createBackupSnapshot };
 
 const BACKUP_DIR = path.join(process.cwd(), "data", "backups");
+const TMP_BACKUP_DIR = path.join(os.tmpdir(), "vvotel_backups");
 const LATEST_BACKUP_PATH = path.join(process.cwd(), "data", "backup_latest.json");
+const TMP_LATEST_BACKUP_PATH = path.join(os.tmpdir(), "vvotel_backup_latest.json");
+const REDIS_LATEST_BACKUP_KEY = "vvotel_backup_latest";
 
 /**
- * Server-side: Save snapshot to file system
+ * Server-side: Save snapshot to file system and Redis store
  */
 export function saveSnapshotToDisk(snapshot: BackupSnapshot): boolean {
+  const serialized = JSON.stringify(snapshot, null, 2);
+
+  // 1. Persist to Redis (distributed primary)
+  safeCache.set(REDIS_LATEST_BACKUP_KEY, serialized).catch(() => {});
+  safeCache.set(`vvotel_backup:${snapshot.id}`, serialized, "EX", 86400 * 30).catch(() => {});
+
+  // 2. Try writing to process.cwd() data/backups (development / persistent FS)
+  let wroteDisk = false;
   try {
     if (!fs.existsSync(BACKUP_DIR)) {
       fs.mkdirSync(BACKUP_DIR, { recursive: true });
     }
-
-    // Save specific snapshot file
     const snapshotFile = path.join(BACKUP_DIR, `${snapshot.id}.json`);
-    const serialized = JSON.stringify(snapshot, null, 2);
     fs.writeFileSync(snapshotFile, serialized, "utf-8");
-
-    // Also update backup_latest.json
     fs.writeFileSync(LATEST_BACKUP_PATH, serialized, "utf-8");
-
-    // Maintain max 30 snapshots on server disk to avoid runaway storage
-    const files = fs
-      .readdirSync(BACKUP_DIR)
-      .filter((f) => f.endsWith(".json"))
-      .map((f) => ({
-        name: f,
-        time: fs.statSync(path.join(BACKUP_DIR, f)).mtime.getTime(),
-      }))
-      .sort((a, b) => b.time - a.time);
-
-    if (files.length > 30) {
-      files.slice(30).forEach((f) => {
-        try {
-          fs.unlinkSync(path.join(BACKUP_DIR, f.name));
-        } catch (e) {}
-      });
-    }
-
-    return true;
+    wroteDisk = true;
   } catch (err) {
-    console.error("Failed to save backup snapshot to disk:", err);
-    return false;
+    // Expected on Vercel read-only Lambda
   }
+
+  // 3. Writable fallback in /tmp for Serverless Lambdas
+  try {
+    if (!fs.existsSync(TMP_BACKUP_DIR)) {
+      fs.mkdirSync(TMP_BACKUP_DIR, { recursive: true });
+    }
+    const tmpFile = path.join(TMP_BACKUP_DIR, `${snapshot.id}.json`);
+    fs.writeFileSync(tmpFile, serialized, "utf-8");
+    fs.writeFileSync(TMP_LATEST_BACKUP_PATH, serialized, "utf-8");
+    wroteDisk = true;
+  } catch (err) {
+    console.warn("Failed to write snapshot to tmp backup dir:", err);
+  }
+
+  return wroteDisk;
 }
 
 /**
@@ -63,19 +67,20 @@ export function saveSnapshotToDisk(snapshot: BackupSnapshot): boolean {
  */
 export function getSnapshotsFromDisk(): BackupSnapshot[] {
   try {
-    if (!fs.existsSync(BACKUP_DIR)) {
+    const targetDir = fs.existsSync(BACKUP_DIR) ? BACKUP_DIR : fs.existsSync(TMP_BACKUP_DIR) ? TMP_BACKUP_DIR : null;
+    if (!targetDir) {
       return [];
     }
 
     const files = fs
-      .readdirSync(BACKUP_DIR)
+      .readdirSync(targetDir)
       .filter((f) => f.endsWith(".json"))
       .sort((a, b) => b.localeCompare(a));
 
     const list: BackupSnapshot[] = [];
     for (const f of files.slice(0, 20)) {
       try {
-        const raw = fs.readFileSync(path.join(BACKUP_DIR, f), "utf-8");
+        const raw = fs.readFileSync(path.join(targetDir, f), "utf-8");
         const parsed = JSON.parse(raw);
         if (parsed.id && parsed.timestamp) {
           list.push(parsed);

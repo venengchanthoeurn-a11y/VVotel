@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import { createBooking, getBookingById, checkRoomAvailability } from "@/lib/bookings";
+import { createBooking, getBookingByIdAsync, checkRoomAvailabilityAsync } from "@/lib/bookings";
 import { getSiteSettings } from "@/lib/settings-server";
 import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rateLimit";
 import { logAuditEvent } from "@/lib/auditLog";
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     const ref = cleanRef || `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`;
 
     // 2. Idempotency Check: Return existing confirmed booking without duplicate processing
-    const existingBooking = getBookingById(ref);
+    const existingBooking = await getBookingByIdAsync(ref);
     if (existingBooking) {
       return NextResponse.json({
         success: true,
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
 
     // 5. Atomic Room Availability & Overcapacity Control
     const targetRoomId = matchedRoom?.id || roomType || "superior-river";
-    const availCheck = checkRoomAvailability(targetRoomId, cIn, cOut, roomQty);
+    const availCheck = await checkRoomAvailabilityAsync(targetRoomId, cIn, cOut, roomQty);
     if (!availCheck.available) {
       return NextResponse.json(
         {

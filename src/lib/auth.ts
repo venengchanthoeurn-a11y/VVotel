@@ -212,7 +212,60 @@ function getSystemAccounts(isProd: boolean): SystemAccount[] {
 }
 
 /**
+ * Verify dynamic RFC 6238 Time-based One-Time Password (TOTP)
+ * Standard 30-second time-step with +-1 step drift window
+ */
+export function verifyDynamicTotp(secretBase32: string, token: string, window = 1): boolean {
+  if (!secretBase32 || !token) return false;
+  const cleanToken = token.trim();
+  if (cleanToken.length !== 6 || !/^\d{6}$/.test(cleanToken)) return false;
+
+  const base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const cleanSecret = secretBase32.toUpperCase().replace(/[^A-Z2-7]/g, "");
+  if (cleanSecret.length === 0) return false;
+
+  let bits = "";
+  for (let i = 0; i < cleanSecret.length; i++) {
+    const val = base32Chars.indexOf(cleanSecret[i]);
+    if (val === -1) continue;
+    bits += val.toString(2).padStart(5, "0");
+  }
+
+  const bytes: number[] = [];
+  for (let i = 0; i + 8 <= bits.length; i += 8) {
+    bytes.push(parseInt(bits.slice(i, i + 8), 2));
+  }
+  const key = Buffer.from(bytes);
+  if (key.length === 0) return false;
+
+  const epoch = Math.floor(Date.now() / 1000);
+  const timeStep = 30;
+  const currentCounter = Math.floor(epoch / timeStep);
+
+  for (let errorWindow = -window; errorWindow <= window; errorWindow++) {
+    const counter = currentCounter + errorWindow;
+    const buf = Buffer.alloc(8);
+    buf.writeBigInt64BE(BigInt(counter));
+
+    const hmac = crypto.createHmac("sha1", key).update(buf).digest();
+    const offset = hmac[hmac.length - 1] & 0xf;
+    const code =
+      ((hmac[offset] & 0x7f) << 24) |
+      ((hmac[offset + 1] & 0xff) << 16) |
+      ((hmac[offset + 2] & 0xff) << 8) |
+      (hmac[offset + 3] & 0xff);
+    const totp = (code % 1000000).toString().padStart(6, "0");
+
+    if (timingSafeCompare(totp, cleanToken)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Verify optional MFA / secondary verification code for privileged accounts
+ * Supports both dynamic RFC 6238 TOTP codes and timing-safe static secrets
  */
 export function verifyMfaCode(role: Role, mfaInput?: string): boolean {
   // If MFA is globally disabled via env, allow bypass in non-production
@@ -231,7 +284,8 @@ export function verifyMfaCode(role: Role, mfaInput?: string): boolean {
 
     if (!mfaInput) return false;
     const cleanMfa = mfaInput.trim();
-    return timingSafeCompare(configuredMfaSecret, cleanMfa);
+    // Validate dynamic RFC 6238 TOTP or timing-safe secondary PIN
+    return verifyDynamicTotp(configuredMfaSecret, cleanMfa) || timingSafeCompare(configuredMfaSecret, cleanMfa);
   }
 
   return true;

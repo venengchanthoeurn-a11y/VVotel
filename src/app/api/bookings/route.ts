@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAllBookings, createBooking } from "@/lib/bookings";
+import { getAllBookings, getAllBookingsAsync, createBooking } from "@/lib/bookings";
 import { verifyAuth } from "@/lib/auth";
 import { logAuditEvent } from "@/lib/auditLog";
 import { getClientIp } from "@/lib/rateLimit";
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const status = searchParams.get("status");
     const query = searchParams.get("query")?.toLowerCase();
 
-    let bookings = getAllBookings();
+    let bookings = await getAllBookingsAsync();
 
     if (status && status !== "ALL") {
       bookings = bookings.filter((b) => b.stayStatus === status || b.paymentStatus === status);
