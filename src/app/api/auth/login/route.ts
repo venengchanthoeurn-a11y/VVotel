@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { passcode, username, remember } = body;
+    const { passcode, username, mfaCode, remember } = body;
 
     if (!passcode || typeof passcode !== "string") {
       return NextResponse.json(
@@ -41,13 +41,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Authenticate
-    const result = await authenticateCredentials(passcode, username, ip, userAgent);
+    // 2. Authenticate with credentials and optional MFA token
+    const result = await authenticateCredentials(passcode, username, mfaCode, ip, userAgent);
     if (!result.success || !result.user) {
       return NextResponse.json(
         {
           success: false,
           error: result.error || "ការផ្ទៀងផ្ទាត់មិនត្រឹមត្រូវ",
+          mfaRequired: result.mfaRequired || false,
           locked: result.locked,
           remainingSeconds: result.remainingSeconds,
         },

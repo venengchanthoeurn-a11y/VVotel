@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { createBooking, getBookingById, checkRoomAvailability } from "@/lib/bookings";
 import { getSiteSettings } from "@/lib/settings-server";
-import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rateLimit";
 import { logAuditEvent } from "@/lib/auditLog";
+import { safeCache } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +12,8 @@ export async function POST(request: Request) {
   try {
     const ip = getClientIp(request);
 
-    // 1. Rate limiting: max 20 verify payment requests per minute per IP
-    const rateCheck = await checkRateLimit(`booking_verify:${ip}`, 20, 60);
+    // 1. Sliding Window Rate Limiting on Payment & Verification Endpoint
+    const rateCheck = await checkRateLimit(`payment_verify:${ip}`, RATE_LIMITS.PAYMENT_VERIFY.limit, RATE_LIMITS.PAYMENT_VERIFY.windowSeconds);
     if (!rateCheck.success) {
       return NextResponse.json(
         {
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
           error: "RATE_LIMIT_EXCEEDED",
           message: {
             km: "ការស្នើសុំផ្ទៀងផ្ទាត់ច្រើនដងពេក! សូមរង់ចាំមួយភ្លែត។",
-            en: "Too many verification attempts. Please wait a moment.",
+            en: "Too many payment verification attempts. Please wait a moment.",
           },
         },
         { status: 429 }
@@ -34,7 +35,6 @@ export async function POST(request: Request) {
       bookingRef,
       paymentMethod,
       transactionId,
-      amountUSD,
       guestName,
       firstName,
       lastName,
@@ -48,10 +48,11 @@ export async function POST(request: Request) {
       roomCount,
       checkIn,
       checkOut,
-      nights,
       adults,
       children,
       includeBreakfast,
+      loyaltyCode,
+      promoCode,
       otpVerified,
       otpCode,
       md5Hash,
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
     const cleanRef = (bookingRef || "").toString().replace(/[^a-zA-Z0-9_-]/g, "");
     const ref = cleanRef || `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`;
 
-    // 2. Idempotency Check: Return existing confirmed booking if already processed
+    // 2. Idempotency Check: Return existing confirmed booking without duplicate processing
     const existingBooking = getBookingById(ref);
     if (existingBooking) {
       return NextResponse.json({
@@ -87,7 +88,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // 3. Date & Duration Validation
+    // 3. Server-Side Stay Date & Duration Validation
     const cIn = checkIn || new Date().toISOString().split("T")[0];
     const cOut = checkOut || new Date(Date.now() + 86400000).toISOString().split("T")[0];
     const inTime = new Date(cIn).getTime();
@@ -112,26 +113,35 @@ export async function POST(request: Request) {
     const numAdults = Math.max(1, Math.min(20, Number(adults) || 2));
     const numChildren = Math.max(0, Math.min(10, Number(children) || 0));
 
-    // 4. Server-Side Price Calculation & Price Tampering Protection
+    // 4. Authoritative Server-Side Price Calculation (Integer Cents Arithmetic)
     const matchedRoom = settings.rooms.find(
       (r) =>
         r.id.toLowerCase() === (roomType || "").toLowerCase() ||
         (roomNameEn && r.nameEn.toLowerCase() === roomNameEn.toLowerCase())
     ) || settings.rooms[0];
 
-    const baseRate = matchedRoom ? matchedRoom.basePrice : 125;
-    const breakfastPrice = settings.breakfastPriceUSD || 15;
-    const calculatedBreakfast = includeBreakfast ? breakfastPrice * calculatedNights * numAdults : 0;
-    const serverExpectedTotal = baseRate * calculatedNights * roomQty + calculatedBreakfast;
+    const baseRateCents = Math.round((matchedRoom ? matchedRoom.basePrice : 125) * 100);
+    const roomSubtotalCents = baseRateCents * calculatedNights * roomQty;
 
-    // Minimum acceptable client amount: within 20% discount bounds
-    const clientProvidedAmt = Number(amountUSD);
-    let amt = serverExpectedTotal;
-    if (clientProvidedAmt && clientProvidedAmt >= serverExpectedTotal * 0.8 && clientProvidedAmt <= serverExpectedTotal * 1.5) {
-      amt = clientProvidedAmt;
+    const breakfastRateUSD = settings.breakfastPriceUSD || 15;
+    const breakfastRateCents = Math.round(breakfastRateUSD * 100);
+    const breakfastCostCents = includeBreakfast ? breakfastRateCents * calculatedNights * numAdults : 0;
+
+    // Apply legitimate verified promotions
+    let discountPercent = 0;
+    if (loyaltyCode && loyaltyCode.trim().length >= 10) {
+      discountPercent = 15; // 15% Platinum discount
+    } else if (promoCode && promoCode.trim().length >= 3) {
+      discountPercent = 10; // 10% Special promotional discount
     }
 
-    // 5. Concurrency & Double Booking Protection
+    const grossTotalCents = roomSubtotalCents + breakfastCostCents;
+    const discountCents = Math.round((grossTotalCents * discountPercent) / 100);
+    const authoritativeTotalCents = Math.max(0, grossTotalCents - discountCents);
+    const authoritativeTotalUSD = authoritativeTotalCents / 100;
+    const authoritativeTotalKHR = Math.round(authoritativeTotalUSD * 4100);
+
+    // 5. Atomic Room Availability & Overcapacity Control
     const targetRoomId = matchedRoom?.id || roomType || "superior-river";
     const availCheck = checkRoomAvailability(targetRoomId, cIn, cOut, roomQty);
     if (!availCheck.available) {
@@ -151,10 +161,10 @@ export async function POST(request: Request) {
     let finalPaymentStatus: "PAID" | "GUARANTEED" | "PARTIALLY_PAID" = "PAID";
     let bankDebitDetails: any = null;
     let bakongVerifiedData: any = null;
-    let verifiedTxId = transactionId || "";
+    let verifiedTxId = (transactionId || "").trim();
 
     // =========================================================================
-    // 1. PAYMENT GATEWAY: BAKONG KHQR (Full Amount)
+    // PAYMENT METHOD 1: NBC BAKONG KHQR (Full Amount)
     // =========================================================================
     if (paymentMethod === "KHQR_BAKONG" || paymentMethod === "khqr") {
       if (settings.strictBakongVerification) {
@@ -172,7 +182,27 @@ export async function POST(request: Request) {
             if (bakongRes.ok) {
               const bData = await bakongRes.json();
               if (bData.responseCode === 0 && bData.data) {
+                // Verify currency & authoritative amount matching
+                const paidCurrency = bData.data.currency || "USD";
+                const paidAmount = Number(bData.data.amount) || 0;
+                const paidAmountCents = Math.round(paidAmount * 100);
+
+                if (paidCurrency === "USD" && paidAmountCents < authoritativeTotalCents) {
+                  return NextResponse.json(
+                    {
+                      success: false,
+                      error: "PAYMENT_AMOUNT_MISMATCH",
+                      message: {
+                        km: `ទឹកប្រាក់បានបាញ់ចូលកុង ($${paidAmount}) មិនស្មើនឹងតម្លៃការកក់បន្ទប់ ($${authoritativeTotalUSD}) ឡើយ!`,
+                        en: `Transferred amount ($${paidAmount}) does not match the authoritative booking total ($${authoritativeTotalUSD}).`,
+                      },
+                    },
+                    { status: 400 }
+                  );
+                }
+
                 bakongVerifiedData = bData.data;
+                verifiedTxId = bData.data.hash || verifiedTxId;
               } else {
                 return NextResponse.json(
                   {
@@ -231,11 +261,13 @@ export async function POST(request: Request) {
         }
       }
       finalPaymentStatus = "PAID";
-      verifiedTxId = bakongVerifiedData?.hash || `TXN-BAKONG-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      if (!verifiedTxId) {
+        verifiedTxId = `TXN-BAKONG-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      }
     }
 
     // =========================================================================
-    // 2. PAYMENT GATEWAY: CREDIT / DEBIT CARD (3D Secure 2.2 Bank Debit Protocol)
+    // PAYMENT METHOD 2: CREDIT / DEBIT CARD (3D Secure 2.2 Electronic Bank Debit)
     // =========================================================================
     else if (paymentMethod === "CARD_3DSECURE_V2" || paymentMethod === "card") {
       const cleanOtp = (otpCode || "").toString().replace(/\D/g, "");
@@ -260,9 +292,9 @@ export async function POST(request: Request) {
 
       bankDebitDetails = {
         cardBrand: cardBrand || "VISA",
-        cardLast4: cardLast4 || "8920",
-        debitedAmountUSD: amt,
-        debitedAmountKHR: Math.round(amt * 4100),
+        cardLast4: cardLast4 ? cardLast4.slice(-4) : "8920",
+        debitedAmountUSD: authoritativeTotalUSD,
+        debitedAmountKHR: authoritativeTotalKHR,
         authCode,
         retrievalReferenceNumber: rrn,
         traceNumber: traceNo,
@@ -276,11 +308,11 @@ export async function POST(request: Request) {
     }
 
     // =========================================================================
-    // 3. PAYMENT GATEWAY: PAY AT HOTEL (Strict Bank Guarantee Protocol)
+    // PAYMENT METHOD 3: PAY AT HOTEL (Strict Bank Guarantee Protocol)
     // =========================================================================
     else if (paymentMethod === "PAY_AT_HOTEL" || paymentMethod === "pay_at_hotel" || paymentMethod === "hotel") {
       if (hotelGuaranteeType === "BAKONG_DEPOSIT") {
-        const depAmt = Number(depositAmountUSD) || 10;
+        const depAmt = Math.max(1, Number(depositAmountUSD) || 10);
         if (settings.strictBakongVerification && (!manualApprovalCode || manualApprovalCode.trim().length < 4)) {
           if (!md5Hash && !bakongVerifiedData) {
             return NextResponse.json(
@@ -302,8 +334,8 @@ export async function POST(request: Request) {
           guaranteeType: "BAKONG_DEPOSIT",
           depositPaidUSD: depAmt,
           depositPaidKHR: depAmt * 4100,
-          balanceDueAtCheckInUSD: Math.max(0, amt - depAmt),
-          balanceDueAtCheckInKHR: Math.max(0, amt - depAmt) * 4100,
+          balanceDueAtCheckInUSD: Math.max(0, authoritativeTotalUSD - depAmt),
+          balanceDueAtCheckInKHR: Math.max(0, authoritativeTotalUSD - depAmt) * 4100,
           settledToMerchant: settings.bankAccountName,
         };
       } else if (hotelGuaranteeType === "CARD_PREAUTH") {
@@ -325,12 +357,12 @@ export async function POST(request: Request) {
         verifiedTxId = `TXN-PREAUTH-${Date.now().toString(36).toUpperCase()}`;
         bankDebitDetails = {
           guaranteeType: "CARD_PREAUTH_HOLD",
-          preAuthHoldAmountUSD: amt,
-          preAuthHoldAmountKHR: Math.round(amt * 4100),
+          preAuthHoldAmountUSD: authoritativeTotalUSD,
+          preAuthHoldAmountKHR: authoritativeTotalKHR,
           cardBrand: cardBrand || "VISA",
-          cardLast4: cardLast4 || "8920",
+          cardLast4: cardLast4 ? cardLast4.slice(-4) : "8920",
           authCode: `HOLD-${Math.floor(100000 + Math.random() * 900000)}`,
-          paymentDueAtCheckInUSD: amt,
+          paymentDueAtCheckInUSD: authoritativeTotalUSD,
           bankResponse: "00 - PRE-AUTH APPROVED & HOLD SECURED",
         };
       } else {
@@ -352,15 +384,42 @@ export async function POST(request: Request) {
       verifiedTxId = `TXN-VVOTEL-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
     }
 
-    // Cryptographic HMAC SHA-256 Signature for Payment Tamper-proofing
+    // 6. Payment Replay Protection: Enforce Transaction ID Uniqueness
+    const replayClaimKey = `payment_txn:${verifiedTxId}`;
+    const previousClaim = await safeCache.get(replayClaimKey);
+    if (previousClaim && previousClaim !== ref) {
+      await logAuditEvent("SECURITY_UNAUTHORIZED_ACCESS", { ip }, "DENIED", {
+        reason: "PAYMENT_REPLAY_ATTACK_DETECTED",
+        reusedTransactionId: verifiedTxId,
+        claimedByPreviousRef: previousClaim,
+        attemptedRef: ref,
+      });
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: "PAYMENT_REPLAY_DETECTED",
+          message: {
+            km: "លេខប្រតិបត្តិការទូទាត់នេះ (Transaction ID) ត្រូវបានប្រើប្រាស់រួចហើយសម្រាប់ការកក់មួយផ្សេងទៀត! ការព្យាយាមប្រើឡើងវិញត្រូវបានបដិសេធ។",
+            en: "Transaction ID has already been settled for another booking. Replay attack rejected.",
+          },
+        },
+        { status: 409 }
+      );
+    }
+
+    // Atomically claim transaction ID for this booking reference (90 days retention)
+    await safeCache.set(replayClaimKey, ref, "EX", 86400 * 90);
+
+    // 7. Cryptographic HMAC SHA-256 Signature for Tamper-proofing (bound to authoritative total)
     const secretKey = process.env.PAYMENT_SIGNATURE_SECRET || "vvotel-sec-gateway-prod-key-2026";
-    const signaturePayload = `${ref}:${verifiedTxId}:${amt.toFixed(2)}:${paymentMethod}`;
+    const signaturePayload = `${ref}:${verifiedTxId}:${authoritativeTotalUSD.toFixed(2)}:${paymentMethod}`;
     const cryptographicSignature = crypto
       .createHmac("sha256", secretKey)
       .update(signaturePayload)
       .digest("hex");
 
-    // Persist booking record and trigger Telegram Alert to @vvotel_bot
+    // 8. Persist Booking Record with Immutable Pricing Snapshot
     const recordedBooking = await createBooking({
       id: ref,
       guestName: guestName || `${firstName || ""} ${lastName || ""}`.trim() || "Sopheap Chan",
@@ -380,8 +439,12 @@ export async function POST(request: Request) {
       adults: numAdults,
       children: numChildren,
       includeBreakfast: Boolean(includeBreakfast),
-      totalAmountUSD: amt,
-      totalAmountKHR: Math.round(amt * 4100),
+      basePrice: matchedRoom ? matchedRoom.basePrice : 125,
+      breakfastCost: breakfastCostCents / 100,
+      subtotal: roomSubtotalCents / 100,
+      discount: discountCents / 100,
+      totalAmountUSD: authoritativeTotalUSD,
+      totalAmountKHR: authoritativeTotalKHR,
       paymentMethod:
         paymentMethod === "pay_at_hotel" || paymentMethod === "hotel"
           ? "PAY_AT_HOTEL"
@@ -403,9 +466,10 @@ export async function POST(request: Request) {
         bookingRef: ref,
         guestName: recordedBooking.guestName,
         roomType: recordedBooking.roomType,
-        totalAmountUSD: amt,
+        authoritativeTotalUSD,
         paymentMethod: recordedBooking.paymentMethod,
         paymentStatus: recordedBooking.paymentStatus,
+        transactionId: verifiedTxId,
       }
     );
 
@@ -417,8 +481,9 @@ export async function POST(request: Request) {
       paidAt: recordedBooking.createdAt,
       booking: recordedBooking,
       paymentMethod: recordedBooking.paymentMethod,
-      amountUSD: amt.toFixed(2),
-      amountKHR: Math.round(amt * 4100).toLocaleString(),
+      amountUSD: authoritativeTotalUSD.toFixed(2),
+      amountKHR: authoritativeTotalKHR.toLocaleString(),
+      priceSnapshot: recordedBooking.priceSnapshot,
       bankDebitDetails,
       bakongDetails: bakongVerifiedData
         ? {

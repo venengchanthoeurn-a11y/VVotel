@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { getBookingById, updateBookingStayStatus, getAllBookings, saveAllBookings } from "@/lib/bookings";
+import {
+  getBookingById,
+  updateBookingStayStatus,
+  updateBookingPaymentStatus,
+  getAllBookings,
+  saveAllBookings,
+} from "@/lib/bookings";
 import { verifyAuth } from "@/lib/auth";
 import { logAuditEvent } from "@/lib/auditLog";
 import { getClientIp } from "@/lib/rateLimit";
@@ -34,15 +40,35 @@ export async function PATCH(
   const ip = getClientIp(request);
 
   try {
-    const { stayStatus, roomNumber } = await request.json();
+    const body = await request.json().catch(() => ({}));
+    const { stayStatus, paymentStatus, roomNumber, force } = body;
     const existing = getBookingById(params.id);
     if (!existing) {
       return NextResponse.json({ success: false, error: "Booking not found" }, { status: 404 });
     }
 
-    const updated = updateBookingStayStatus(params.id, stayStatus, roomNumber);
-    if (!updated) {
-      return NextResponse.json({ success: false, error: "Booking update failed" }, { status: 404 });
+    const isSuperAdmin = auth.user?.role === "SUPER_ADMIN";
+    const canForce = isSuperAdmin && Boolean(force);
+
+    let updated = existing;
+
+    if (stayStatus && stayStatus !== existing.stayStatus) {
+      const res = updateBookingStayStatus(params.id, stayStatus, roomNumber, canForce);
+      if (!res) {
+        return NextResponse.json({ success: false, error: "Booking stay status update failed" }, { status: 404 });
+      }
+      updated = res;
+    } else if (roomNumber && roomNumber !== existing.roomNumber) {
+      const res = updateBookingStayStatus(params.id, existing.stayStatus, roomNumber, true);
+      if (res) updated = res;
+    }
+
+    if (paymentStatus && paymentStatus !== existing.paymentStatus) {
+      const res = updateBookingPaymentStatus(params.id, paymentStatus, undefined, canForce);
+      if (!res) {
+        return NextResponse.json({ success: false, error: "Booking payment status update failed" }, { status: 404 });
+      }
+      updated = res;
     }
 
     await logAuditEvent(
@@ -51,14 +77,20 @@ export async function PATCH(
       "SUCCESS",
       {
         bookingId: params.id,
-        previousStatus: existing.stayStatus,
-        newStatus: stayStatus,
+        previousStayStatus: existing.stayStatus,
+        newStayStatus: updated.stayStatus,
+        previousPaymentStatus: existing.paymentStatus,
+        newPaymentStatus: updated.paymentStatus,
         roomNumber: roomNumber || existing.roomNumber,
       }
     );
 
     return NextResponse.json({ success: true, booking: updated });
-  } catch (error) {
+  } catch (error: any) {
+    const errorMsg = error?.message || "Failed to update booking";
+    if (errorMsg.includes("INVALID_STATE_TRANSITION") || errorMsg.includes("INVALID_PAYMENT_STATE_TRANSITION")) {
+      return NextResponse.json({ success: false, error: errorMsg }, { status: 400 });
+    }
     return NextResponse.json({ success: false, error: "Failed to update booking" }, { status: 500 });
   }
 }

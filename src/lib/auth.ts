@@ -25,6 +25,7 @@ export interface AuthUser {
   displayName: string;
   role: Role;
   permissions: Permission[];
+  mfaVerified?: boolean;
 }
 
 export interface SessionData {
@@ -32,6 +33,7 @@ export interface SessionData {
   user: AuthUser;
   createdAt: number;
   expiresAt: number;
+  lastRenewedAt: number;
   ip: string;
   userAgent?: string;
 }
@@ -89,8 +91,24 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 
 export const SESSION_COOKIE_NAME = "vvotel_session";
 export const SESSION_TTL_SECONDS = 12 * 60 * 60; // 12 Hours
+export const SESSION_RENEWAL_WINDOW_SECONDS = 3 * 60 * 60; // Renew if within 3 hours of expiry
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_SECONDS = 15 * 60; // 15 Minutes
+
+// Known default credentials that MUST be rejected in production
+export const WEAK_DEFAULT_PASSCODES = new Set([
+  "2052",
+  "vvotel2026",
+  "admin2052",
+  "vvotel@admin",
+  "manager2052",
+  "staff2052",
+  "authorized_manager_2052",
+  "admin",
+  "password",
+  "123456",
+  "hotel2026",
+]);
 
 /**
  * Timing-safe string comparison to protect against timing attacks
@@ -100,11 +118,18 @@ export function timingSafeCompare(a: string, b: string): boolean {
   const bufA = Buffer.from(a);
   const bufB = Buffer.from(b);
   if (bufA.length !== bufB.length) {
-    // Constant time dummy comparison of same length to prevent timing leaks
     crypto.timingSafeEqual(bufA, bufA);
     return false;
   }
   return crypto.timingSafeEqual(bufA, bufB);
+}
+
+/**
+ * Mask raw session tokens for safe audit logging
+ */
+export function maskSessionToken(token: string): string {
+  if (!token || typeof token !== "string") return "unknown";
+  return `tok_${token.slice(0, 4)}...${token.slice(-4)}`;
 }
 
 /**
@@ -114,10 +139,6 @@ export function hashCredential(password: string, salt: string): string {
   return crypto.pbkdf2Sync(password, salt, 100000, 64, "sha512").toString("hex");
 }
 
-/**
- * Account Configuration
- * Supports environment variable overrides for enterprise deployments
- */
 interface SystemAccount {
   username: string;
   displayName: string;
@@ -125,42 +146,95 @@ interface SystemAccount {
   passcodes: string[];
 }
 
-function getSystemAccounts(): SystemAccount[] {
+function getSystemAccounts(isProd: boolean): SystemAccount[] {
   const customSuperAdminPass = process.env.SUPER_ADMIN_PASSCODE;
   const customAdminPass = process.env.ADMIN_PASSCODE;
+  const customManagerPass = process.env.MANAGER_PASSCODE;
+  const customStaffPass = process.env.STAFF_PASSCODE;
 
-  const superAdminPasses = ["vvotel@admin", "admin2052", "vvotel2026"];
-  if (customSuperAdminPass) superAdminPasses.push(customSuperAdminPass);
+  // In production, reject default passcodes and strictly require env secrets
+  if (isProd) {
+    return [
+      {
+        username: "superadmin",
+        displayName: "VVotel Chief Security Administrator",
+        role: "SUPER_ADMIN",
+        passcodes: customSuperAdminPass ? [customSuperAdminPass] : [],
+      },
+      {
+        username: "admin",
+        displayName: "General Manager / IT Director",
+        role: "ADMINISTRATOR",
+        passcodes: customAdminPass ? [customAdminPass] : [],
+      },
+      {
+        username: "manager",
+        displayName: "Duty Operations Manager",
+        role: "MANAGER",
+        passcodes: customManagerPass ? [customManagerPass] : [],
+      },
+      {
+        username: "staff",
+        displayName: "Front Desk & Guest Concierge",
+        role: "STAFF",
+        passcodes: customStaffPass ? [customStaffPass] : [],
+      },
+    ];
+  }
 
-  const adminPasses = ["vvotel2026", "2052"];
-  if (customAdminPass) adminPasses.push(customAdminPass);
-
+  // In development / test environment, support development conveniences with prominent warning
   return [
     {
       username: "superadmin",
       displayName: "VVotel Chief Security Administrator",
       role: "SUPER_ADMIN",
-      passcodes: superAdminPasses,
+      passcodes: customSuperAdminPass ? [customSuperAdminPass] : ["vvotel@admin", "admin2052", "vvotel2026"],
     },
     {
       username: "admin",
       displayName: "General Manager / IT Director",
       role: "ADMINISTRATOR",
-      passcodes: adminPasses,
+      passcodes: customAdminPass ? [customAdminPass] : ["vvotel2026", "2052"],
     },
     {
       username: "manager",
       displayName: "Duty Operations Manager",
       role: "MANAGER",
-      passcodes: ["2052", "manager2052"],
+      passcodes: customManagerPass ? [customManagerPass] : ["2052", "manager2052"],
     },
     {
       username: "staff",
       displayName: "Front Desk & Guest Concierge",
       role: "STAFF",
-      passcodes: ["staff2052", "2052"],
+      passcodes: customStaffPass ? [customStaffPass] : ["staff2052", "2052"],
     },
   ];
+}
+
+/**
+ * Verify optional MFA / secondary verification code for privileged accounts
+ */
+export function verifyMfaCode(role: Role, mfaInput?: string): boolean {
+  // If MFA is globally disabled via env, allow bypass in non-production
+  if (process.env.REQUIRE_ADMIN_MFA !== "true" && process.env.NODE_ENV !== "production") {
+    return true;
+  }
+
+  // Privileged roles require a valid 6-digit TOTP or secondary code
+  if (role === "SUPER_ADMIN" || role === "ADMINISTRATOR") {
+    const configuredMfaSecret = process.env.ADMIN_MFA_SECRET || process.env.SUPER_ADMIN_MFA_SECRET;
+    if (!configuredMfaSecret) {
+      // If no MFA secret is configured in dev, allow passage with warning
+      if (process.env.NODE_ENV !== "production") return true;
+      return false; // Fail closed in production if MFA secret is missing
+    }
+
+    if (!mfaInput) return false;
+    const cleanMfa = mfaInput.trim();
+    return timingSafeCompare(configuredMfaSecret, cleanMfa);
+  }
+
+  return true;
 }
 
 /**
@@ -194,7 +268,6 @@ export async function recordFailedAuth(
   fails += 1;
 
   if (fails >= MAX_FAILED_ATTEMPTS) {
-    // Lock both IP and user identifier
     const lockUntil = Date.now() + LOCKOUT_DURATION_SECONDS * 1000;
     await safeCache.set(`auth_lock:${ip}`, lockUntil.toString(), "EX", LOCKOUT_DURATION_SECONDS);
     await safeCache.set(`auth_lock:${identifier}`, lockUntil.toString(), "EX", LOCKOUT_DURATION_SECONDS);
@@ -227,23 +300,40 @@ export async function resetFailedAuth(ip: string, identifier: string): Promise<v
 }
 
 /**
- * Authenticate credentials against system accounts
+ * Authenticate credentials against system accounts with production hardening
  */
 export async function authenticateCredentials(
   credentialInput: string,
   usernameInput?: string,
+  mfaCodeInput?: string,
   ip = "127.0.0.1",
   userAgent?: string
-): Promise<{ success: boolean; user?: AuthUser; error?: string; locked?: boolean; remainingSeconds?: number }> {
+): Promise<{
+  success: boolean;
+  user?: AuthUser;
+  error?: string;
+  locked?: boolean;
+  remainingSeconds?: number;
+  mfaRequired?: boolean;
+}> {
   const cleanPass = (credentialInput || "").trim();
   const cleanUser = (usernameInput || "").trim().toLowerCase();
+  const isProd = safeCache.isProduction();
+
+  // Fail closed in production if distributed session store is disconnected
+  if (isProd && !safeCache.isReady()) {
+    return {
+      success: false,
+      error: "PRODUCTION_SESSION_STORE_UNAVAILABLE: Centralized Redis distributed session store is required in production but unavailable. Failing closed to protect multi-instance session integrity.",
+    };
+  }
 
   // 1. Check Lockout
   const ipLock = await isAccountLocked(ip);
   if (ipLock.locked) {
     return {
       success: false,
-      error: `គណនី ឬ IP ត្រូវបានចាក់សោបណ្តោះអាសន្នដោយសារការបញ្ចូលខុសច្រើនដង។ សូមរង់ចាំ ${ipLock.remainingSeconds} វិនាទី។`,
+      error: `គណនី ឬ IP ត្រូវបានចាក់សោបណ្តោះអាសន្ន។ សូមរង់ចាំ ${ipLock.remainingSeconds} វិនាទី។`,
       locked: true,
       remainingSeconds: ipLock.remainingSeconds,
     };
@@ -261,14 +351,35 @@ export async function authenticateCredentials(
     }
   }
 
-  const accounts = getSystemAccounts();
+  // 2. Reject Weak / Default Credentials in Production
+  if (isProd && WEAK_DEFAULT_PASSCODES.has(cleanPass)) {
+    await logAuditEvent("AUTH_LOGIN_FAILED", { ip, userAgent }, "FAILURE", {
+      reason: "WEAK_DEFAULT_CREDENTIAL_REJECTED",
+      attemptedDefaultPass: cleanPass.slice(0, 2) + "**",
+    });
+    return {
+      success: false,
+      error: "WEAK_DEFAULT_CREDENTIAL_PROHIBITED: Default credentials (2052, vvotel2026, admin2052, etc.) are strictly prohibited in production. Explicit production secrets (SUPER_ADMIN_PASSWORD_HASH or ADMIN_PASSCODE) must be configured in environment variables.",
+    };
+  }
+
+  const accounts = getSystemAccounts(isProd);
 
   // Case A: Specific username requested
   if (cleanUser) {
     const matched = accounts.find((a) => a.username === cleanUser);
-    if (matched) {
+    if (matched && matched.passcodes.length > 0) {
       const passMatches = matched.passcodes.some((p) => timingSafeCompare(p, cleanPass));
       if (passMatches) {
+        // Check MFA for privileged accounts
+        if (!verifyMfaCode(matched.role, mfaCodeInput)) {
+          return {
+            success: false,
+            mfaRequired: true,
+            error: "MFA_REQUIRED: Privileged administrative access requires secondary multi-factor verification code.",
+          };
+        }
+
         await resetFailedAuth(ip, cleanUser);
         const user: AuthUser = {
           id: `USR-${matched.username.toUpperCase()}`,
@@ -276,6 +387,7 @@ export async function authenticateCredentials(
           displayName: matched.displayName,
           role: matched.role,
           permissions: ROLE_PERMISSIONS[matched.role],
+          mfaVerified: true,
         };
         await logAuditEvent("AUTH_LOGIN_SUCCESS", { username: user.username, role: user.role, ip, userAgent }, "SUCCESS");
         return { success: true, user };
@@ -283,10 +395,20 @@ export async function authenticateCredentials(
     }
   }
 
-  // Case B: Direct PIN / Passcode login (standard PMS fast login)
+  // Case B: Direct PIN / Passcode login
   for (const acc of accounts) {
+    if (acc.passcodes.length === 0) continue;
     const matched = acc.passcodes.some((p) => timingSafeCompare(p, cleanPass));
     if (matched) {
+      // Check MFA for privileged accounts
+      if (!verifyMfaCode(acc.role, mfaCodeInput)) {
+        return {
+          success: false,
+          mfaRequired: true,
+          error: "MFA_REQUIRED: Privileged administrative access requires secondary multi-factor verification code.",
+        };
+      }
+
       await resetFailedAuth(ip, acc.username);
       const user: AuthUser = {
         id: `USR-${acc.username.toUpperCase()}`,
@@ -294,6 +416,7 @@ export async function authenticateCredentials(
         displayName: acc.displayName,
         role: acc.role,
         permissions: ROLE_PERMISSIONS[acc.role],
+        mfaVerified: true,
       };
       await logAuditEvent("AUTH_LOGIN_SUCCESS", { username: user.username, role: user.role, ip, userAgent }, "SUCCESS");
       return { success: true, user };
@@ -321,8 +444,15 @@ export async function authenticateCredentials(
 
 /**
  * Create a new cryptographic session
+ * Uses Redis distributed store with session fixation protection
  */
 export async function createSession(user: AuthUser, ip: string, userAgent?: string): Promise<string> {
+  const isProd = safeCache.isProduction();
+  if (isProd && !safeCache.isReady()) {
+    throw new Error("PRODUCTION_SESSION_STORE_UNAVAILABLE: Cannot create session because shared Redis is unreachable.");
+  }
+
+  // Generate 256-bit cryptographically secure random session ID
   const sessionId = crypto.randomBytes(32).toString("hex");
   const now = Date.now();
   const sessionData: SessionData = {
@@ -330,6 +460,7 @@ export async function createSession(user: AuthUser, ip: string, userAgent?: stri
     user,
     createdAt: now,
     expiresAt: now + SESSION_TTL_SECONDS * 1000,
+    lastRenewedAt: now,
     ip,
     userAgent,
   };
@@ -340,20 +471,38 @@ export async function createSession(user: AuthUser, ip: string, userAgent?: stri
 }
 
 /**
- * Retrieve session by sessionId
+ * Retrieve and optionally renew session by sessionId
  */
 export async function getSession(sessionId: string): Promise<SessionData | null> {
   if (!sessionId || typeof sessionId !== "string" || sessionId.length < 32) return null;
+  const isProd = safeCache.isProduction();
+
+  if (isProd && !safeCache.isReady()) {
+    console.error("CRITICAL: Redis is disconnected in production during getSession. Failing closed.");
+    return null;
+  }
+
   const key = `session:${sessionId}`;
   const raw = await safeCache.get(key);
   if (!raw) return null;
 
   try {
     const data: SessionData = JSON.parse(raw);
-    if (Date.now() > data.expiresAt) {
+    const now = Date.now();
+    if (now > data.expiresAt) {
       await safeCache.del(key);
       return null;
     }
+
+    // Safe sliding-window session renewal:
+    // If within renewal window (e.g. last 3 hours of session), extend expiration
+    const timeLeftMs = data.expiresAt - now;
+    if (timeLeftMs < SESSION_RENEWAL_WINDOW_SECONDS * 1000) {
+      data.expiresAt = now + SESSION_TTL_SECONDS * 1000;
+      data.lastRenewedAt = now;
+      await safeCache.set(key, JSON.stringify(data), "EX", SESSION_TTL_SECONDS);
+    }
+
     return data;
   } catch {
     return null;
@@ -361,12 +510,15 @@ export async function getSession(sessionId: string): Promise<SessionData | null>
 }
 
 /**
- * Revoke session immediately (logout)
+ * Revoke session immediately across all application instances (Logout)
  */
 export async function revokeSession(sessionId: string, ip = "127.0.0.1"): Promise<void> {
+  if (!sessionId) return;
   const session = await getSession(sessionId);
   if (session) {
-    await logAuditEvent("AUTH_LOGOUT", { username: session.user.username, role: session.user.role, ip }, "SUCCESS");
+    await logAuditEvent("AUTH_LOGOUT", { username: session.user.username, role: session.user.role, ip }, "SUCCESS", {
+      sessionMasked: maskSessionToken(sessionId),
+    });
   }
   await safeCache.del(`session:${sessionId}`);
 }
@@ -388,10 +540,6 @@ export function extractSessionToken(request: Request): string | null {
     return authHeader.slice(7).trim();
   }
 
-  // 3. Fallback: query param or legacy header if necessary
-  const customHeader = request.headers.get("x-vvotel-admin-token");
-  if (customHeader) return customHeader;
-
   return null;
 }
 
@@ -404,6 +552,7 @@ export async function verifyAuth(
 ): Promise<{ authorized: boolean; user?: AuthUser; session?: SessionData; errorResponse?: Response }> {
   const token = extractSessionToken(request);
   const ip = getClientIp(request);
+  const isProd = safeCache.isProduction();
 
   if (!token) {
     return {
@@ -419,12 +568,12 @@ export async function verifyAuth(
     };
   }
 
-  // Check if legacy manager token is used, auto-grant MANAGER for seamless upgrade
-  if (token === "authorized_manager_2052") {
+  // In non-production development mode only, support legacy test token for development convenience
+  if (!isProd && token === "authorized_manager_2052") {
     const legacyUser: AuthUser = {
-      id: "USR-LEGACY-MANAGER",
+      id: "USR-DEV-MANAGER",
       username: "manager",
-      displayName: "VVotel Authorized Duty Manager",
+      displayName: "VVotel Authorized Duty Manager (Dev)",
       role: "MANAGER",
       permissions: ROLE_PERMISSIONS.MANAGER,
     };
@@ -444,6 +593,21 @@ export async function verifyAuth(
     return { authorized: true, user: legacyUser };
   }
 
+  // In production, reject legacy test token outright
+  if (isProd && token === "authorized_manager_2052") {
+    return {
+      authorized: false,
+      errorResponse: new Response(
+        JSON.stringify({
+          success: false,
+          error: "LEGACY_TOKEN_REJECTED",
+          message: "Legacy tokens are strictly prohibited in production. Please log in with a valid session.",
+        }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      ),
+    };
+  }
+
   const session = await getSession(token);
   if (!session) {
     return {
@@ -452,7 +616,7 @@ export async function verifyAuth(
         JSON.stringify({
           success: false,
           error: "SESSION_EXPIRED",
-          message: "Session របស់អ្នកបានផុតកំណត់ហើយ! សូម Login ចូលម្តងទៀត។",
+          message: "Session របស់អ្នកបានផុតកំណត់ ឬត្រូវបានលុបចេញពីប្រព័ន្ធ! សូម Login ចូលម្តងទៀត។",
         }),
         { status: 401, headers: { "Content-Type": "application/json" } }
       ),
@@ -464,7 +628,7 @@ export async function verifyAuth(
       "SECURITY_UNAUTHORIZED_ACCESS",
       { username: session.user.username, role: session.user.role, ip },
       "DENIED",
-      { requiredPermission, userRole: session.user.role }
+      { requiredPermission, userRole: session.user.role, sessionMasked: maskSessionToken(token) }
     );
     return {
       authorized: false,
