@@ -267,7 +267,7 @@ export async function POST(request: Request) {
     }
 
     // =========================================================================
-    // PAYMENT METHOD 2: CREDIT / DEBIT CARD (3D Secure 2.2 Electronic Bank Debit)
+    // PAYMENT METHOD 2: CREDIT / DEBIT CARD (Reservation Guarantee Pre-Auth Hold)
     // =========================================================================
     else if (paymentMethod === "CARD_3DSECURE_V2" || paymentMethod === "card") {
       const cleanOtp = (otpCode || "").toString().replace(/\D/g, "");
@@ -277,34 +277,37 @@ export async function POST(request: Request) {
             success: false,
             error: "CARD_SECURITY_PIN_INVALID",
             message: {
-              km: "ធនាគារបានបដិសេធប្រតិបត្តិការកាត់ប្រាក់៖ លេខកូដសម្ងាត់សុវត្ថិភាព OTP / PIN មិនត្រឹមត្រូវឡើយ (ត្រូវតែមាន ៦ខ្ទង់)! ប្រព័ន្ធមិនអាចកាត់ប្រាក់ចេញពីគណនីបានទេ។",
-              en: "Bank authorization declined: Invalid 6-digit Security OTP / PIN code. Funds could not be deducted from the cardholder account.",
+              km: "ធនាគារបានបដិសេធការធានាបន្ទប់៖ លេខកូដសម្ងាត់សុវត្ថិភាព OTP / PIN មិនត្រឹមត្រូវឡើយ (ត្រូវតែមាន ៦ខ្ទង់)! មិនអាចធានាបន្ទប់ជូនបានទេ។",
+              en: "Bank reservation guarantee declined: Invalid 6-digit Security OTP / PIN code. Room could not be held without bank guarantee.",
             },
           },
           { status: 402 }
         );
       }
 
-      const authCode = `AUTH-${Math.floor(100000 + Math.random() * 900000)}`;
+      const authCode = `HOLD-${Math.floor(100000 + Math.random() * 900000)}`;
       const rrn = `RRN-${Date.now().toString().slice(-12)}`;
       const traceNo = `TRC-${Math.floor(100000 + Math.random() * 900000)}`;
-      verifiedTxId = `TXN-CARD-${Date.now().toString(36).toUpperCase()}-${authCode}`;
+      verifiedTxId = `TXN-CARD-HOLD-${Date.now().toString(36).toUpperCase()}-${authCode}`;
 
       bankDebitDetails = {
+        guaranteeType: "CARD_PREAUTH_HOLD",
         cardBrand: cardBrand || "VISA",
         cardLast4: cardLast4 ? cardLast4.slice(-4) : "8920",
-        debitedAmountUSD: authoritativeTotalUSD,
-        debitedAmountKHR: authoritativeTotalKHR,
+        preAuthHoldAmountUSD: authoritativeTotalUSD,
+        preAuthHoldAmountKHR: authoritativeTotalKHR,
+        paymentDueAtCheckInUSD: authoritativeTotalUSD,
         authCode,
         retrievalReferenceNumber: rrn,
         traceNumber: traceNo,
         batchNumber: "BATCH-0026",
-        settledToMerchant: settings.bankAccountName || "VVOTEL KAMPONG CHAM",
         merchantBank: settings.bankName || "ABA Bank / NBC Bakong",
         debitTimestamp: new Date().toISOString(),
-        bankResponse: "00 - APPROVED & DEBITED",
+        bankResponse: "00 - PRE-AUTH APPROVED & HOLD SECURED",
+        disclaimer: "Card hold secured as reservation guarantee. Payment will be completed upon arrival at front desk or via official PayWay gateway.",
       };
-      finalPaymentStatus = "PAID";
+      // Never claim a payment is completed without provider confirmation
+      finalPaymentStatus = "GUARANTEED";
     }
 
     // =========================================================================

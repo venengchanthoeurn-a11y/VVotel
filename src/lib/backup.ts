@@ -12,9 +12,21 @@ import { getSiteSettings, saveSiteSettings } from "./settings-server";
 
 import os from "os";
 import { safeCache } from "./redis";
+import {
+  encryptBackupSnapshot,
+  decryptBackupSnapshot,
+  EncryptedBackupEnvelope,
+  verifyBackupEnvelopeIntegrity,
+} from "./backupCrypto";
 
-export type { BackupStats, BackupSnapshot };
-export { computeBackupStats, createBackupSnapshot };
+export type { BackupStats, BackupSnapshot, EncryptedBackupEnvelope };
+export {
+  computeBackupStats,
+  createBackupSnapshot,
+  encryptBackupSnapshot,
+  decryptBackupSnapshot,
+  verifyBackupEnvelopeIntegrity,
+};
 
 const BACKUP_DIR = path.join(process.cwd(), "data", "backups");
 const TMP_BACKUP_DIR = path.join(os.tmpdir(), "vvotel_backups");

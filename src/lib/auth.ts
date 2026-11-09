@@ -139,6 +139,35 @@ export function hashCredential(password: string, salt: string): string {
   return crypto.pbkdf2Sync(password, salt, 100000, 64, "sha512").toString("hex");
 }
 
+/**
+ * Generate a salted PBKDF2-SHA512 hash string for secure storage
+ */
+export function generateSaltedPasswordHash(password: string): string {
+  const salt = crypto.randomBytes(16);
+  const iterations = 100000;
+  const hash = crypto.pbkdf2Sync(password, salt, iterations, 64, "sha512");
+  return `pbkdf2:sha512:${iterations}:${salt.toString("hex")}:${hash.toString("hex")}`;
+}
+
+/**
+ * Verify password against salted PBKDF2-SHA512 hash or timing-safe plain secret
+ */
+export function verifyPassword(inputPassword: string, storedCredential: string): boolean {
+  if (!inputPassword || !storedCredential) return false;
+  if (storedCredential.startsWith("pbkdf2:")) {
+    const parts = storedCredential.split(":");
+    if (parts.length === 5) {
+      const iterations = parseInt(parts[2], 10) || 100000;
+      const salt = Buffer.from(parts[3], "hex");
+      const expectedHash = Buffer.from(parts[4], "hex");
+      const computed = crypto.pbkdf2Sync(inputPassword, salt, iterations, 64, "sha512");
+      if (computed.length !== expectedHash.length) return false;
+      return crypto.timingSafeEqual(computed, expectedHash);
+    }
+  }
+  return timingSafeCompare(storedCredential, inputPassword);
+}
+
 interface SystemAccount {
   username: string;
   displayName: string;
@@ -148,24 +177,29 @@ interface SystemAccount {
 
 function getSystemAccounts(isProd: boolean): SystemAccount[] {
   const customSuperAdminPass = process.env.SUPER_ADMIN_PASSCODE;
+  const customSuperAdminHash = process.env.SUPER_ADMIN_PASSWORD_HASH;
   const customAdminPass = process.env.ADMIN_PASSCODE;
+  const customAdminHash = process.env.ADMIN_PASSWORD_HASH;
   const customManagerPass = process.env.MANAGER_PASSCODE;
   const customStaffPass = process.env.STAFF_PASSCODE;
 
   // In production, reject default passcodes and strictly require env secrets
   if (isProd) {
+    const superAdminSecrets = [customSuperAdminHash, customSuperAdminPass].filter(Boolean) as string[];
+    const adminSecrets = [customAdminHash, customAdminPass].filter(Boolean) as string[];
+
     return [
       {
         username: "superadmin",
         displayName: "VVotel Chief Security Administrator",
         role: "SUPER_ADMIN",
-        passcodes: customSuperAdminPass ? [customSuperAdminPass] : [],
+        passcodes: superAdminSecrets,
       },
       {
         username: "admin",
         displayName: "General Manager / IT Director",
         role: "ADMINISTRATOR",
-        passcodes: customAdminPass ? [customAdminPass] : [],
+        passcodes: adminSecrets,
       },
       {
         username: "manager",
@@ -423,7 +457,7 @@ export async function authenticateCredentials(
   if (cleanUser) {
     const matched = accounts.find((a) => a.username === cleanUser);
     if (matched && matched.passcodes.length > 0) {
-      const passMatches = matched.passcodes.some((p) => timingSafeCompare(p, cleanPass));
+      const passMatches = matched.passcodes.some((p) => verifyPassword(cleanPass, p));
       if (passMatches) {
         // Check MFA for privileged accounts
         if (!verifyMfaCode(matched.role, mfaCodeInput)) {
@@ -452,7 +486,7 @@ export async function authenticateCredentials(
   // Case B: Direct PIN / Passcode login
   for (const acc of accounts) {
     if (acc.passcodes.length === 0) continue;
-    const matched = acc.passcodes.some((p) => timingSafeCompare(p, cleanPass));
+    const matched = acc.passcodes.some((p) => verifyPassword(cleanPass, p));
     if (matched) {
       // Check MFA for privileged accounts
       if (!verifyMfaCode(acc.role, mfaCodeInput)) {
