@@ -30,9 +30,11 @@ export const Footer: React.FC = () => {
                   className="w-10 h-10 rounded-xl object-contain shadow border border-vvotel-gold/40"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-xl bg-vvotel-gold flex items-center justify-center text-vvotel-navy font-black text-xl shadow">
-                  {settings.logoText || "V"}
-                </div>
+                <img
+                  src="/icons/icon-192.png"
+                  alt={hotelNameEn}
+                  className="w-10 h-10 rounded-xl object-contain shadow border border-vvotel-gold/40"
+                />
               )}
               <div>
                 <span className="font-extrabold text-xl tracking-tight text-white block">

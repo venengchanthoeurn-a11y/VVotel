@@ -1,4 +1,6 @@
-import { Document, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, HeadingLevel, Packer } from "docx";
+import fs from "fs";
+import path from "path";
+import { Document, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, HeadingLevel, Packer, ImageRun } from "docx";
 import ExcelJS from "exceljs";
 import { BookingRecord } from "./bookings";
 
@@ -78,6 +80,22 @@ export function computeReportMetrics(bookings: BookingRecord[]) {
 export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<Buffer> {
   const dateInfo = getOfficialKhmerDate();
   const metrics = computeReportMetrics(bookings);
+
+  // Load official logo for administrative header
+  let logoImageRun: ImageRun | null = null;
+  try {
+    const logoPath = path.join(process.cwd(), "public", "icons", "icon-192.png");
+    if (fs.existsSync(logoPath)) {
+      const logoBuffer = fs.readFileSync(logoPath);
+      logoImageRun = new ImageRun({
+        data: logoBuffer,
+        type: "png",
+        transformation: { width: 42, height: 42 },
+      });
+    }
+  } catch (err) {
+    console.warn("Could not load logo for docx:", err);
+  }
 
   // Fonts configuration
   const FONT_MOOL = "Khmer Mool";
@@ -160,6 +178,14 @@ export async function generateOfficialDocx(bookings: BookingRecord[]): Promise<B
                   new TableCell({
                     width: { size: 55, type: WidthType.PERCENTAGE },
                     children: [
+                      ...(logoImageRun
+                        ? [
+                            new Paragraph({
+                              spacing: { after: 60 },
+                              children: [logoImageRun],
+                            }),
+                          ]
+                        : []),
                       new Paragraph({
                         children: [
                           new TextRun({
@@ -1112,7 +1138,7 @@ export function generateOfficialHtmlReport(bookings: BookingRecord[]): string {
   <!-- Printable Action Bar (Hidden in Print) -->
   <div class="no-print max-w-4xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl shadow-md border border-gray-200">
     <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-[#0c2340] text-amber-300 font-mool flex items-center justify-center text-xl">V</div>
+      <img src="/icons/icon-192.png" alt="Logo" class="w-10 h-10 rounded-xl object-contain shadow border border-amber-300 shrink-0" />
       <div>
         <h3 class="font-mool text-sm text-[#0c2340]">របាយការណ៍រដ្ឋបាលផ្លូវការ (Administrative Report)</h3>
         <p class="text-xs text-gray-500 font-siemreap">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ប្រព័ន្ធកណ្តាល PMS</p>
@@ -1143,11 +1169,14 @@ export function generateOfficialHtmlReport(bookings: BookingRecord[]): string {
 
     <!-- 2. Hotel on Left & Date on Right on the SAME HORIZONTAL LINE -->
     <div class="flex justify-between items-start border-b-2 border-gray-800 pb-4 mb-6">
-      <!-- Left: Organization & Ref Number (ចុះក្រោមបន្តិច) -->
-      <div class="space-y-1 text-left pt-1">
-        <h2 class="font-mool text-base text-[#0c2340] leading-relaxed">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម</h2>
-        <p class="text-xs font-bold text-gray-700">ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ</p>
-        <p class="text-xs text-gray-600">លេខ: ០២៤/២៦ វវ.កច</p>
+      <!-- Left: Organization & Ref Number with Official Logo -->
+      <div class="flex items-center space-x-3 pt-1">
+        <img src="/icons/icon-192.png" alt="VVotel Logo" class="w-12 h-12 rounded-xl object-contain border border-amber-400/80 shadow-sm shrink-0" />
+        <div class="space-y-0.5 text-left">
+          <h2 class="font-mool text-base text-[#0c2340] leading-relaxed">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម</h2>
+          <p class="text-xs font-bold text-gray-700">ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ</p>
+          <p class="text-xs text-gray-600">លេខ: ០២៤/២៦ វវ.កច</p>
+        </div>
       </div>
 
       <!-- Right: Date aligned horizontally on the same line as hotel name -->

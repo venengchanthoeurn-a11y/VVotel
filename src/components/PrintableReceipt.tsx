@@ -260,6 +260,9 @@ export const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
             >
               {/* Thermal Header */}
               <div className="text-center pb-2 border-b border-dashed border-gray-400 space-y-1">
+                <div className="flex justify-center pb-1">
+                  <img src="/icons/icon-192.png" alt="Logo" className="w-9 h-9 object-contain rounded-lg" />
+                </div>
                 <div className="font-extrabold text-sm tracking-wider">
                   VVOTEL KAMPONG CHAM
                 </div>
@@ -394,10 +397,12 @@ export const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
               {/* Header Letterhead */}
               <div className="flex justify-between items-start border-b-2 border-vvotel-gold pb-6">
                 <div className="space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-10 h-10 rounded-xl bg-vvotel-navy text-vvotel-gold flex items-center justify-center font-black text-xl">
-                      V
-                    </div>
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src="/icons/icon-192.png"
+                      alt="VVotel Logo"
+                      className="w-12 h-12 rounded-xl object-contain shadow-sm border border-vvotel-gold/40 shrink-0"
+                    />
                     <div>
                       <h1 className="text-xl sm:text-2xl font-black text-vvotel-navy tracking-tight">
                         VATTANAC HOTEL (VVOTEL)

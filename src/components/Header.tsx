@@ -60,9 +60,11 @@ export const Header: React.FC = () => {
                     className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain shadow-md border border-vvotel-gold/30 shrink-0"
                   />
                 ) : (
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-vvotel-navy flex items-center justify-center text-vvotel-gold font-black text-xl sm:text-2xl shadow-md group-hover:scale-105 transition-transform border border-vvotel-gold/30 shrink-0">
-                    {settings.logoText?.slice(0, 1) || "V"}
-                  </div>
+                  <img
+                    src="/icons/icon-192.png"
+                    alt={settings.hotelNameEn}
+                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain shadow-md border border-vvotel-gold/30 shrink-0 group-hover:scale-105 transition-transform"
+                  />
                 )}
                 <div className="hidden md:flex flex-col min-w-0">
                   <span className="font-extrabold text-xl sm:text-2xl tracking-tighter text-vvotel-navy leading-none truncate">

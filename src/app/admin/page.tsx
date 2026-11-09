@@ -847,8 +847,8 @@ export default function AdminPage() {
                   <img src={settings.logoImageUrl} alt="Logo" className="w-full h-full object-contain" />
                 </div>
               ) : (
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#12335e] to-[#0c2340] border-2 border-amber-300/80 flex items-center justify-center text-amber-300 font-mool text-3xl shadow-xl shadow-amber-950/20 shrink-0">
-                  {settings.logoText?.slice(0, 1) || "V"}
+                <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-300 p-1 flex items-center justify-center shadow-xl shrink-0">
+                  <img src="/icons/icon-192.png" alt="Logo" className="w-full h-full object-contain" />
                 </div>
               )}
               <div>
@@ -979,8 +979,8 @@ export default function AdminPage() {
                   <img src={settings.logoImageUrl} alt="Logo" className="w-full h-full object-contain" />
                 </div>
               ) : (
-                <div className="w-14 h-14 rounded-2xl bg-[#0c2340] border-2 border-amber-300 flex items-center justify-center text-amber-300 font-mool text-2xl shadow-md mx-auto">
-                  {settings.logoText?.slice(0, 1) || "V"}
+                <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-300 p-1 flex items-center justify-center shadow-md mx-auto">
+                  <img src="/icons/icon-192.png" alt="Logo" className="w-full h-full object-contain" />
                 </div>
               )}
               <span className="text-[11px] font-bold tracking-widest uppercase text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 inline-block font-siemreap">
@@ -1119,9 +1119,11 @@ export default function AdminPage() {
                 className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl border border-amber-300 shadow-xs shrink-0 bg-white p-0.5"
               />
             ) : (
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#0c2340] border border-amber-300 flex items-center justify-center text-amber-300 font-mool text-base sm:text-lg shadow-xs shrink-0">
-                {settings.logoText?.slice(0, 1) || "V"}
-              </div>
+              <img
+                src="/icons/icon-192.png"
+                alt="Logo"
+                className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl border border-amber-300 shadow-xs shrink-0 bg-white p-0.5"
+              />
             )}
 
             {/* Hotel/Portal Title & Clock: Hidden on < 2xl to guarantee all 11 buttons fit without wrapping! */}

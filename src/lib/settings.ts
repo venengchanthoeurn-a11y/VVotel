@@ -130,7 +130,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   hotelTaglineKm: "សណ្ឋាគារប្រណីតផ្កាយ ៥ មាត់ទន្លេមេគង្គ",
   hotelTaglineEn: "5-Star Luxury Riverside Resort & Spa",
   logoText: "VVOTEL",
-  logoImageUrl: "",
+  logoImageUrl: "/images/vvotel-logo.png",
   adminPortalTitleKm: "ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ និងភោជនីយដ្ឋាន VVotel",
   adminPortalTitleEn: "VVotel Central PMS Admin Portal",
   phone: "+855 (0) 42 982 999",

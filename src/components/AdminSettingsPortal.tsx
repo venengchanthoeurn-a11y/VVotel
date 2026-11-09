@@ -750,8 +750,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                         />
                       </div>
                     ) : (
-                      <div className="w-14 h-14 rounded-xl bg-vvotel-navy text-amber-300 font-mool flex items-center justify-center text-xl shadow-sm border border-amber-300/40">
-                        {formSettings.logoText?.slice(0, 1) || "V"}
+                      <div className="w-14 h-14 rounded-xl border-2 border-amber-300 overflow-hidden bg-white p-1 shadow-sm flex items-center justify-center">
+                        <img
+                          src="/icons/icon-192.png"
+                          alt="Logo Preview"
+                          className="w-full h-full object-contain"
+                        />
                       </div>
                     )}
 
