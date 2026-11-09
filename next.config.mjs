@@ -66,8 +66,8 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // Global security headers for all routes
-        source: "/:path*",
+        // Global security headers for all routes including root /
+        source: "/(.*)",
         headers: securityHeaders,
       },
       {
