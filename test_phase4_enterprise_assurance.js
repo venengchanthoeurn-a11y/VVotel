@@ -300,8 +300,10 @@ async function runPhase4AssuranceTests() {
     assert(settingsRes.status === 200, "6.2 Public settings API responds HTTP 200");
     assert(settingsData.settings.telegramBotToken === "", "6.2 Telegram token stripped from public response");
 
-    // Live Booking Verification Test (Zero Tolerance)
     const testRef = `VVT-P4-${Date.now().toString().slice(-6)}`;
+    const randomDay = 10 + Math.floor(Math.random() * 15);
+    const checkInDate = `2028-09-${randomDay.toString().padStart(2, "0")}`;
+    const checkOutDate = `2028-09-${(randomDay + 3).toString().padStart(2, "0")}`;
     const verifyRes = await fetch(`${BASE_URL}/api/booking/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -313,8 +315,8 @@ async function runPhase4AssuranceTests() {
         otpCode: "123456",
         roomType: "superior-river",
         roomCount: 1,
-        checkIn: "2027-07-01",
-        checkOut: "2027-07-04",
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
         adults: 2,
         includeBreakfast: true,
         guestName: "Phase 4 Enterprise Guest",

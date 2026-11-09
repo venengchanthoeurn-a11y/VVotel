@@ -446,6 +446,9 @@ async function runIndependentAuditSuite() {
 
     // 8.4 Authoritative Price Verification Live API
     const testRef = `VVT-AUDIT-${Date.now().toString().slice(-6)}`;
+    const randomDay = 10 + Math.floor(Math.random() * 15);
+    const checkInDate = `2028-06-${randomDay.toString().padStart(2, "0")}`;
+    const checkOutDate = `2028-06-${(randomDay + 3).toString().padStart(2, "0")}`;
     const verifyRes = await fetch(`${BASE_URL}/api/booking/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -457,8 +460,8 @@ async function runIndependentAuditSuite() {
         otpCode: "123456",
         roomType: "superior-river",
         roomCount: 1,
-        checkIn: "2027-06-01",
-        checkOut: "2027-06-04",
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
         adults: 2,
         includeBreakfast: true,
         guestName: "Independent Audit Guest",

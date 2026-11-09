@@ -584,6 +584,9 @@ async function runAllPhase2Tests() {
 
     // 9.5 Live Booking Verification & Price Tampering Protection
     const testRef = `VVT-P2-${Date.now().toString().slice(-6)}`;
+    const randomDay = 10 + Math.floor(Math.random() * 15);
+    const checkInDate = `2028-05-${randomDay.toString().padStart(2, "0")}`;
+    const checkOutDate = `2028-05-${(randomDay + 3).toString().padStart(2, "0")}`;
     const verifyRes = await fetch(`${BASE_URL}/api/booking/verify`, {
       method: "POST",
       headers: {
@@ -598,8 +601,8 @@ async function runAllPhase2Tests() {
         otpCode: "123456",
         roomType: "superior-river",
         roomCount: 1,
-        checkIn: "2027-05-01",
-        checkOut: "2027-05-04",
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
         adults: 2,
         includeBreakfast: true,
         guestName: "Phase 2 Security Test",
