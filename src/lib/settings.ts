@@ -416,3 +416,118 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   _isUserCustomized: false,
   updatedAt: "2026-01-01T00:00:00.000Z",
 };
+
+/**
+ * Aggressively sanitizes media URLs in SiteSettings to ensure local high-resolution
+ * assets are always used, completely removing reliance on external CDN/Unsplash URLs.
+ */
+export function sanitizeMediaSettings(settings: any): SiteSettings {
+  if (!settings || typeof settings !== "object") {
+    return { ...DEFAULT_SETTINGS };
+  }
+
+  const result: SiteSettings = {
+    ...DEFAULT_SETTINGS,
+    ...settings,
+    features: {
+      ...DEFAULT_SETTINGS.features,
+      ...(settings.features || {}),
+    },
+  };
+
+  // 1. Hotel Logo: Ensure local high-resolution asset is used
+  if (
+    !result.logoImageUrl ||
+    result.logoImageUrl.includes("website-files.com") ||
+    result.logoImageUrl.includes("unsplash.com") ||
+    result.logoImageUrl.startsWith("http://") ||
+    result.logoImageUrl.startsWith("https://")
+  ) {
+    result.logoImageUrl = "/images/vvotel-logo.png?v=2";
+  }
+
+  // 2. Rooms: Enforce local room photography
+  const roomFallbackMap: Record<string, string> = {
+    "standard-city": "/images/rooms/vv_standard_king.jpg",
+    "superior-river": "/images/rooms/vv_superior_bed.jpg",
+    "executive-suite": "/images/rooms/vv_suite_bedroom.jpg",
+    "royal-family-suite": "/images/rooms/vv_family_space.jpg",
+    "royal-family": "/images/rooms/vv_family_space.jpg",
+  };
+
+  if (Array.isArray(result.rooms)) {
+    result.rooms = result.rooms.map((r: any) => {
+      const cleanRoom = { ...r };
+      const fallback = roomFallbackMap[cleanRoom.id] || "/images/rooms/vv_deluxe_double.jpg";
+      if (
+        !cleanRoom.imageUrl ||
+        cleanRoom.imageUrl.includes("unsplash.com") ||
+        cleanRoom.imageUrl.includes("website-files.com") ||
+        cleanRoom.imageUrl.startsWith("http://") ||
+        cleanRoom.imageUrl.startsWith("https://")
+      ) {
+        cleanRoom.imageUrl = fallback;
+      }
+      return cleanRoom;
+    });
+  } else {
+    result.rooms = DEFAULT_SETTINGS.rooms;
+  }
+
+  // 3. Dining: Enforce local restaurant and lounge photography
+  const diningFallbackMap: Record<string, string> = {
+    "mekong-breeze": "/images/rooms/vv_room_interior_1.jpg",
+    "sunset-lounge": "/images/rooms/vv_room_view.jpg",
+    "palm-pool-bar": "/images/rooms/vv_real_room_1280_4.jpg",
+    "artisan-bakery": "/images/destinations/destiny-cafe.jpg",
+  };
+
+  if (Array.isArray(result.dining)) {
+    result.dining = result.dining.map((d: any) => {
+      const cleanDining = { ...d };
+      const fallback = diningFallbackMap[cleanDining.id] || "/images/rooms/vv_room_interior_1.jpg";
+      if (
+        !cleanDining.imageUrl ||
+        cleanDining.imageUrl.includes("unsplash.com") ||
+        cleanDining.imageUrl.includes("website-files.com") ||
+        cleanDining.imageUrl.startsWith("http://") ||
+        cleanDining.imageUrl.startsWith("https://")
+      ) {
+        cleanDining.imageUrl = fallback;
+      }
+      return cleanDining;
+    });
+  } else {
+    result.dining = DEFAULT_SETTINGS.dining;
+  }
+
+  // 4. Destinations: Enforce local attraction photography
+  const destFallbackMap: Record<string, string> = {
+    "koh-pen-bamboo-bridge": "/images/destinations/bamboo-bridge.jpg",
+    "wat-nokor-bachey": "/images/destinations/wat-nokor.jpg",
+    "phnom-srei-phnom-pros": "/images/destinations/phnom-pros.jpg",
+    "phnom-hanchey": "/images/destinations/phnom-hanchey.jpg",
+  };
+
+  if (Array.isArray(result.destinations)) {
+    result.destinations = result.destinations.map((d: any) => {
+      const cleanDest = { ...d };
+      const fallback = destFallbackMap[cleanDest.slug] || "/images/destinations/bamboo-bridge.jpg";
+      if (
+        !cleanDest.imageUrl ||
+        cleanDest.imageUrl.includes("unsplash.com") ||
+        cleanDest.imageUrl.includes("website-files.com") ||
+        cleanDest.imageUrl.startsWith("http://") ||
+        cleanDest.imageUrl.startsWith("https://")
+      ) {
+        cleanDest.imageUrl = fallback;
+      }
+      return cleanDest;
+    });
+  } else {
+    result.destinations = DEFAULT_SETTINGS.destinations;
+  }
+
+  return result;
+}
+

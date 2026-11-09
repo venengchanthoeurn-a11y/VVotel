@@ -28,6 +28,10 @@ export const Footer: React.FC = () => {
                   src={settings.logoImageUrl}
                   alt={hotelNameEn}
                   className="w-10 h-10 rounded-xl object-contain shadow border border-vvotel-gold/40"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "/icons/icon-192.png?v=2";
+                  }}
                 />
               ) : (
                 <img

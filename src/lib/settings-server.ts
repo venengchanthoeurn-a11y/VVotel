@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { SiteSettings, DEFAULT_SETTINGS } from "./settings";
+import { SiteSettings, DEFAULT_SETTINGS, sanitizeMediaSettings } from "./settings";
 
 const SEED_SETTINGS_FILE = path.join(process.cwd(), "data", "settings.json");
 const TMP_SETTINGS_FILE = path.join(os.tmpdir(), "vvotel_settings.json");
@@ -12,7 +12,7 @@ declare global {
 
 export function getSiteSettings(): SiteSettings {
   if (globalThis._vvotelSettingsMemoryCache) {
-    return globalThis._vvotelSettingsMemoryCache;
+    return sanitizeMediaSettings(globalThis._vvotelSettingsMemoryCache);
   }
 
   // 1. Try reading from TMP_SETTINGS_FILE (persisted during container lifetime)
@@ -20,15 +20,16 @@ export function getSiteSettings(): SiteSettings {
     if (fs.existsSync(TMP_SETTINGS_FILE)) {
       const raw = fs.readFileSync(TMP_SETTINGS_FILE, "utf-8");
       const parsed = JSON.parse(raw);
-      globalThis._vvotelSettingsMemoryCache = {
+      const sanitized = sanitizeMediaSettings({
         ...DEFAULT_SETTINGS,
         ...parsed,
         features: {
           ...DEFAULT_SETTINGS.features,
           ...(parsed.features || {}),
         },
-      };
-      return globalThis._vvotelSettingsMemoryCache!;
+      });
+      globalThis._vvotelSettingsMemoryCache = sanitized;
+      return sanitized;
     }
   } catch (err) {
     // Continue to seed file
@@ -39,27 +40,28 @@ export function getSiteSettings(): SiteSettings {
     if (fs.existsSync(SEED_SETTINGS_FILE)) {
       const raw = fs.readFileSync(SEED_SETTINGS_FILE, "utf-8");
       const parsed = JSON.parse(raw);
-      globalThis._vvotelSettingsMemoryCache = {
+      const sanitized = sanitizeMediaSettings({
         ...DEFAULT_SETTINGS,
         ...parsed,
         features: {
           ...DEFAULT_SETTINGS.features,
           ...(parsed.features || {}),
         },
-      };
-      return globalThis._vvotelSettingsMemoryCache!;
+      });
+      globalThis._vvotelSettingsMemoryCache = sanitized;
+      return sanitized;
     }
   } catch (err) {
     console.warn("Failed to read settings.json, using defaults:", err);
   }
 
-  globalThis._vvotelSettingsMemoryCache = { ...DEFAULT_SETTINGS };
+  globalThis._vvotelSettingsMemoryCache = sanitizeMediaSettings(DEFAULT_SETTINGS);
   return globalThis._vvotelSettingsMemoryCache;
 }
 
 export function saveSiteSettings(newSettings: Partial<SiteSettings>): SiteSettings {
   const current = getSiteSettings();
-  const merged: SiteSettings = {
+  const merged: SiteSettings = sanitizeMediaSettings({
     ...current,
     ...newSettings,
     features: {
@@ -68,7 +70,7 @@ export function saveSiteSettings(newSettings: Partial<SiteSettings>): SiteSettin
     },
     _isUserCustomized: true,
     updatedAt: new Date().toISOString(),
-  };
+  });
 
   globalThis._vvotelSettingsMemoryCache = merged;
 

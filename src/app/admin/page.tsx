@@ -1159,7 +1159,15 @@ export default function AdminPage() {
             <div className="flex items-center space-x-3.5">
               {settings.logoImageUrl ? (
                 <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-300 p-1 flex items-center justify-center shadow-xl shrink-0">
-                  <img src={settings.logoImageUrl} alt="Logo" className="w-full h-full object-contain" />
+                  <img
+                    src={settings.logoImageUrl}
+                    alt="Logo"
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/icons/icon-192.png?v=2";
+                    }}
+                  />
                 </div>
               ) : (
                 <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-300 p-1 flex items-center justify-center shadow-xl shrink-0">
@@ -1291,7 +1299,15 @@ export default function AdminPage() {
             <div className="text-center space-y-2.5 pt-2">
               {settings.logoImageUrl ? (
                 <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-300 p-1 flex items-center justify-center shadow-md mx-auto">
-                  <img src={settings.logoImageUrl} alt="Logo" className="w-full h-full object-contain" />
+                  <img
+                    src={settings.logoImageUrl}
+                    alt="Logo"
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/icons/icon-192.png?v=2";
+                    }}
+                  />
                 </div>
               ) : (
                 <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-300 p-1 flex items-center justify-center shadow-md mx-auto">
@@ -1437,6 +1453,10 @@ export default function AdminPage() {
                 src={settings.logoImageUrl}
                 alt="Logo"
                 className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl border border-amber-300 shadow-xs shrink-0 bg-white p-0.5"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/icons/icon-192.png?v=2";
+                }}
               />
             ) : (
               <img

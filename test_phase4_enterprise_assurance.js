@@ -230,7 +230,7 @@ async function runPhase4AssuranceTests() {
 
   // Tamper detection: flip 1 byte of ciphertext
   const tamperedEnvelope = { ...encryptedEnvelope };
-  tamperedEnvelope.ciphertext = "A" + tamperedEnvelope.ciphertext.slice(1);
+  tamperedEnvelope.ciphertext = (encryptedEnvelope.ciphertext[0] === "A" ? "B" : "A") + encryptedEnvelope.ciphertext.slice(1);
   let tamperCaught = false;
   try {
     decryptTestSnapshot(tamperedEnvelope, backupSecret);

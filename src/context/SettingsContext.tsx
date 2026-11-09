@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { SiteSettings, DEFAULT_SETTINGS } from "@/lib/settings";
+import { SiteSettings, DEFAULT_SETTINGS, sanitizeMediaSettings } from "@/lib/settings";
 import { recordClientAutoBackup } from "@/lib/clientBackup";
 import { BookingRecord } from "@/lib/bookings";
 
@@ -21,48 +21,8 @@ const SettingsContext = createContext<SettingsContextType>({
   updateSettings: async () => false,
 });
 
-function sanitizeSettingsMedia(st: any): any {
-  if (!st) return st;
-  const clone = { ...st };
-  if (Array.isArray(clone.destinations)) {
-    const fixMap: Record<string, string> = {
-      "koh-pen-bamboo-bridge": "/images/destinations/bamboo-bridge.jpg",
-      "wat-nokor-bachey": "/images/destinations/wat-nokor.jpg",
-      "phnom-srei-phnom-pros": "/images/destinations/phnom-pros.jpg",
-      "phnom-hanchey": "/images/destinations/phnom-hanchey.jpg",
-    };
-    clone.destinations = clone.destinations.map((d: any) => {
-      if (
-        d.imageUrl &&
-        (d.imageUrl.includes("unsplash.com") ||
-          d.imageUrl.includes("photo-1544644181") ||
-          d.imageUrl.includes("photo-1569154941") ||
-          d.imageUrl.includes("photo-1609137144") ||
-          d.imageUrl.includes("photo-1506744038"))
-      ) {
-        return { ...d, imageUrl: fixMap[d.slug] || "/images/destinations/bamboo-bridge.jpg" };
-      }
-      return d;
-    });
-  }
-  if (Array.isArray(clone.dining)) {
-    clone.dining = clone.dining.map((d: any) => {
-      if (d.id === "mekong-breeze" && (!d.imageUrl || d.imageUrl.includes("unsplash.com"))) {
-        return { ...d, imageUrl: "/images/rooms/vv_room_interior_1.jpg" };
-      }
-      if (d.id === "sunset-lounge" && (!d.imageUrl || d.imageUrl.includes("unsplash.com"))) {
-        return { ...d, imageUrl: "/images/rooms/vv_room_view.jpg" };
-      }
-      if (d.id === "palm-pool-bar" && (!d.imageUrl || d.imageUrl.includes("unsplash.com"))) {
-        return { ...d, imageUrl: "/images/rooms/vv_real_room_1280_4.jpg" };
-      }
-      if (d.id === "artisan-bakery" && (!d.imageUrl || d.imageUrl.includes("unsplash.com"))) {
-        return { ...d, imageUrl: "/images/destinations/destiny-cafe.jpg" };
-      }
-      return d;
-    });
-  }
-  return clone;
+function sanitizeSettingsMedia(st: any): SiteSettings {
+  return sanitizeMediaSettings(st);
 }
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -76,6 +36,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (local) {
         const rawParsed = JSON.parse(local);
         const parsed = sanitizeSettingsMedia(rawParsed);
+        // Overwrite localStorage with sanitized version so broken URLs are permanently eradicated
+        localStorage.setItem(PERSISTED_SETTINGS_KEY, JSON.stringify(parsed));
         setSettings((prev) => ({
           ...prev,
           ...parsed,
@@ -97,14 +59,14 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.settings) {
-          let activeSettings = data.settings;
+          let activeSettings = sanitizeSettingsMedia(data.settings);
 
           // Check if local cache has user edits that must be preserved
           if (typeof window !== "undefined") {
             try {
               const local = localStorage.getItem(PERSISTED_SETTINGS_KEY);
               if (local) {
-                const parsedLocal = JSON.parse(local);
+                const parsedLocal = sanitizeSettingsMedia(JSON.parse(local));
                 const localIsCustomized = Boolean(parsedLocal._isUserCustomized);
                 const serverIsCustomized = Boolean(data.settings._isUserCustomized);
 
@@ -114,7 +76,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 // Rule 1: If local has user customization but server does not, LOCAL ALWAYS WINS!
                 // Rule 2: If both are customized, newer timestamp wins.
                 if (localIsCustomized && (!serverIsCustomized || localTime >= serverTime)) {
-                  activeSettings = {
+                  activeSettings = sanitizeSettingsMedia({
                     ...data.settings,
                     ...parsedLocal,
                     _isUserCustomized: true,
@@ -122,7 +84,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                       ...data.settings.features,
                       ...(parsedLocal.features || {}),
                     },
-                  };
+                  });
 
                   // Re-sync local user customizations to server container in background if privileged
                   if (data.isPrivileged) {
@@ -133,16 +95,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                     }).catch(() => {});
                   }
                 } else if (serverIsCustomized && serverTime > localTime) {
-                  activeSettings = {
+                  activeSettings = sanitizeSettingsMedia({
                     ...data.settings,
                     _isUserCustomized: true,
-                  };
+                  });
                 } else if (localIsCustomized) {
-                  activeSettings = {
+                  activeSettings = sanitizeSettingsMedia({
                     ...data.settings,
                     ...parsedLocal,
                     _isUserCustomized: true,
-                  };
+                  });
                 }
               }
             } catch (e) {}
@@ -201,7 +163,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const updateSettings = async (newSettings: Partial<SiteSettings>): Promise<boolean> => {
     try {
-      const merged: SiteSettings = {
+      const merged: SiteSettings = sanitizeSettingsMedia({
         ...settings,
         ...newSettings,
         features: {
@@ -210,7 +172,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         },
         _isUserCustomized: true,
         updatedAt: new Date().toISOString(),
-      };
+      });
 
       // 1. Immediately persist to localStorage for permanent retention across sessions
       if (typeof window !== "undefined") {

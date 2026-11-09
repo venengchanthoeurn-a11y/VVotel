@@ -132,7 +132,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 85,
         size: "34 m²",
         bed: "1 King Bed or 2 Twins",
-        img: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
+        img: "/images/rooms/vv_standard_king.jpg",
       },
       "superior-river": {
         nameEn: "Superior Room River View",
@@ -140,7 +140,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 125,
         size: "42 m²",
         bed: "1 King Bed / Balcony",
-        img: "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=600&q=80",
+        img: "/images/rooms/vv_superior_bed.jpg",
       },
       "executive-suite": {
         nameEn: "Executive Mekong Suite (1 Bedroom)",
@@ -148,7 +148,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 195,
         size: "68 m²",
         bed: "1 Super King / Living Lounge",
-        img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80",
+        img: "/images/rooms/vv_suite_bedroom.jpg",
       },
       "royal-family-suite": {
         nameEn: "Royal Family River Suite (2 Bedroom)",
@@ -156,7 +156,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 280,
         size: "95 m²",
         bed: "2 En-suite Bedrooms / Dining Area",
-        img: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=600&q=80",
+        img: "/images/rooms/vv_family_space.jpg",
       },
       "royal-family": {
         nameEn: "Royal Family River Suite (2 Bedroom)",
@@ -164,19 +164,28 @@ export const BookingBar: React.FC = () => {
         basePrice: 280,
         size: "95 m²",
         bed: "2 En-suite Bedrooms / Dining Area",
-        img: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=600&q=80",
+        img: "/images/rooms/vv_family_space.jpg",
       },
     };
 
     if (settings.rooms && settings.rooms.length > 0) {
       settings.rooms.forEach((r) => {
+        const cleanImg =
+          r.imageUrl &&
+          !r.imageUrl.includes("unsplash.com") &&
+          !r.imageUrl.includes("website-files.com") &&
+          !r.imageUrl.startsWith("http://") &&
+          !r.imageUrl.startsWith("https://")
+            ? r.imageUrl
+            : baseCatalog[r.id]?.img || "/images/rooms/vv_deluxe_double.jpg";
+
         baseCatalog[r.id] = {
           nameEn: r.nameEn,
           nameKm: r.nameKm,
           basePrice: r.basePrice,
           size: `${r.sizeSqm} m²`,
           bed: r.bedTypeKm || r.bedTypeEn,
-          img: r.imageUrl || baseCatalog[r.id]?.img || "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
+          img: cleanImg,
         };
       });
     }
@@ -1064,7 +1073,15 @@ export const BookingBar: React.FC = () => {
                           }`}
                         >
                           <div className="relative h-36 w-full rounded-xl overflow-hidden bg-gray-100">
-                            <img src={item.img} alt={item.nameEn} className="w-full h-full object-cover" />
+                            <img
+                              src={item.img}
+                              alt={item.nameEn}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = "/images/rooms/vv_deluxe_double.jpg";
+                              }}
+                            />
                             <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">
                               {item.size}
                             </div>

@@ -263,7 +263,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
     viewEn: "Mekong River View",
     viewTypeKm: "ទេសភាពទន្លេមេគង្គ",
     viewTypeEn: "Mekong River View",
-    imageUrl: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
+    imageUrl: "/images/rooms/vv_deluxe_double.jpg",
     descriptionKm: "បន្ទប់ប្រណីតបំពាក់គ្រឿងសង្ហារិមទំនើប និងមានយ៉រគយគន់ទន្លេមេគង្គ។",
     descriptionEn: "Modern luxury room with private balcony overlooking the Mekong River.",
     enabled: true,
@@ -334,7 +334,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       viewEn: "Mekong River View",
       viewTypeKm: "ទេសភាពទន្លេមេគង្គ",
       viewTypeEn: "Mekong River View",
-      imageUrl: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
+      imageUrl: "/images/rooms/vv_deluxe_double.jpg",
       descriptionKm: "បន្ទប់ប្រណីតបំពាក់គ្រឿងសង្ហារិមទំនើប និងមានយ៉រគយគន់ទន្លេមេគង្គ។",
       descriptionEn: "Modern luxury room with private balcony overlooking the Mekong River.",
       enabled: true,
@@ -371,7 +371,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
     descriptionEn: "Offering gourmet dishes and fresh local flavors overlooking the majestic Mekong River.",
     signatureDishesKm: ["អាម៉ុកត្រីមេគង្គ", "បង្កងអាំងទឹកត្រីកោះកុង"],
     signatureDishesEn: ["Mekong Fish Amok", "Grilled River Lobster"],
-    imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+    imageUrl: "/images/rooms/vv_room_interior_1.jpg",
     enabled: true,
   });
 
@@ -433,7 +433,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       descriptionEn: "Offering gourmet dishes and fresh local flavors overlooking the majestic Mekong River.",
       signatureDishesKm: ["អាម៉ុកត្រីមេគង្គ", "បង្កងអាំងទឹកត្រីកោះកុង"],
       signatureDishesEn: ["Mekong Fish Amok", "Grilled River Lobster"],
-      imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+      imageUrl: "/images/rooms/vv_room_interior_1.jpg",
       enabled: true,
     });
   };
@@ -473,7 +473,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
     taglineEn: "",
     descriptionKm: "",
     descriptionEn: "",
-    imageUrl: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1200&q=80",
+    imageUrl: "/images/destinations/bamboo-bridge.jpg",
     googleMapsUrl: "https://maps.google.com/?q=11.9924,105.4645",
     enabled: true,
   });
@@ -601,7 +601,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       taglineEn: newDest.taglineEn || "",
       descriptionKm: newDest.descriptionKm || "",
       descriptionEn: newDest.descriptionEn || "",
-      imageUrl: newDest.imageUrl || "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1200&q=80",
+      imageUrl: newDest.imageUrl || "/images/destinations/bamboo-bridge.jpg",
       googleMapsUrl: newDest.googleMapsUrl || `https://maps.google.com/?q=${newDest.latitude || 11.9924},${newDest.longitude || 105.4645}`,
       enabled: true,
     };
@@ -629,7 +629,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       taglineEn: "",
       descriptionKm: "",
       descriptionEn: "",
-      imageUrl: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1200&q=80",
+      imageUrl: "/images/destinations/bamboo-bridge.jpg",
       googleMapsUrl: "https://maps.google.com/?q=11.9924,105.4645",
       enabled: true,
     });

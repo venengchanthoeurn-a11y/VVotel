@@ -81,7 +81,9 @@ export async function generateOfficialDocx(
   // Load official logo for administrative header
   let logoImageRun: ImageRun | null = null;
   try {
-    const logoPath = path.join(process.cwd(), "public", "icons", "icon-192.png");
+    const logoPngPath = path.join(process.cwd(), "public", "images", "vvotel-logo.png");
+    const logoIconPath = path.join(process.cwd(), "public", "icons", "icon-192.png");
+    const logoPath = fs.existsSync(logoPngPath) ? logoPngPath : logoIconPath;
     if (fs.existsSync(logoPath)) {
       const logoBuffer = fs.readFileSync(logoPath);
       logoImageRun = new ImageRun({
@@ -1160,7 +1162,7 @@ export function generateOfficialHtmlReport(
   <!-- Printable Action Bar (Hidden in Print) -->
   <div class="no-print max-w-4xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl shadow-md border border-gray-200">
     <div class="flex items-center space-x-3">
-      <img src="/icons/icon-192.png?v=2" alt="Logo" class="w-10 h-10 rounded-xl object-contain shadow border border-amber-300 shrink-0" />
+      <img src="/images/vvotel-logo.png?v=2" alt="Logo" class="w-10 h-10 rounded-xl object-contain shadow border border-amber-300 shrink-0" onerror="this.onerror=null;this.src='/icons/icon-192.png?v=2';" />
       <div>
         <h3 class="font-mool text-sm text-[#0c2340]">របាយការណ៍រដ្ឋបាលផ្លូវការ (Administrative Report)</h3>
         <p class="text-xs text-gray-500 font-siemreap">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ប្រព័ន្ធកណ្តាល PMS</p>
@@ -1193,7 +1195,7 @@ export function generateOfficialHtmlReport(
     <div class="flex justify-between items-start border-b-2 border-gray-800 pb-4 mb-6">
       <!-- Left: Organization & Ref Number with Official Logo -->
       <div class="flex items-center space-x-3 pt-1">
-        <img src="/icons/icon-192.png?v=2" alt="VVotel Logo" class="w-12 h-12 rounded-xl object-contain border border-amber-400/80 shadow-sm shrink-0" />
+        <img src="/images/vvotel-logo.png?v=2" alt="VVotel Logo" class="w-12 h-12 rounded-xl object-contain border border-amber-400/80 shadow-sm shrink-0" onerror="this.onerror=null;this.src='/icons/icon-192.png?v=2';" />
         <div class="space-y-0.5 text-left">
           <h2 class="font-mool text-base text-[#0c2340] leading-relaxed">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម</h2>
           <p class="text-xs font-bold text-gray-700">ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ</p>

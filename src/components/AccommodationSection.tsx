@@ -257,6 +257,15 @@ export const AccommodationSection: React.FC = () => {
     ...ROOMS.map((staticRoom) => {
       const match = settings?.rooms?.find((r) => r.id === staticRoom.id);
       if (!match) return staticRoom;
+      const validCustomImage =
+        match.imageUrl &&
+        !match.imageUrl.includes("unsplash.com") &&
+        !match.imageUrl.includes("website-files.com") &&
+        !match.imageUrl.startsWith("http://") &&
+        !match.imageUrl.startsWith("https://")
+          ? match.imageUrl
+          : staticRoom.imageUrl;
+
       return {
         ...staticRoom,
         pricePerNightUSD: typeof match.basePrice === "number" ? match.basePrice : staticRoom.pricePerNightUSD,
@@ -268,7 +277,7 @@ export const AccommodationSection: React.FC = () => {
           en: match.categoryEn || staticRoom.category.en,
           km: match.categoryKm || staticRoom.category.km,
         },
-        imageUrl: match.imageUrl || staticRoom.imageUrl,
+        imageUrl: validCustomImage,
         sizeSqm: match.sizeSqm || staticRoom.sizeSqm,
       };
     }),
@@ -289,7 +298,10 @@ export const AccommodationSection: React.FC = () => {
         en: customRoom.descriptionEn || "Luxury accommodation in Kampong Cham with river views and full amenities.",
         km: customRoom.descriptionKm || "បន្ទប់ស្នាក់នៅប្រណីតកណ្តាលក្រុងកំពង់ចាម បែរមុខទៅទន្លេមេគង្គ ផាសុកភាពខ្ពស់។",
       },
-      imageUrl: customRoom.imageUrl || "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
+      imageUrl:
+        customRoom.imageUrl && !customRoom.imageUrl.includes("unsplash.com") && !customRoom.imageUrl.includes("website-files.com")
+          ? customRoom.imageUrl
+          : "/images/rooms/vv_deluxe_double.jpg",
       amenities: [
         { en: "High-Speed WiFi 6 & Smart TV", km: "អ៊ីនធឺណិតល្បឿនលឿន WiFi 6 & Smart TV" },
         { en: "Complimentary Breakfast", km: "អាហារពេលព្រឹកឥតគិតថ្លៃ" },
@@ -367,6 +379,16 @@ export const AccommodationSection: React.FC = () => {
                   alt={lang === "km" ? room.name.km : room.name.en}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    const fallbackMap: Record<string, string> = {
+                      "standard-city": "/images/rooms/vv_standard_king.jpg",
+                      "superior-river": "/images/rooms/vv_superior_bed.jpg",
+                      "executive-suite": "/images/rooms/vv_suite_bedroom.jpg",
+                      "royal-family-suite": "/images/rooms/vv_family_space.jpg",
+                    };
+                    e.currentTarget.src = fallbackMap[room.id] || "/images/rooms/vv_deluxe_double.jpg";
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
@@ -456,6 +478,16 @@ export const AccommodationSection: React.FC = () => {
                 src={selectedModalPhoto || activeModalRoom.imageUrl}
                 alt={lang === "km" ? activeModalRoom.name.km : activeModalRoom.name.en}
                 className="w-full h-full object-cover transition-all duration-300"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  const fallbackMap: Record<string, string> = {
+                    "standard-city": "/images/rooms/vv_standard_king.jpg",
+                    "superior-river": "/images/rooms/vv_superior_bed.jpg",
+                    "executive-suite": "/images/rooms/vv_suite_bedroom.jpg",
+                    "royal-family-suite": "/images/rooms/vv_family_space.jpg",
+                  };
+                  e.currentTarget.src = fallbackMap[activeModalRoom.id] || "/images/rooms/vv_deluxe_double.jpg";
+                }}
               />
               <button
                 onClick={() => {
@@ -487,7 +519,15 @@ export const AccommodationSection: React.FC = () => {
                         : "border-transparent opacity-70 hover:opacity-100"
                     }`}
                   >
-                    <img src={gImg} alt="Thumbnail" className="w-full h-full object-cover" />
+                    <img
+                      src={gImg}
+                      alt="Thumbnail"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "/images/rooms/vv_deluxe_double.jpg";
+                      }}
+                    />
                   </button>
                 ))}
               </div>

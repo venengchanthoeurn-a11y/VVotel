@@ -38,6 +38,10 @@ export const DestinationDetailModal: React.FC<DestinationDetailModalProps> = ({
             src={destination.imageUrl}
             alt={destination.title.en}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/images/destinations/bamboo-bridge.jpg";
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 

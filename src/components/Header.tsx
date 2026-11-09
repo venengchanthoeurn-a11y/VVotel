@@ -58,6 +58,10 @@ export const Header: React.FC = () => {
                     src={settings.logoImageUrl}
                     alt={settings.hotelNameEn}
                     className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain shadow-md border border-vvotel-gold/30 shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/icons/icon-192.png?v=2";
+                    }}
                   />
                 ) : (
                   <img

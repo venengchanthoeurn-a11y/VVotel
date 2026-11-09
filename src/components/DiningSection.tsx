@@ -306,6 +306,16 @@ export const DiningSection: React.FC = () => {
                   alt={lang === "km" ? venue.name.km : venue.name.en}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    const diningMap: Record<string, string> = {
+                      "mekong-breeze": "/images/rooms/vv_room_interior_1.jpg",
+                      "sunset-lounge": "/images/rooms/vv_room_view.jpg",
+                      "palm-pool-bar": "/images/rooms/vv_real_room_1280_4.jpg",
+                      "artisan-bakery": "/images/destinations/destiny-cafe.jpg",
+                    };
+                    e.currentTarget.src = diningMap[venue.id] || "/images/rooms/vv_room_interior_1.jpg";
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 text-white">
