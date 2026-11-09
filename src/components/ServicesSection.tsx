@@ -49,7 +49,7 @@ export const RESORT_SERVICES: ResortService[] = [
       { en: "Complimentary sun loungers & towel service", km: "កៅអីគេងថ្ងៃ & កន្សែងងូតទឹកឥតគិតថ្លៃ" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=1200&q=80",
+      "/images/rooms/vv_real_room_1280_4.jpg",
     icon: "waves",
   },
   {
@@ -124,7 +124,7 @@ export const RESORT_SERVICES: ResortService[] = [
       { en: "PlayStation 5 & family board games library", km: "ហ្គេម PlayStation 5 និងក្តារហ្គេមគ្រួសារ" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1566454544259-f4b94c3d758c?auto=format&fit=crop&w=1200&q=80",
+      "/images/rooms/vv_family_space.jpg",
     icon: "smile",
   },
   {

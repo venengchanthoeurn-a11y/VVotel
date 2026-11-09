@@ -44,13 +44,22 @@ import {
   SlidersHorizontal,
   Settings,
   LayoutGrid,
+  Database,
+  HardDrive,
+  Upload,
+  Server,
 } from "lucide-react";
 import { BookingRecord } from "@/lib/bookings";
 import { PrintableReceipt } from "@/components/PrintableReceipt";
 import { AdminSettingsPortal } from "@/components/AdminSettingsPortal";
 import { useSettings } from "@/context/SettingsContext";
 import { ReportPeriod, filterBookingsByPeriod, PERIOD_TITLES } from "@/lib/reportsShared";
-import { recordClientAutoBackup } from "@/lib/clientBackup";
+import {
+  recordClientAutoBackup,
+  getClientBackupHistory,
+  downloadSnapshotJson,
+} from "@/lib/clientBackup";
+import { BackupSnapshot } from "@/lib/backupTypes";
 
 // Dual Language Translations Dictionary for Admin Portal & Login Screen
 const ADMIN_I18N = {
@@ -128,6 +137,7 @@ const ADMIN_I18N = {
     btnCheckOut: "Check-Out",
     btnComplete: "បញ្ចប់",
     reportsBtn: "📑 របាយការណ៍រដ្ឋបាល",
+    backupBtn: "💾 Backup Data",
     reportModalTitle: "ប្រព័ន្ធផលិតរបាយការណ៍រដ្ឋបាលផ្លូវការ",
     reportModalSubtitle: "ទម្រង់រដ្ឋបាលកម្ពុជា • គាំទ្រ Word (.docx), Excel (.xlsx), និង PDF",
     reportWordTitle: "របាយការណ៍រដ្ឋបាល Word (.docx)",
@@ -212,6 +222,7 @@ const ADMIN_I18N = {
     btnCheckOut: "Check-Out",
     btnComplete: "Complete",
     reportsBtn: "📑 Administrative Reports",
+    backupBtn: "💾 Backup Data",
     reportModalTitle: "Official Administrative Reporting Suite",
     reportModalSubtitle: "Cambodian Administrative Format • Word (.docx), Excel (.xlsx), and PDF",
     reportWordTitle: "Official Word Report (.docx)",
@@ -255,7 +266,7 @@ function playHotelChime() {
 export default function AdminPage() {
   // Language State
   const [lang, setLang] = useState<"km" | "en">("km");
-  const { settings } = useSettings();
+  const { settings, updateSettings, refreshSettings } = useSettings();
   const t = ADMIN_I18N[lang];
 
   // Authentication State
@@ -315,10 +326,23 @@ export default function AdminPage() {
   const [selectedReportPeriod, setSelectedReportPeriod] = useState<ReportPeriod>("daily");
   const [downloadingReport, setDownloadingReport] = useState<string | null>(null);
 
-  // Filtered bookings & KPIs for selected period
+  // Backup modal and state
+  const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
+  const [backupSnapshots, setBackupSnapshots] = useState<BackupSnapshot[]>([]);
+  const [lastBackupTime, setLastBackupTime] = useState<string>("");
+  const [isProcessingBackup, setIsProcessingBackup] = useState<boolean>(false);
+  const [backupNotice, setBackupNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Report Reference Date state (defaults to today's date)
+  const [reportRefDate, setReportRefDate] = useState<string>(() => {
+    return new Date().toISOString().split("T")[0];
+  });
+
+  // Filtered bookings & KPIs for selected period and reference date
   const periodReportData = useMemo(() => {
-    return filterBookingsByPeriod(bookings, selectedReportPeriod, new Date());
-  }, [bookings, selectedReportPeriod]);
+    const targetDate = reportRefDate ? new Date(reportRefDate + "T12:00:00") : new Date();
+    return filterBookingsByPeriod(bookings, selectedReportPeriod, targetDate);
+  }, [bookings, selectedReportPeriod, reportRefDate]);
 
   const periodBookings = periodReportData.filtered;
   const periodRoomBookings = useMemo(
@@ -341,6 +365,7 @@ export default function AdminPage() {
   const handleDownloadReport = async (format: "docx" | "xlsx" | "html" | "csv") => {
     try {
       setDownloadingReport(format);
+      const targetDateIso = reportRefDate ? new Date(reportRefDate + "T12:00:00").toISOString() : new Date().toISOString();
       const res = await fetch("/api/reports", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -348,7 +373,7 @@ export default function AdminPage() {
           format,
           period: selectedReportPeriod,
           bookings,
-          refDate: new Date().toISOString(),
+          refDate: targetDateIso,
         }),
       });
 
@@ -362,7 +387,7 @@ export default function AdminPage() {
           printWin.document.write(htmlText);
           printWin.document.close();
         } else {
-          window.location.href = `/api/reports?format=html&period=${selectedReportPeriod}`;
+          window.location.href = `/api/reports?format=html&period=${selectedReportPeriod}&refDate=${targetDateIso}`;
         }
       } else {
         const blob = await res.blob();
@@ -370,7 +395,7 @@ export default function AdminPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `Vattanac_${selectedReportPeriod}_Report_${new Date().toISOString().split("T")[0]}.${ext}`;
+        a.download = `Vattanac_${selectedReportPeriod}_Report_${reportRefDate || new Date().toISOString().split("T")[0]}.${ext}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -378,10 +403,134 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error("Report generation error:", err);
-      window.open(`/api/reports?format=${format}&period=${selectedReportPeriod}`, "_blank");
+      const targetDateIso = reportRefDate ? new Date(reportRefDate + "T12:00:00").toISOString() : new Date().toISOString();
+      window.open(`/api/reports?format=${format}&period=${selectedReportPeriod}&refDate=${targetDateIso}`, "_blank");
     } finally {
       setDownloadingReport(null);
     }
+  };
+
+  // Continuous Auto-Backup 24/7 Engine
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Load initial snapshots & timestamp
+    const initialList = getClientBackupHistory();
+    setBackupSnapshots(initialList);
+    const savedTime = localStorage.getItem("vvotel_last_auto_backup_time");
+    if (savedTime) setLastBackupTime(savedTime);
+
+    // Initial system snapshot on mount
+    try {
+      const snap = recordClientAutoBackup(settings, bookings, "init");
+      setLastBackupTime(snap.timestamp);
+      setBackupSnapshots(getClientBackupHistory());
+    } catch (e) {
+      console.warn("Initial auto backup skipped:", e);
+    }
+
+    // Interval: continuous 3-minute auto-backup (180,000 ms)
+    const interval = setInterval(() => {
+      try {
+        const snap = recordClientAutoBackup(settings, bookings, "interval");
+        setLastBackupTime(snap.timestamp);
+        setBackupSnapshots(getClientBackupHistory());
+      } catch (e) {
+        console.warn("Continuous auto backup error:", e);
+      }
+    }, 180000);
+
+    return () => clearInterval(interval);
+  }, [settings, bookings]);
+
+  // Manual Backup & Restore Handlers
+  const handleManualBackupNow = async () => {
+    setIsProcessingBackup(true);
+    try {
+      const snap = recordClientAutoBackup(
+        settings,
+        bookings,
+        "manual",
+        "ការបម្រុងទុកទិន្នន័យដោយដៃដោយអ្នកគ្រប់គ្រង (Manual Manager Snapshot)"
+      );
+      setLastBackupTime(snap.timestamp);
+      setBackupSnapshots(getClientBackupHistory());
+      downloadSnapshotJson(snap);
+      setBackupNotice({
+        type: "success",
+        text:
+          lang === "km"
+            ? `បានបង្កើត និងទាញយក Backup ជោគជ័យ! (${snap.stats.bookingCount} ការកក់, ${snap.stats.roomCount} បន្ទប់)`
+            : `Backup created & downloaded successfully! (${snap.stats.bookingCount} bookings recorded)`,
+      });
+    } catch (err: any) {
+      setBackupNotice({
+        type: "error",
+        text: lang === "km" ? "បរាជ័យក្នុងការបង្កើត Backup" : "Failed to create backup: " + err.message,
+      });
+    } finally {
+      setIsProcessingBackup(false);
+    }
+  };
+
+  const handleRestoreSnapshot = async (snapshot: BackupSnapshot) => {
+    if (
+      !confirm(
+        lang === "km"
+          ? "តើលោកអ្នកពិតជាចង់ស្ដារទិន្នន័យពីកំណែនេះមែនទេ? (ប្រព័ន្ធនឹងស្ដារការកំណត់ និងការកក់ទាំងអស់)"
+          : "Are you sure you want to restore data from this snapshot?"
+      )
+    ) {
+      return;
+    }
+    setIsProcessingBackup(true);
+    try {
+      const res = await fetch("/api/backup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "restore", snapshot }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || "Failed to restore");
+
+      if (snapshot.settings) {
+        updateSettings(snapshot.settings);
+      }
+      await fetchBookings(false);
+
+      setBackupNotice({
+        type: "success",
+        text: lang === "km" ? "បានស្ដារទិន្នន័យឡើងវិញដោយជោគជ័យ!" : "System data restored successfully!",
+      });
+    } catch (err: any) {
+      setBackupNotice({
+        type: "error",
+        text: lang === "km" ? "ការស្ដារទិន្នន័យមានបញ្ហា៖ " + err.message : "Restore error: " + err.message,
+      });
+    } finally {
+      setIsProcessingBackup(false);
+    }
+  };
+
+  const handleFileUploadRestore = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (!parsed.version && !parsed.settings && !parsed.bookings) {
+          throw new Error("Invalid backup file format");
+        }
+        await handleRestoreSnapshot(parsed);
+      } catch (err: any) {
+        setBackupNotice({
+          type: "error",
+          text: lang === "km" ? "ឯកសារមិនត្រឹមត្រូវ៖ " + err.message : "Invalid JSON file: " + err.message,
+        });
+      }
+    };
+    reader.readAsText(file);
   };
   const [newBookingData, setNewBookingData] = useState({
     bookingCategory: "ROOM" as "ROOM" | "DINING",
@@ -1288,6 +1437,17 @@ export default function AdminPage() {
               <span className="hidden 2xl:inline">{t.reportsBtn}</span>
             </button>
 
+            {/* 3.1. Continuous Auto Backup & Snapshot Hub */}
+            <button
+              onClick={() => setIsBackupModalOpen(true)}
+              className="bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-400/60 p-1.5 sm:p-2 2xl:px-3 2xl:py-1.5 rounded-xl flex items-center space-x-1.5 shadow-xs transition text-xs font-bold shrink-0 relative"
+              title={lang === "km" ? "ទិន្នន័យបម្រុង (Auto Backup 24/7)" : "Backup Data (Auto 24/7)"}
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping absolute -top-0.5 -right-0.5" />
+              <Database className="w-4 h-4 text-emerald-300 shrink-0" />
+              <span className="hidden 2xl:inline">{t.backupBtn}</span>
+            </button>
+
             {/* 4. Refresh Bookings */}
             <button
               onClick={() => fetchBookings(false)}
@@ -1561,6 +1721,75 @@ export default function AdminPage() {
               <span className="text-xl sm:text-2xl font-bold text-[#0c2340]">Active</span>
             </div>
             <span className="text-[10px] text-sky-700 mt-1 font-mono">@vvotel_bot</span>
+          </div>
+        </div>
+
+        {/* Backup Status Toast Alert */}
+        {backupNotice && (
+          <div
+            className={`p-4 rounded-2xl border flex items-center justify-between text-xs sm:text-sm font-bold shadow-md animate-in fade-in slide-in-from-top-2 font-siemreap ${
+              backupNotice.type === "success"
+                ? "bg-emerald-50 border-emerald-300 text-emerald-900"
+                : "bg-red-50 border-red-300 text-red-900"
+            }`}
+          >
+            <div className="flex items-center space-x-3">
+              <CheckCircle className="w-5 h-5 shrink-0 text-emerald-600" />
+              <span>{backupNotice.text}</span>
+            </div>
+            <button
+              onClick={() => setBackupNotice(null)}
+              className="p-1 hover:bg-black/5 rounded-lg text-gray-500 hover:text-gray-900"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* 24/7 Continuous Auto-Backup System Banner Card */}
+        <div className="bg-gradient-to-r from-[#0c2340] via-[#12335e] to-[#0c2340] text-white border border-emerald-500/40 rounded-2xl p-4 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 font-siemreap">
+          <div className="flex items-start sm:items-center space-x-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shrink-0 shadow-inner">
+              <Database className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/30 text-emerald-300 border border-emerald-400/40">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span>24/7 Continuous Auto-Backup</span>
+                </span>
+                <span className="text-[11px] text-gray-300 font-mono hidden sm:inline">
+                  {lastBackupTime ? `បម្រុងចុងក្រោយ៖ ${new Date(lastBackupTime).toLocaleTimeString("en-GB", { hour12: true })}` : "ដំណើរការជាប់ជានិច្ច"}
+                </span>
+              </div>
+              <h4 className="font-mool text-xs sm:text-sm text-amber-300 mt-1">
+                {lang === "km" ? "ប្រព័ន្ធរក្សាទុកទិន្នន័យបម្រុងស្វ័យប្រវត្តិ (Auto-Backup គ្រប់ពេលវេលា)" : "24/7 Continuous Data Backup Engine"}
+              </h4>
+              <p className="text-[11px] text-gray-300 mt-0.5 leading-relaxed">
+                {lang === "km"
+                  ? `ប្រព័ន្ធធ្វើការ Backup រាល់ពេលមានការកក់ថ្មី និងរៀងរាល់ ៣ នាទីដោយស្វ័យប្រវត្តិ។ បច្ចុប្បន្នមាន ${backupSnapshots.length} កំណែទិន្នន័យបម្រុងដែលអាចទាញយក ឬស្ដារឡើងវិញបានគ្រប់ពេល។`
+                  : `Automated snapshots every 3 minutes & on every booking/update. ${backupSnapshots.length} recovery snapshots ready.`}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center flex-wrap gap-2 w-full md:w-auto shrink-0">
+            <button
+              type="button"
+              onClick={handleManualBackupNow}
+              disabled={isProcessingBackup}
+              className="flex-1 sm:flex-initial px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{isProcessingBackup ? "កំពុងរក្សាទុក..." : (lang === "km" ? "Backup ឥឡូវនេះ" : "Backup Now")}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsBackupModalOpen(true)}
+              className="flex-1 sm:flex-initial px-3.5 py-2 bg-white/10 hover:bg-white/20 text-amber-300 border border-amber-300/40 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 cursor-pointer"
+            >
+              <HardDrive className="w-3.5 h-3.5 text-amber-300" />
+              <span>{lang === "km" ? "គ្រប់គ្រង Backup & ស្ដារ" : "Manage & Restore"}</span>
+            </button>
           </div>
         </div>
 
@@ -2276,15 +2505,29 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Multi-Period Selector Tabs */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-gray-700 flex items-center space-x-1.5">
+              {/* Multi-Period Selector Tabs & Reference Date */}
+              <div className="space-y-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-gray-800 flex items-center space-x-1.5">
                     <span>ជ្រើសរើសប្រភេទរបាយការណ៍៖</span>
                   </span>
-                  <span className="text-[11px] text-amber-800 font-mono font-bold bg-amber-100/80 px-2 py-0.5 rounded-md">
-                    {periodReportData.dateRangeText}
-                  </span>
+                  <div className="flex items-center flex-wrap gap-2">
+                    <div className="flex items-center space-x-1.5 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-300 shadow-2xs">
+                      <label className="text-[11px] font-bold text-amber-900 flex items-center space-x-1 shrink-0">
+                        <Calendar className="w-3.5 h-3.5 text-amber-700" />
+                        <span>{lang === "km" ? "កាលបរិច្ឆេទយោង:" : "Ref Date:"}</span>
+                      </label>
+                      <input
+                        type="date"
+                        value={reportRefDate}
+                        onChange={(e) => setReportRefDate(e.target.value)}
+                        className="text-xs font-bold font-mono bg-white border border-amber-300 rounded-lg px-2 py-0.5 text-gray-900 shadow-2xs focus:ring-1 focus:ring-amber-500"
+                      />
+                    </div>
+                    <span className="text-[11px] text-amber-900 font-mono font-bold bg-amber-100/90 px-2.5 py-1 rounded-xl border border-amber-200 shrink-0">
+                      {periodReportData.dateRangeText}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 no-scrollbar">
@@ -2449,6 +2692,213 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={() => setIsReportModalOpen(false)}
+                className="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl text-xs transition"
+              >
+                {lang === "km" ? "បិទផ្ទាំង" : "Close"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================= 24/7 AUTO-BACKUP & DATA RECOVERY MODAL ======================= */}
+      {isBackupModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs font-siemreap animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border border-emerald-300 max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="p-5 bg-gradient-to-r from-[#0c2340] via-emerald-950 to-[#0c2340] text-white flex items-center justify-between border-b border-emerald-500/40">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 flex items-center justify-center font-bold shrink-0 shadow-inner">
+                  <Database className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="font-mool text-sm sm:text-base text-amber-300">
+                    {lang === "km" ? "ប្រព័ន្ធរក្សាទុកទិន្នន័យបម្រុងស្វ័យប្រវត្តិ (24/7 Continuous Auto-Backup)" : "24/7 Continuous Auto-Backup & Recovery"}
+                  </h3>
+                  <p className="text-xs text-emerald-200/90 mt-0.5">
+                    {lang === "km"
+                      ? "ការពារទិន្នន័យ ១០០% • Backup ស្វ័យប្រវត្តរៀងរាល់ ៣ នាទី • ទាញយក .JSON • ស្ដារទិន្នន័យគ្រប់ពេល"
+                      : "100% Data Protection • 3-min interval auto-backup • JSON export • 1-click restore"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBackupModalOpen(false)}
+                className="p-2 hover:bg-white/10 rounded-xl transition text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              {/* Live Status Card */}
+              <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center space-x-3">
+                  <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-xs text-emerald-950">
+                      {lang === "km" ? "ប្រព័ន្ធ Auto-Backup កំពុងដំណើរការ ២៤/៧" : "24/7 Auto-Backup Active"}
+                    </h4>
+                    <p className="text-[11px] text-emerald-800 font-mono mt-0.5">
+                      {lastBackupTime
+                        ? `${lang === "km" ? "បម្រុងចុងក្រោយ៖" : "Last backup:"} ${new Date(lastBackupTime).toLocaleString("en-GB")}`
+                        : (lang === "km" ? "បានកំណត់ដំណើរការស្វ័យប្រវត្តិ" : "Auto-backup configured")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-bold px-2.5 py-1 bg-emerald-200/80 text-emerald-900 rounded-lg font-mono">
+                    {backupSnapshots.length} Snapshots
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons: 1-Click Manual Backup & Direct Restore */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* 1. Manual Backup Now */}
+                <div className="p-4 bg-white border-2 border-emerald-200 hover:border-emerald-400 rounded-2xl transition space-y-3 shadow-2xs">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                      <Download className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-gray-900">
+                        {lang === "km" ? "បង្កើត Backup ឥឡូវនេះ (ទាញយក .JSON)" : "Manual Snapshot (Download .JSON)"}
+                      </h4>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        {lang === "km"
+                          ? "កត់ត្រាទិន្នន័យភ្លាមៗ និងទាញយកឯកសារ JSON ពេញលេញរក្សាទុកក្នុងកុំព្យូទ័រ។"
+                          : "Create immediate snapshot and download standard JSON backup file."}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleManualBackupNow}
+                    disabled={isProcessingBackup}
+                    className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition cursor-pointer"
+                  >
+                    {isProcessingBackup ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5" />
+                    )}
+                    <span>{isProcessingBackup ? "កំពុងដំណើរការ..." : (lang === "km" ? "ទាញយក Backup .JSON" : "Download Backup .JSON")}</span>
+                  </button>
+                </div>
+
+                {/* 2. File Upload Restore */}
+                <div className="p-4 bg-white border-2 border-blue-200 hover:border-blue-400 rounded-2xl transition space-y-3 shadow-2xs">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center shrink-0">
+                      <Upload className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-gray-900">
+                        {lang === "km" ? "ស្ដារទិន្នន័យពីឯកសារ (Restore JSON)" : "Restore from JSON File"}
+                      </h4>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        {lang === "km"
+                          ? "ជ្រើសរើសឯកសារ .json បម្រុងទុកពីមុន ដើម្បីស្ដារឡើងវិញគ្រប់ពេលវេលា។"
+                          : "Upload a previously downloaded .json backup file to restore system state."}
+                      </p>
+                    </div>
+                  </div>
+                  <label className="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition cursor-pointer">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{lang === "km" ? "ជ្រើសរើសឯកសារ JSON ដើម្បីស្ដារ" : "Upload JSON to Restore"}</span>
+                    <input
+                      type="file"
+                      accept=".json"
+                      className="hidden"
+                      onChange={handleFileUploadRestore}
+                      disabled={isProcessingBackup}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Snapshots History Table */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-xs text-gray-800 flex items-center space-x-1.5">
+                    <HardDrive className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>{lang === "km" ? "ប្រវត្តិនៃការ Backup ស្វ័យប្រវត្តិ (Recent Snapshots)" : "Recent Backup Snapshots"}</span>
+                  </h4>
+                  <span className="text-[11px] text-gray-500">
+                    {lang === "km" ? "រក្សាទុក ១៥ កំណែចុងក្រោយ" : "Keeps latest 15 snapshots"}
+                  </span>
+                </div>
+
+                <div className="border border-gray-200 rounded-2xl overflow-hidden divide-y divide-gray-100 shadow-2xs max-h-60 overflow-y-auto">
+                  {backupSnapshots.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-gray-500">
+                      {lang === "km" ? "មិនទាន់មាន snapshot ក្នុងប្រវត្តិនៅឡើយទេ។" : "No backup snapshots available yet."}
+                    </div>
+                  ) : (
+                    backupSnapshots.map((snap) => (
+                      <div
+                        key={snap.id}
+                        className="p-3 bg-white hover:bg-gray-50/80 transition flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-bold text-gray-900 truncate">{snap.title || snap.id}</span>
+                            <span className="text-[10px] font-mono bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                              {snap.reason}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-3 text-[11px] text-gray-500 mt-0.5 font-mono">
+                            <span>{new Date(snap.timestamp).toLocaleString("en-GB")}</span>
+                            <span>•</span>
+                            <span>ការកក់: {snap.stats?.bookingCount ?? 0}</span>
+                            <span>•</span>
+                            <span>បន្ទប់: {snap.stats?.roomCount ?? 0}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => downloadSnapshotJson(snap)}
+                            className="p-1.5 bg-gray-100 hover:bg-emerald-50 text-gray-700 hover:text-emerald-700 rounded-lg transition"
+                            title={lang === "km" ? "ទាញយក .JSON" : "Download JSON"}
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRestoreSnapshot(snap)}
+                            disabled={isProcessingBackup}
+                            className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg font-bold text-[11px] transition shadow-2xs"
+                          >
+                            {lang === "km" ? "ស្ដារ" : "Restore"}
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Bot & Safety Note */}
+              <div className="p-3.5 bg-sky-50 border border-sky-200 rounded-2xl flex items-start space-x-2.5 text-xs text-sky-900">
+                <Server className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
+                <div className="leading-relaxed">
+                  <strong>{lang === "km" ? "សុវត្ថិភាពទិន្នន័យកម្រិតខ្ពស់ (Data Security & Redundancy):" : "High-Availability Redundancy:"}</strong>{" "}
+                  {lang === "km"
+                    ? "រាល់ពេលចុចស្ដារឡើងវិញ ប្រព័ន្ធនឹងបង្កើត safety snapshot ការពារជាមុនដោយស្វ័យប្រវត្តិ។ ដូច្នេះទិន្នន័យមិនអាចបាត់បង់ដោយចៃដន្យឡើយ។"
+                    : "Prior to any restore action, a pre-restore safety snapshot is automatically created. Your hotel records are safe at all times."}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsBackupModalOpen(false)}
                 className="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl text-xs transition"
               >
                 {lang === "km" ? "បិទផ្ទាំង" : "Close"}

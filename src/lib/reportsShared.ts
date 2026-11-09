@@ -190,9 +190,9 @@ export function filterBookingsByPeriod(
     return t >= startTime && t <= endTime;
   });
 
-  if (filtered.length === 0 && bookings.length > 0 && periodKey === "daily") {
-    filtered = bookings.slice(0, Math.min(10, bookings.length));
-    dateRangeText += " (បង្ហាញទិន្នន័យថ្មីៗ)";
+  if (filtered.length === 0 && bookings.length > 0) {
+    filtered = bookings;
+    dateRangeText += " (បង្ហាញទិន្នន័យប្រតិបត្តិការជាក់ស្តែងក្នុងប្រព័ន្ធ)";
   }
 
   return {

@@ -83,7 +83,9 @@ export default function HomePage() {
           latitude: custom.latitude,
           longitude: custom.longitude,
           googleMapsUrl: custom.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${custom.latitude},${custom.longitude}`,
-          imageUrl: custom.imageUrl || "/images/destinations/koh-pen-beach.jpg",
+          imageUrl: (custom.imageUrl && !custom.imageUrl.includes("unsplash.com"))
+            ? custom.imageUrl
+            : (existingIdx !== -1 ? list[existingIdx].imageUrl : "/images/destinations/bamboo-bridge.jpg"),
           travelTimeMinutes: custom.travelTimeMinutes || 10,
         };
         if (existingIdx !== -1) {

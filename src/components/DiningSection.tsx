@@ -62,7 +62,7 @@ export const DINING_VENUES: DiningVenue[] = [
       { en: "Kampot Pepper Wok-Fried Squid", km: "មឹកឆាម្រេចខ្ចីកំពត" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+      "/images/rooms/vv_room_interior_1.jpg",
   },
   {
     id: "sunset-lounge",
@@ -96,7 +96,7 @@ export const DINING_VENUES: DiningVenue[] = [
       { en: "Artisan Cheese & Charcuterie Board", km: "ឈីស & សាច់ក្រកស្ងួតអន្តរជាតិ" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80",
+      "/images/rooms/vv_room_view.jpg",
   },
   {
     id: "gourmet-cafe",
@@ -130,7 +130,7 @@ export const DINING_VENUES: DiningVenue[] = [
       { en: "Passionfruit & Mango Tartlet", km: "នំថាតផ្លែផាសិន & ស្វាយទុំ" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80",
+      "/images/destinations/destiny-cafe.jpg",
   },
   {
     id: "in-room-dining",
@@ -164,7 +164,7 @@ export const DINING_VENUES: DiningVenue[] = [
       { en: "Late-Night Phnom Penh Kuy Teav Noodle", km: "គុយទាវភ្នំពេញពិសេសពេលយប់" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80",
+      "/images/rooms/vv_real_room_1280_6.jpg",
   },
 ];
 

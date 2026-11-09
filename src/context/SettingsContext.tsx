@@ -21,6 +21,50 @@ const SettingsContext = createContext<SettingsContextType>({
   updateSettings: async () => false,
 });
 
+function sanitizeSettingsMedia(st: any): any {
+  if (!st) return st;
+  const clone = { ...st };
+  if (Array.isArray(clone.destinations)) {
+    const fixMap: Record<string, string> = {
+      "koh-pen-bamboo-bridge": "/images/destinations/bamboo-bridge.jpg",
+      "wat-nokor-bachey": "/images/destinations/wat-nokor.jpg",
+      "phnom-srei-phnom-pros": "/images/destinations/phnom-pros.jpg",
+      "phnom-hanchey": "/images/destinations/phnom-hanchey.jpg",
+    };
+    clone.destinations = clone.destinations.map((d: any) => {
+      if (
+        d.imageUrl &&
+        (d.imageUrl.includes("unsplash.com") ||
+          d.imageUrl.includes("photo-1544644181") ||
+          d.imageUrl.includes("photo-1569154941") ||
+          d.imageUrl.includes("photo-1609137144") ||
+          d.imageUrl.includes("photo-1506744038"))
+      ) {
+        return { ...d, imageUrl: fixMap[d.slug] || "/images/destinations/bamboo-bridge.jpg" };
+      }
+      return d;
+    });
+  }
+  if (Array.isArray(clone.dining)) {
+    clone.dining = clone.dining.map((d: any) => {
+      if (d.id === "mekong-breeze" && (!d.imageUrl || d.imageUrl.includes("unsplash.com"))) {
+        return { ...d, imageUrl: "/images/rooms/vv_room_interior_1.jpg" };
+      }
+      if (d.id === "sunset-lounge" && (!d.imageUrl || d.imageUrl.includes("unsplash.com"))) {
+        return { ...d, imageUrl: "/images/rooms/vv_room_view.jpg" };
+      }
+      if (d.id === "palm-pool-bar" && (!d.imageUrl || d.imageUrl.includes("unsplash.com"))) {
+        return { ...d, imageUrl: "/images/rooms/vv_real_room_1280_4.jpg" };
+      }
+      if (d.id === "artisan-bakery" && (!d.imageUrl || d.imageUrl.includes("unsplash.com"))) {
+        return { ...d, imageUrl: "/images/destinations/destiny-cafe.jpg" };
+      }
+      return d;
+    });
+  }
+  return clone;
+}
+
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
@@ -30,7 +74,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       const local = localStorage.getItem(PERSISTED_SETTINGS_KEY);
       if (local) {
-        const parsed = JSON.parse(local);
+        const rawParsed = JSON.parse(local);
+        const parsed = sanitizeSettingsMedia(rawParsed);
         setSettings((prev) => ({
           ...prev,
           ...parsed,
@@ -101,6 +146,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             } catch (e) {}
           }
 
+          activeSettings = sanitizeSettingsMedia(activeSettings);
           setSettings(activeSettings);
           if (typeof window !== "undefined") {
             localStorage.setItem(PERSISTED_SETTINGS_KEY, JSON.stringify(activeSettings));

@@ -53,7 +53,7 @@ export const SPECIAL_OFFERS: SpecialOffer[] = [
       { en: "Late Check-out until 14:00", km: "ចាកចេញយឺតរហូតដល់ម៉ោង ២ រសៀល" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80",
+      "/images/rooms/vv_google_maps_photo.jpg",
   },
   {
     id: "family-holiday",
@@ -82,7 +82,7 @@ export const SPECIAL_OFFERS: SpecialOffer[] = [
       { en: "Complimentary extra rollaway bed in suite", km: "គ្រែបន្ថែមឥតគិតថ្លៃក្នុងបន្ទប់ស្វ៊ីត" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80",
+      "/images/rooms/vv_executive_living.jpg",
   },
   {
     id: "romantic-retreat",
@@ -111,7 +111,7 @@ export const SPECIAL_OFFERS: SpecialOffer[] = [
       { en: "Romantic flower petal bath decoration", km: "ការរៀបចំផ្កាកុលាបក្នុងអាងត្រាំទឹកយ៉ាងផ្អែមល្ហែម" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80",
+      "/images/rooms/vv_real_room_1280_4.jpg",
   },
 ];
 

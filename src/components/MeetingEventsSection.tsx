@@ -48,7 +48,7 @@ export const EVENT_SPACES: EventSpace[] = [
       { en: "VIP green room & private bridal suite", km: "បន្ទប់រៀបចំខ្លួន VIP និងបន្ទប់កូនក្រមុំ" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=80",
+      "/images/rooms/vv_deluxe_double.jpg",
   },
   {
     id: "kizuna-boardroom",
@@ -70,7 +70,7 @@ export const EVENT_SPACES: EventSpace[] = [
       { en: "Dedicated Nespresso lounge & refreshment bar", km: "កន្លែងឆុងកាហ្វេ Nespresso និងភេសជ្ជៈផ្ទាល់ខ្លួន" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?auto=format&fit=crop&w=1200&q=80",
+      "/images/rooms/vv_room_interior_1.jpg",
   },
   {
     id: "riverside-lawn",
@@ -92,7 +92,7 @@ export const EVENT_SPACES: EventSpace[] = [
       { en: "Illuminated fairy light canopy overhead", km: "ខ្សែភ្លើងរចនាលើមេឃយ៉ាងស្រស់ស្អាតពេលរាត្រី" },
     ],
     imageUrl:
-      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80",
+      "/images/rooms/vv_hallway.jpg",
   },
 ];
 
