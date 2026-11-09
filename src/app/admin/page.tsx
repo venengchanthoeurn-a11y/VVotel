@@ -276,6 +276,14 @@ export default function AdminPage() {
   const [showPasscode, setShowPasscode] = useState<boolean>(false);
   const [rememberLogin, setRememberLogin] = useState<boolean>(true);
   const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    username: string;
+    displayName: string;
+    role: string;
+    permissions: string[];
+  } | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
   // Live Clock State
   const [currentTimeStr, setCurrentTimeStr] = useState<string>("");
@@ -585,43 +593,100 @@ export default function AdminPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Verify stored session on initial load
+  // Verify stored session on initial load via /api/auth/me
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedToken = localStorage.getItem("vvotel_admin_token");
-      if (storedToken === "authorized_manager_2052") {
-        setIsAuthenticated(true);
+    let isMounted = true;
+    const checkSession = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated && data.user && isMounted) {
+            setIsAuthenticated(true);
+            setCurrentUser(data.user);
+            fetchBookings(true);
+            setIsCheckingAuth(false);
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // Seamless migration fallback for legacy local tokens
+      if (typeof window !== "undefined") {
+        const storedToken = localStorage.getItem("vvotel_admin_token");
+        if (storedToken === "authorized_manager_2052") {
+          try {
+            const loginRes = await fetch("/api/auth/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ passcode: "2052", remember: true }),
+            });
+            if (loginRes.ok) {
+              const loginData = await loginRes.json();
+              if (loginData.success && loginData.user && isMounted) {
+                setIsAuthenticated(true);
+                setCurrentUser(loginData.user);
+                fetchBookings(true);
+                setIsCheckingAuth(false);
+                return;
+              }
+            }
+          } catch (e) {}
+        }
       }
-      setIsCheckingAuth(false);
-    }
+
+      if (isMounted) {
+        setIsAuthenticated(false);
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkSession();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasscodeError("");
+    setIsLoggingIn(true);
 
-    const clean = passcode.trim();
-    if (
-      clean === "2052" ||
-      clean === "vvotel2026" ||
-      clean === "admin2052" ||
-      clean === "vvotel@admin"
-    ) {
-      setIsAuthenticated(true);
-      if (rememberLogin && typeof window !== "undefined") {
-        localStorage.setItem("vvotel_admin_token", "authorized_manager_2052");
+    try {
+      const clean = passcode.trim();
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passcode: clean, remember: rememberLogin }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.user) {
+        setIsAuthenticated(true);
+        setCurrentUser(data.user);
+        if (rememberLogin && typeof window !== "undefined") {
+          localStorage.setItem("vvotel_admin_token", "authorized_manager_2052");
+        }
+        fetchBookings(true);
+      } else {
+        setPasscodeError(data.error || data.message || t.invalidCodeError);
       }
-      fetchBookings(true);
-    } else {
+    } catch (err: any) {
       setPasscodeError(t.invalidCodeError);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (e) {}
     if (typeof window !== "undefined") {
       localStorage.removeItem("vvotel_admin_token");
     }
     setIsAuthenticated(false);
+    setCurrentUser(null);
     setPasscode("");
   };
 
@@ -630,6 +695,10 @@ export default function AdminPage() {
     if (isInitial) setLoading(true);
     try {
       const res = await fetch("/api/bookings", { cache: "no-store" });
+      if (res.status === 401) {
+        setIsAuthenticated(false);
+        return;
+      }
       const data = await res.json();
       let serverList: BookingRecord[] = [];
       if (data.success && Array.isArray(data.bookings)) {
@@ -1319,10 +1388,15 @@ export default function AdminPage() {
               {/* Enter Button */}
               <button
                 type="submit"
-                className="w-full mt-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-md shadow-amber-900/10 hover:shadow-lg transition-all flex items-center justify-center space-x-2"
+                disabled={isLoggingIn}
+                className="w-full mt-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-md shadow-amber-900/10 hover:shadow-lg transition-all flex items-center justify-center space-x-2 disabled:opacity-60"
               >
-                <LogIn className="w-4 h-4" />
-                <span>{t.enterAdminBtn}</span>
+                {isLoggingIn ? (
+                  <RefreshCw className="w-4 h-4 animate-spin text-amber-200" />
+                ) : (
+                  <LogIn className="w-4 h-4" />
+                )}
+                <span>{isLoggingIn ? (lang === "km" ? "កំពុងផ្ទៀងផ្ទាត់..." : "Verifying...") : t.enterAdminBtn}</span>
               </button>
             </form>
 
@@ -1527,6 +1601,14 @@ export default function AdminPage() {
               <Globe className="w-4 h-4 text-amber-700 shrink-0" />
               <span className="hidden 2xl:inline font-bold">{lang === "km" ? "EN" : "ខ្មែរ"}</span>
             </button>
+
+            {/* Authenticated Role Badge */}
+            {currentUser && (
+              <div className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 bg-gradient-to-r from-amber-50 to-amber-100/80 border border-amber-300/70 rounded-xl text-[11px] font-bold text-amber-900 shadow-sm shrink-0">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
+                <span className="uppercase tracking-wider">{currentUser.role.replace("_", " ")}</span>
+              </div>
+            )}
 
             {/* 11. Logout */}
             <button

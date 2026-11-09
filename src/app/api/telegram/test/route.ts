@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { sendTelegramTestAlert, syncTelegramChatIds } from "@/lib/telegram";
+import { verifyAuth } from "@/lib/auth";
 
-export async function POST() {
+export const dynamic = "force-dynamic";
+
+export async function POST(request: Request) {
+  const auth = await verifyAuth(request, "telegram:manage");
+  if (!auth.authorized) {
+    return auth.errorResponse!;
+  }
+
   try {
     const result = await sendTelegramTestAlert();
     return NextResponse.json({
@@ -19,7 +27,12 @@ export async function POST() {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const auth = await verifyAuth(request, "telegram:manage");
+  if (!auth.authorized) {
+    return auth.errorResponse!;
+  }
+
   try {
     const chatIds = await syncTelegramChatIds();
     return NextResponse.json({

@@ -8,15 +8,26 @@ import {
   filterBookingsByPeriod,
   ReportPeriod,
 } from "@/lib/reports";
+import { verifyAuth } from "@/lib/auth";
+import { logAuditEvent } from "@/lib/auditLog";
+import { getClientIp } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
 async function handleReportRequest(
+  request: NextRequest,
   format: string,
   period: ReportPeriod,
   providedBookings?: BookingRecord[],
   refDateStr?: string
 ) {
+  // Authorize report generation: Manager or higher required
+  const auth = await verifyAuth(request, "reports:generate");
+  if (!auth.authorized) {
+    return auth.errorResponse!;
+  }
+
+  const ip = getClientIp(request);
   const refDate = refDateStr ? new Date(refDateStr) : new Date();
   const dateInfo = getOfficialKhmerDate(refDate);
 
@@ -35,6 +46,13 @@ async function handleReportRequest(
   } else {
     bookings = getAllBookings();
   }
+
+  await logAuditEvent(
+    "REPORT_GENERATED",
+    { username: auth.user?.username, role: auth.user?.role, ip },
+    "SUCCESS",
+    { format, period, totalRecords: bookings.length }
+  );
 
   // 1. DOCX FORMAT
   if (format === "docx" || format === "doc" || format === "word") {
@@ -124,7 +142,7 @@ export async function GET(request: NextRequest) {
     const period = ((searchParams.get("period") || "all").toLowerCase()) as ReportPeriod;
     const refDate = searchParams.get("date") || undefined;
 
-    return await handleReportRequest(format, period, undefined, refDate);
+    return await handleReportRequest(request, format, period, undefined, refDate);
   } catch (error) {
     console.error("Failed to generate report (GET):", error);
     return NextResponse.json(
@@ -142,7 +160,7 @@ export async function POST(request: NextRequest) {
     const providedBookings = Array.isArray(body.bookings) ? body.bookings : undefined;
     const refDate = body.date || undefined;
 
-    return await handleReportRequest(format, period, providedBookings, refDate);
+    return await handleReportRequest(request, format, period, providedBookings, refDate);
   } catch (error) {
     console.error("Failed to generate report (POST):", error);
     return NextResponse.json(

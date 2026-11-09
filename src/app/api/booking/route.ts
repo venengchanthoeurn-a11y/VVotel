@@ -1,8 +1,23 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { getSiteSettings } from "@/lib/settings-server";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const ip = getClientIp(request);
+
+    // Rate limiting: 60 inquiries per minute per IP
+    const rateCheck = await checkRateLimit(`rate_inquiry:${ip}`, 60, 60);
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        { success: false, message: "Too many rate inquiries. Please wait." },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json().catch(() => ({}));
     const {
       checkIn,
       checkOut,
@@ -21,15 +36,22 @@ export async function POST(request: Request) {
       );
     }
 
-    // Rate calculation
-    const basePricePerNight = 120; // USD
-    const nights = Math.max(
-      1,
-      Math.ceil(
-        (new Date(checkOut).getTime() - new Date(checkIn).getTime()) /
-          (1000 * 60 * 60 * 24)
-      ) || 1
+    const inTime = new Date(checkIn).getTime();
+    const outTime = new Date(checkOut).getTime();
+    if (isNaN(inTime) || isNaN(outTime) || outTime <= inTime) {
+      return NextResponse.json(
+        { success: false, message: "Invalid check-in/check-out dates" },
+        { status: 400 }
+      );
+    }
+
+    const nights = Math.min(90, Math.max(1, Math.ceil((outTime - inTime) / (1000 * 60 * 60 * 24))));
+    const settings = getSiteSettings();
+    const matchedRoom = settings.rooms.find(
+      (r) => r.id.toLowerCase() === roomType.toLowerCase() || r.nameEn.toLowerCase().includes(roomType.toLowerCase())
     );
+
+    const basePricePerNight = matchedRoom ? matchedRoom.basePrice : 120;
 
     let discountPercent = 0;
     let loyaltyTier = "Standard Guest";
@@ -42,7 +64,8 @@ export async function POST(request: Request) {
       loyaltyTier = "Promo Special (10% Off)";
     }
 
-    const subtotal = basePricePerNight * nights * Number(rooms);
+    const roomQty = Math.max(1, Math.min(10, Number(rooms) || 1));
+    const subtotal = basePricePerNight * nights * roomQty;
     const discountAmount = (subtotal * discountPercent) / 100;
     const total = subtotal - discountAmount;
     const bookingRef = `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -50,11 +73,11 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       bookingReference: bookingRef,
-      hotel: "VVotel Kampong Cham Riverside Hotel",
+      hotel: settings.hotelNameEn || "VVotel Kampong Cham Riverside Hotel",
       roomType,
       nights,
-      rooms: Number(rooms),
-      guests: { adults: Number(adults), children: Number(children) },
+      rooms: roomQty,
+      guests: { adults: Number(adults) || 2, children: Number(children) || 0 },
       pricing: {
         currency: "USD",
         baseRate: basePricePerNight,

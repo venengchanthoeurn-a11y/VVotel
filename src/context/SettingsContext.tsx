@@ -124,12 +124,14 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                     },
                   };
 
-                  // Re-sync local user customizations to server container in background
-                  fetch("/api/settings", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(activeSettings),
-                  }).catch(() => {});
+                  // Re-sync local user customizations to server container in background if privileged
+                  if (data.isPrivileged) {
+                    fetch("/api/settings", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(activeSettings),
+                    }).catch(() => {});
+                  }
                 } else if (serverIsCustomized && serverTime > localTime) {
                   activeSettings = {
                     ...data.settings,

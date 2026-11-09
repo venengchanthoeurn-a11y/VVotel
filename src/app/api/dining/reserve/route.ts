@@ -1,9 +1,24 @@
 import { NextResponse } from "next/server";
 import { createBooking } from "@/lib/bookings";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { logAuditEvent } from "@/lib/auditLog";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const ip = getClientIp(request);
+
+    // Rate limiting: 20 dining reservations per minute per IP
+    const rateCheck = await checkRateLimit(`dining:${ip}`, 20, 60);
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        { success: false, message: "Too many reservation requests. Please wait." },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json().catch(() => ({}));
     const {
       venueId,
       venueNameKm,
@@ -22,9 +37,9 @@ export async function POST(request: Request) {
     const newDiningReservation = await createBooking({
       id: ref,
       bookingCategory: "DINING",
-      guestName: guestName || "Dining Guest",
-      phone: guestPhone || "+855 12 345 678",
-      email: guestEmail || "dining@vvotel.com",
+      guestName: (guestName || "").trim() || "Dining Guest",
+      phone: (guestPhone || "").trim() || "+855 12 345 678",
+      email: (guestEmail || "").trim() || "dining@vvotel.com",
       country: "Cambodia",
       specialRequests: specialRequests || "Window table with Mekong River view",
       roomType: venueId || "dining-table",
@@ -40,7 +55,7 @@ export async function POST(request: Request) {
       checkInTime: resTime || "19:00",
       checkOutTime: "",
       nights: 0,
-      adults: Number(guestCount) || 2,
+      adults: Math.max(1, Math.min(50, Number(guestCount) || 2)),
       children: 0,
       roomCount: 1,
       roomNumber: `Table ${Math.floor(1 + Math.random() * 20)}`,
@@ -52,15 +67,26 @@ export async function POST(request: Request) {
       stayStatus: "CONFIRMED",
     });
 
+    await logAuditEvent(
+      "BOOKING_CREATED",
+      { ip },
+      "SUCCESS",
+      {
+        bookingId: ref,
+        category: "DINING",
+        venue: venueNameEn || venueId,
+        guestCount: newDiningReservation.adults,
+      }
+    );
+
     return NextResponse.json({
       success: true,
       booking: newDiningReservation,
       message: "Dining reservation created and Telegram alert dispatched successfully",
     });
   } catch (error) {
-    console.error("Failed to process dining reservation:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to reserve dining table" },
+      { success: false, message: "Failed to create dining reservation" },
       { status: 500 }
     );
   }

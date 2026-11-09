@@ -1,17 +1,31 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getSiteSettings } from "@/lib/settings-server";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
-    const { amount, bookingRef, guestName } = await request.json();
+    const ip = getClientIp(request);
+
+    // Rate limiting: max 30 KHQR generation requests per minute per IP
+    const rateCheck = await checkRateLimit(`khqr:${ip}`, 30, 60);
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        { success: false, error: "RATE_LIMIT", message: "Too many KHQR requests. Please wait." },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const { amount, bookingRef, guestName } = body;
     const settings = getSiteSettings();
 
-    const amt = Number(amount) || 120;
+    const amt = Math.max(0.01, Number(amount) || 120);
     const riels = Math.round(amt * 4100);
-    const ref = bookingRef || `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`;
+    const cleanRef = (bookingRef || "").toString().replace(/[^a-zA-Z0-9_-]/g, "");
+    const ref = cleanRef || `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`;
 
     // EMVCo / Bakong standard CRC16-CCITT (Polynomial 0x1021, Init 0xFFFF)
     const computeCrc16 = (str: string): string => {

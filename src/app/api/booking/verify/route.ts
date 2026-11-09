@@ -1,13 +1,33 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import { createBooking } from "@/lib/bookings";
+import { createBooking, getBookingById, checkRoomAvailability } from "@/lib/bookings";
 import { getSiteSettings } from "@/lib/settings-server";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { logAuditEvent } from "@/lib/auditLog";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const ip = getClientIp(request);
+
+    // 1. Rate limiting: max 20 verify payment requests per minute per IP
+    const rateCheck = await checkRateLimit(`booking_verify:${ip}`, 20, 60);
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "RATE_LIMIT_EXCEEDED",
+          message: {
+            km: "ការស្នើសុំផ្ទៀងផ្ទាត់ច្រើនដងពេក! សូមរង់ចាំមួយភ្លែត។",
+            en: "Too many verification attempts. Please wait a moment.",
+          },
+        },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json().catch(() => ({}));
     const settings = getSiteSettings();
 
     const {
@@ -43,8 +63,90 @@ export async function POST(request: Request) {
       depositAmountUSD,
     } = body;
 
-    const amt = Number(amountUSD) || 125;
-    const ref = bookingRef || `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`;
+    const cleanRef = (bookingRef || "").toString().replace(/[^a-zA-Z0-9_-]/g, "");
+    const ref = cleanRef || `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    // 2. Idempotency Check: Return existing confirmed booking if already processed
+    const existingBooking = getBookingById(ref);
+    if (existingBooking) {
+      return NextResponse.json({
+        success: true,
+        status: existingBooking.paymentStatus,
+        bookingRef: existingBooking.id,
+        transactionId: existingBooking.transactionId,
+        paidAt: existingBooking.createdAt,
+        booking: existingBooking,
+        paymentMethod: existingBooking.paymentMethod,
+        amountUSD: existingBooking.totalAmountUSD.toFixed(2),
+        amountKHR: existingBooking.totalAmountKHR.toLocaleString(),
+        idempotent: true,
+        message: {
+          en: "Booking already verified and active.",
+          km: "ការកក់ត្រូវបានផ្ទៀងផ្ទាត់ និងកត់ត្រារួចរាល់ហើយ។",
+        },
+      });
+    }
+
+    // 3. Date & Duration Validation
+    const cIn = checkIn || new Date().toISOString().split("T")[0];
+    const cOut = checkOut || new Date(Date.now() + 86400000).toISOString().split("T")[0];
+    const inTime = new Date(cIn).getTime();
+    const outTime = new Date(cOut).getTime();
+
+    if (isNaN(inTime) || isNaN(outTime) || outTime <= inTime) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "INVALID_STAY_DATES",
+          message: {
+            km: "កាលបរិច្ឆេទ Check-in និង Check-out មិនត្រឹមត្រូវឡើយ!",
+            en: "Invalid check-in and check-out dates.",
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    const calculatedNights = Math.min(90, Math.max(1, Math.ceil((outTime - inTime) / (1000 * 60 * 60 * 24))));
+    const roomQty = Math.max(1, Number(roomCount) || 1);
+    const numAdults = Math.max(1, Math.min(20, Number(adults) || 2));
+    const numChildren = Math.max(0, Math.min(10, Number(children) || 0));
+
+    // 4. Server-Side Price Calculation & Price Tampering Protection
+    const matchedRoom = settings.rooms.find(
+      (r) =>
+        r.id.toLowerCase() === (roomType || "").toLowerCase() ||
+        (roomNameEn && r.nameEn.toLowerCase() === roomNameEn.toLowerCase())
+    ) || settings.rooms[0];
+
+    const baseRate = matchedRoom ? matchedRoom.basePrice : 125;
+    const breakfastPrice = settings.breakfastPriceUSD || 15;
+    const calculatedBreakfast = includeBreakfast ? breakfastPrice * calculatedNights * numAdults : 0;
+    const serverExpectedTotal = baseRate * calculatedNights * roomQty + calculatedBreakfast;
+
+    // Minimum acceptable client amount: within 20% discount bounds
+    const clientProvidedAmt = Number(amountUSD);
+    let amt = serverExpectedTotal;
+    if (clientProvidedAmt && clientProvidedAmt >= serverExpectedTotal * 0.8 && clientProvidedAmt <= serverExpectedTotal * 1.5) {
+      amt = clientProvidedAmt;
+    }
+
+    // 5. Concurrency & Double Booking Protection
+    const targetRoomId = matchedRoom?.id || roomType || "superior-river";
+    const availCheck = checkRoomAvailability(targetRoomId, cIn, cOut, roomQty);
+    if (!availCheck.available) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "ROOM_CAPACITY_EXCEEDED",
+          message: {
+            km: "ប្រភេទបន្ទប់នេះត្រូវបានកក់ពេញអស់ហើយសម្រាប់កាលបរិច្ឆេទនេះ! សូមជ្រើសរើសប្រភេទបន្ទប់ផ្សេង ឬផ្លាស់ប្តូរកាលបរិច្ឆេទ។",
+            en: "Selected room type is fully booked for these dates. Please choose different dates or another room category.",
+          },
+        },
+        { status: 409 }
+      );
+    }
 
     let finalPaymentStatus: "PAID" | "GUARANTEED" | "PARTIALLY_PAID" = "PAID";
     let bankDebitDetails: any = null;
@@ -137,7 +239,6 @@ export async function POST(request: Request) {
     // =========================================================================
     else if (paymentMethod === "CARD_3DSECURE_V2" || paymentMethod === "card") {
       const cleanOtp = (otpCode || "").toString().replace(/\D/g, "");
-      // Bank standard: Must enter a valid 6-digit Security PIN / OTP
       if (!otpVerified || cleanOtp.length !== 6) {
         return NextResponse.json(
           {
@@ -152,7 +253,6 @@ export async function POST(request: Request) {
         );
       }
 
-      // Execute Electronic Card Account Debit & Settlement
       const authCode = `AUTH-${Math.floor(100000 + Math.random() * 900000)}`;
       const rrn = `RRN-${Date.now().toString().slice(-12)}`;
       const traceNo = `TRC-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -179,9 +279,7 @@ export async function POST(request: Request) {
     // 3. PAYMENT GATEWAY: PAY AT HOTEL (Strict Bank Guarantee Protocol)
     // =========================================================================
     else if (paymentMethod === "PAY_AT_HOTEL" || paymentMethod === "pay_at_hotel" || paymentMethod === "hotel") {
-      // Hotel banking standard: MUST be backed by a verified room guarantee!
       if (hotelGuaranteeType === "BAKONG_DEPOSIT") {
-        // Customer paid deposit (e.g. $10) via Bakong KHQR
         const depAmt = Number(depositAmountUSD) || 10;
         if (settings.strictBakongVerification && (!manualApprovalCode || manualApprovalCode.trim().length < 4)) {
           if (!md5Hash && !bakongVerifiedData) {
@@ -209,7 +307,6 @@ export async function POST(request: Request) {
           settledToMerchant: settings.bankAccountName,
         };
       } else if (hotelGuaranteeType === "CARD_PREAUTH") {
-        // Customer provided card pre-authorization with 6-digit security PIN
         const cleanOtp = (otpCode || "").toString().replace(/\D/g, "");
         if (!otpVerified || cleanOtp.length !== 6) {
           return NextResponse.json(
@@ -237,7 +334,6 @@ export async function POST(request: Request) {
           bankResponse: "00 - PRE-AUTH APPROVED & HOLD SECURED",
         };
       } else {
-        // No bank guarantee provided: STRICTLY REJECT according to hotel standards!
         return NextResponse.json(
           {
             success: false,
@@ -274,15 +370,15 @@ export async function POST(request: Request) {
       phone,
       country,
       specialRequests,
-      roomType: roomType || "superior-river",
-      roomNameKm: roomNameKm || "បន្ទប់ស៊ុភើរៀ ទេសភាពទន្លេមេគង្គ",
-      roomNameEn: roomNameEn || "Superior Room River View",
-      roomCount: Number(roomCount) || 1,
-      checkIn: checkIn || "2026-11-05",
-      checkOut: checkOut || "2026-11-08",
-      nights: Number(nights) || 1,
-      adults: Number(adults) || 2,
-      children: Number(children) || 0,
+      roomType: targetRoomId,
+      roomNameKm: roomNameKm || matchedRoom?.nameKm || "បន្ទប់ស៊ុភើរៀ ទេសភាពទន្លេមេគង្គ",
+      roomNameEn: roomNameEn || matchedRoom?.nameEn || "Superior Room River View",
+      roomCount: roomQty,
+      checkIn: cIn,
+      checkOut: cOut,
+      nights: calculatedNights,
+      adults: numAdults,
+      children: numChildren,
       includeBreakfast: Boolean(includeBreakfast),
       totalAmountUSD: amt,
       totalAmountKHR: Math.round(amt * 4100),
@@ -298,6 +394,20 @@ export async function POST(request: Request) {
       tamperProofHash: `sha256:${cryptographicSignature.slice(0, 32)}...`,
       stayStatus: "CONFIRMED",
     });
+
+    await logAuditEvent(
+      "BOOKING_CREATED",
+      { ip },
+      "SUCCESS",
+      {
+        bookingRef: ref,
+        guestName: recordedBooking.guestName,
+        roomType: recordedBooking.roomType,
+        totalAmountUSD: amt,
+        paymentMethod: recordedBooking.paymentMethod,
+        paymentStatus: recordedBooking.paymentStatus,
+      }
+    );
 
     return NextResponse.json({
       success: true,

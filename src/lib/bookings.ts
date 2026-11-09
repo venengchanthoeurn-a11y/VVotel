@@ -1,7 +1,9 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import os from "os";
 import { sendTelegramBookingAlert } from "./telegram";
+import { getSiteSettings } from "./settings-server";
 
 export interface BookingRecord {
   id: string;
@@ -47,8 +49,6 @@ export interface BookingRecord {
   reservationDate?: string;
   reservationTime?: string;
 }
-
-import os from "os";
 
 declare global {
   var _vvotelBookingsCache: BookingRecord[] | undefined;
@@ -115,17 +115,74 @@ export function saveAllBookings(bookings: BookingRecord[]) {
 }
 
 export function getBookingById(id: string): BookingRecord | null {
+  if (!id) return null;
   const bookings = getAllBookings();
   return bookings.find((b) => b.id.toLowerCase() === id.toLowerCase()) || null;
+}
+
+/**
+ * Concurrency & Double-Booking Prevention:
+ * Check if the requested room type has available physical inventory for the target date range.
+ */
+export function checkRoomAvailability(
+  roomType: string,
+  checkIn: string,
+  checkOut: string,
+  requestedCount: number,
+  excludeBookingId?: string
+): { available: boolean; bookedCount: number; maxAvailable: number } {
+  const settings = getSiteSettings();
+  const roomSetting = settings.rooms.find(
+    (r) => r.id.toLowerCase() === roomType.toLowerCase() || r.nameEn.toLowerCase().includes(roomType.toLowerCase())
+  );
+
+  const maxAvailable = roomSetting ? roomSetting.availableCount : 10;
+  const bookings = getAllBookings();
+
+  const reqStart = new Date(checkIn).getTime();
+  const reqEnd = new Date(checkOut).getTime();
+
+  let bookedCount = 0;
+  for (const b of bookings) {
+    if (excludeBookingId && b.id.toLowerCase() === excludeBookingId.toLowerCase()) continue;
+    if (b.stayStatus === "CANCELLED") continue;
+    if (b.bookingCategory === "DINING") continue;
+
+    // Check if room type matches
+    const matchesType =
+      b.roomType.toLowerCase() === roomType.toLowerCase() ||
+      (roomSetting && b.roomNameEn.toLowerCase() === roomSetting.nameEn.toLowerCase());
+
+    if (matchesType) {
+      const bStart = new Date(b.checkIn).getTime();
+      const bEnd = new Date(b.checkOut).getTime();
+      // Overlap condition: start < reqEnd && end > reqStart
+      if (bStart < reqEnd && bEnd > reqStart) {
+        bookedCount += Number(b.roomCount) || 1;
+      }
+    }
+  }
+
+  return {
+    available: bookedCount + requestedCount <= maxAvailable,
+    bookedCount,
+    maxAvailable,
+  };
 }
 
 export async function createBooking(data: Partial<BookingRecord>): Promise<BookingRecord> {
   const bookings = getAllBookings();
   const id = data.id || `VVT-KC-${Math.floor(100000 + Math.random() * 900000)}`;
 
+  // Idempotency check: if booking already exists with this ID, return it without duplicate creation
+  const existing = bookings.find((b) => b.id.toLowerCase() === id.toLowerCase());
+  if (existing) {
+    return existing;
+  }
+
   const nights = Math.max(1, Number(data.nights) || 1);
   const basePrice = Number(data.basePrice) || 125;
-  const roomCount = Number(data.roomCount) || 1;
+  const roomCount = Math.max(1, Number(data.roomCount) || 1);
   const breakfastCost = data.includeBreakfast ? Number(data.breakfastCost) || 15 * nights * Number(data.adults || 2) : 0;
   const subtotal = basePrice * nights * roomCount + breakfastCost;
   const discount = Number(data.discount) || 0;

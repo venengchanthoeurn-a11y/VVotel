@@ -124,3 +124,4 @@ class SafeCacheService {
 }
 
 export const cache = new SafeCacheService();
+export const safeCache = cache;
