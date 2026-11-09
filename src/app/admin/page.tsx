@@ -1178,7 +1178,7 @@ export default function AdminPage() {
                 <span className="text-[11px] font-bold uppercase tracking-widest text-amber-300 block font-siemreap">
                   {lang === "km" ? settings.hotelTaglineKm : settings.hotelTaglineEn}
                 </span>
-                <h1 className="text-xl sm:text-2xl font-mool text-white tracking-normal mt-0.5">
+                <h1 className="text-xl sm:text-2xl font-bold font-siemreap text-white tracking-tight mt-0.5">
                   {lang === "km" ? settings.hotelNameKm : settings.hotelNameEn}
                 </h1>
                 <p className="text-xs text-amber-100/70 font-siemreap mt-0.5">
@@ -1196,14 +1196,14 @@ export default function AdminPage() {
               <span>{t.liveClockLabel} <strong>{currentTimeStr || "Loading..."}</strong></span>
             </div>
 
-            <div className="w-full overflow-visible py-1">
+            <div className="w-full py-1">
               <h2
-                className="text-xs sm:text-sm md:text-[15px] lg:text-[17px] xl:text-[20px] 2xl:text-[22px] font-mool text-white tracking-normal whitespace-nowrap overflow-visible leading-[2.3] py-2.5 block select-none"
+                className="text-lg sm:text-xl lg:text-2xl font-bold font-siemreap text-white tracking-tight leading-snug"
                 title={lang === "km" ? (settings.adminPortalTitleKm || t.showcaseTitle) : (settings.adminPortalTitleEn || t.showcaseTitle)}
               >
                 {lang === "km" ? (settings.adminPortalTitleKm || t.showcaseTitle) : (settings.adminPortalTitleEn || t.showcaseTitle)}
               </h2>
-              <p className="text-amber-300 font-serif italic text-xs sm:text-sm md:text-base mt-0.5 font-normal tracking-wide whitespace-nowrap overflow-visible">
+              <p className="text-amber-300 font-siemreap text-xs sm:text-sm mt-1 font-medium tracking-wide">
                 {t.showcaseSubtitle}
               </p>
             </div>
@@ -1319,7 +1319,7 @@ export default function AdminPage() {
                   ? (settings.adminPortalTitleKm || "VVotel Executive Security Portal")
                   : (settings.adminPortalTitleEn || "VVotel Executive Security Portal")}
               </span>
-              <h2 className="text-xl sm:text-2xl font-mool text-[#0c2340] tracking-normal">
+              <h2 className="text-xl sm:text-2xl font-bold font-siemreap text-[#0c2340] tracking-tight">
                 {t.securityGateTitle}
               </h2>
               <p className="text-xs text-gray-500 leading-relaxed font-siemreap">
@@ -1466,19 +1466,19 @@ export default function AdminPage() {
               />
             )}
 
-            {/* Hotel/Portal Title & Clock: Hidden on < 2xl to guarantee all 11 buttons fit without wrapping! */}
-            <div className="hidden 2xl:flex flex-col min-w-0">
+            {/* Hotel/Portal Title & Clock: Display cleanly with full title and font-siemreap */}
+            <div className="hidden xl:flex flex-col">
               <div className="flex items-center space-x-2">
-                <span className="font-mool text-base text-[#0c2340] tracking-normal truncate">
+                <span className="font-siemreap font-bold text-sm lg:text-base text-[#0c2340] tracking-tight whitespace-nowrap">
                   {lang === "km"
-                    ? (settings.adminPortalTitleKm || "VVotel PMS Admin Portal")
+                    ? (settings.adminPortalTitleKm || "ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ និងភោជនីយដ្ឋាន VVotel")
                     : (settings.adminPortalTitleEn || "VVotel Central PMS Admin Portal")}
                 </span>
                 <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">
                   Live System
                 </span>
               </div>
-              <p className="text-[11px] text-gray-500 flex items-center space-x-1.5 mt-0.5 font-siemreap truncate">
+              <p className="text-[11px] text-gray-500 flex items-center space-x-1.5 mt-0.5 font-siemreap whitespace-nowrap">
                 <span>{lang === "km" ? settings.hotelNameKm : settings.hotelNameEn}</span>
                 <span>•</span>
                 <span className="font-mono font-bold text-amber-800">{currentTimeStr}</span>
@@ -1650,26 +1650,26 @@ export default function AdminPage() {
       <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 flex-1 space-y-6 font-siemreap">
         {/* Real-time Dynamic Booking Alert Banner */}
         {newBookingAlert && (
-          <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 text-white p-4 rounded-2xl shadow-lg border border-amber-300 flex items-center justify-between animate-in slide-in-from-top-3 duration-300 font-siemreap">
-            <div className="flex items-center space-x-3.5">
-              <div className="w-10 h-10 rounded-xl bg-white text-amber-700 flex items-center justify-center font-bold shadow-md shrink-0">
+          <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 text-white p-4 rounded-2xl shadow-lg border border-amber-300 flex items-start sm:items-center justify-between gap-3 animate-in slide-in-from-top-3 duration-300 font-siemreap">
+            <div className="flex items-start sm:items-center space-x-3.5 min-w-0 flex-1">
+              <div className="w-10 h-10 rounded-xl bg-white text-amber-700 flex items-center justify-center font-bold shadow-md shrink-0 mt-0.5 sm:mt-0">
                 <Bell className="w-5 h-5 animate-bounce" />
               </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full shrink-0">
                     {newBookingAlert.category === "DINING"
                       ? (lang === "km" ? "🍽️ ការកក់តុអាហារថ្មី" : "🍽️ New Dining Booking")
                       : (lang === "km" ? "🛏️ ការកក់បន្ទប់ថ្មី" : "🛏️ New Room Booking")}
                   </span>
                   <span className="font-mono text-xs opacity-90">{newBookingAlert.id}</span>
                 </div>
-                <h4 className="font-bold text-sm sm:text-base mt-0.5">
+                <h4 className="font-bold text-sm sm:text-base mt-0.5 break-words leading-snug">
                   {lang === "km"
                     ? `ភ្ញៀវ ${newBookingAlert.guestName} បានកក់ ${newBookingAlert.title}`
                     : `Guest ${newBookingAlert.guestName} reserved ${newBookingAlert.title}`}
                 </h4>
-                <p className="text-[11px] text-amber-100">
+                <p className="text-[11px] text-amber-100 break-words mt-0.5">
                   {lang === "km"
                     ? "ទិន្នន័យត្រូវបានបញ្ជូនទៅកាន់ Telegram Bot (@vvotel_bot) និងបាន Update លើផ្ទាំងគ្រប់គ្រងរួចរាល់!"
                     : "Notification dispatched to Telegram Bot (@vvotel_bot) & updated on PMS!"}
@@ -1678,7 +1678,7 @@ export default function AdminPage() {
             </div>
             <button
               onClick={() => setNewBookingAlert(null)}
-              className="p-1.5 hover:bg-white/20 rounded-xl transition text-white"
+              className="p-1.5 hover:bg-white/20 rounded-xl transition text-white shrink-0 ml-2"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1864,7 +1864,7 @@ export default function AdminPage() {
                   {lastBackupTime ? `បម្រុងចុងក្រោយ៖ ${new Date(lastBackupTime).toLocaleTimeString("en-GB", { hour12: true })}` : "ដំណើរការជាប់ជានិច្ច"}
                 </span>
               </div>
-              <h4 className="font-mool text-xs sm:text-sm text-amber-300 mt-1">
+              <h4 className="font-siemreap font-bold text-sm sm:text-base text-amber-300 mt-1">
                 {lang === "km" ? "ប្រព័ន្ធរក្សាទុកទិន្នន័យបម្រុងស្វ័យប្រវត្តិ (Auto-Backup គ្រប់ពេលវេលា)" : "24/7 Continuous Data Backup Engine"}
               </h4>
               <p className="text-[11px] text-gray-300 mt-0.5 leading-relaxed">
@@ -2014,7 +2014,7 @@ export default function AdminPage() {
           <div className="p-4 border-b border-amber-200/60 bg-[#FAF8F4] flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center space-x-2">
               <Building className="w-4 h-4 text-amber-700" />
-              <h3 className="font-mool text-sm sm:text-base text-[#0c2340]">
+              <h3 className="font-siemreap font-bold text-sm sm:text-base text-[#0c2340]">
                 {t.tableHeading} ({filteredBookings.length})
               </h3>
             </div>
@@ -2281,7 +2281,7 @@ export default function AdminPage() {
             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div className="flex items-center space-x-2">
                 <Key className="w-5 h-5 text-amber-600" />
-                <h3 className="font-mool text-[#0c2340] text-sm sm:text-base">
+                <h3 className="font-siemreap font-bold text-[#0c2340] text-sm sm:text-base">
                   {checkInModalBooking.bookingCategory === "DINING" || checkInModalBooking.id.startsWith("DIN")
                     ? (lang === "km" ? "ទទួលភ្ញៀវចូលតុ & កំណត់លេខតុ" : "Seat Guest & Assign Table")
                     : (lang === "km" ? "Check-In ភ្ញៀវ & កំណត់លេខបន្ទប់" : "Check-In Guest & Assign Room")}
@@ -2351,7 +2351,7 @@ export default function AdminPage() {
             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div className="flex items-center space-x-2">
                 <Plus className="w-5 h-5 text-amber-600" />
-                <h3 className="font-mool text-[#0c2340] text-sm sm:text-base">
+                <h3 className="font-siemreap font-bold text-[#0c2340] text-sm sm:text-base">
                   {lang === "km" ? "បង្កើតការកក់ថ្មី (Walk-in / Phone Reservation)" : "New Reservation (Walk-in / Phone)"}
                 </h3>
               </div>
@@ -2573,7 +2573,7 @@ export default function AdminPage() {
                   V
                 </div>
                 <div>
-                  <h3 className="font-mool text-base sm:text-lg text-amber-300">
+                  <h3 className="font-siemreap font-bold text-base sm:text-lg text-amber-300">
                     {t.reportModalTitle}
                   </h3>
                   <p className="text-xs text-amber-100/80 mt-0.5">
@@ -2702,7 +2702,7 @@ export default function AdminPage() {
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-mool text-sm text-[#0c2340]">
+                      <h4 className="font-siemreap font-bold text-sm text-[#0c2340]">
                         {t.reportWordTitle} • {PERIOD_TITLES[selectedReportPeriod]?.km || ""}
                       </h4>
                       <p className="text-xs text-gray-600 mt-0.5">{t.reportWordDesc}</p>
@@ -2730,7 +2730,7 @@ export default function AdminPage() {
                       <FileSpreadsheet className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-mool text-sm text-[#0c2340]">
+                      <h4 className="font-siemreap font-bold text-sm text-[#0c2340]">
                         {t.reportExcelTitle} • {PERIOD_TITLES[selectedReportPeriod]?.km || ""}
                       </h4>
                       <p className="text-xs text-gray-600 mt-0.5">{t.reportExcelDesc}</p>
@@ -2758,7 +2758,7 @@ export default function AdminPage() {
                       <Printer className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-mool text-sm text-[#0c2340]">
+                      <h4 className="font-siemreap font-bold text-sm text-[#0c2340]">
                         {t.reportPdfTitle} • {PERIOD_TITLES[selectedReportPeriod]?.km || ""}
                       </h4>
                       <p className="text-xs text-gray-600 mt-0.5">{t.reportPdfDesc}</p>
@@ -2814,7 +2814,7 @@ export default function AdminPage() {
                   <Database className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
-                  <h3 className="font-mool text-sm sm:text-base text-amber-300">
+                  <h3 className="font-siemreap font-bold text-sm sm:text-base text-amber-300">
                     {lang === "km" ? "ប្រព័ន្ធរក្សាទុកទិន្នន័យបម្រុងស្វ័យប្រវត្តិ (24/7 Continuous Auto-Backup)" : "24/7 Continuous Auto-Backup & Recovery"}
                   </h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">

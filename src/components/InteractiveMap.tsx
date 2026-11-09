@@ -54,18 +54,18 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         zoomControl: true,
       });
 
-      // Add Google Maps Roadmap tile layer by default
-      const googleRoadTiles = L.tileLayer(
-        "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+      // Add high-resolution crisp Roadmap tile layer (CartoDB Voyager with full Kampong Cham details)
+      const roadTiles = L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
         {
-          attribution: '&copy; <a href="https://maps.google.com">Google Maps</a> | VVotel Kampong Cham',
+          attribution: '&copy; <a href="https://maps.google.com">Google Maps Data</a> &copy; OpenStreetMap | VVotel Kampong Cham',
           maxZoom: 20,
-          subdomains: ["mt0", "mt1", "mt2", "mt3"],
+          subdomains: ["a", "b", "c", "d"],
         }
       );
 
-      googleRoadTiles.addTo(map);
-      currentTileLayerRef.current = googleRoadTiles;
+      roadTiles.addTo(map);
+      currentTileLayerRef.current = roadTiles;
 
       // Add Hotel Marker (Gold luxury star pin)
       const hotelIcon = L.divIcon({
@@ -150,15 +150,17 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         zoomControl: true,
       });
 
-      const tileUrl =
-        type === "google-satellite"
-          ? "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
-          : "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
+      const isSat = type === "google-satellite";
+      const tileUrl = isSat
+        ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 
       const newLayer = L.tileLayer(tileUrl, {
-        attribution: '&copy; <a href="https://maps.google.com">Google Maps</a> | VVotel Kampong Cham',
+        attribution: isSat
+          ? '&copy; Esri &mdash; Satellite Imagery | VVotel Kampong Cham'
+          : '&copy; <a href="https://maps.google.com">Google Maps Data</a> &copy; OpenStreetMap | VVotel Kampong Cham',
         maxZoom: 20,
-        subdomains: ["mt0", "mt1", "mt2", "mt3"],
+        subdomains: isSat ? [] : ["a", "b", "c", "d"],
       });
       newLayer.addTo(map);
       currentTileLayerRef.current = newLayer;
@@ -175,15 +177,17 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       map.removeLayer(currentTileLayerRef.current);
     }
 
-    const tileUrl =
-      type === "google-satellite"
-        ? "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
-        : "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
+    const isSat = type === "google-satellite";
+    const tileUrl = isSat
+      ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+      : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 
     const newLayer = L.tileLayer(tileUrl, {
-      attribution: '&copy; <a href="https://maps.google.com">Google Maps</a> | VVotel Kampong Cham',
+      attribution: isSat
+        ? '&copy; Esri &mdash; Satellite Imagery | VVotel Kampong Cham'
+        : '&copy; <a href="https://maps.google.com">Google Maps Data</a> &copy; OpenStreetMap | VVotel Kampong Cham',
       maxZoom: 20,
-      subdomains: ["mt0", "mt1", "mt2", "mt3"],
+      subdomains: isSat ? [] : ["a", "b", "c", "d"],
     });
 
     newLayer.addTo(map);
@@ -311,15 +315,15 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               <h3 className="font-extrabold text-base text-white">
                 {lang === "km" ? "Google Maps ផែនទីអន្តរកម្មខេត្តកំពង់ចាម" : "Interactive Google Maps — Kampong Cham"}
               </h3>
-              <span className="text-[10px] bg-red-600 text-white font-bold px-2 py-0.5 rounded-full uppercase flex items-center space-x-1">
+              <span className="text-[10px] bg-emerald-600 text-white font-bold px-2.5 py-0.5 rounded-full uppercase flex items-center space-x-1 shadow-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span>Live Google Data</span>
+                <span>{lang === "km" ? "GPS ផែនទីផ្ទាល់" : "Verified GPS"}</span>
               </span>
             </div>
             <p className="text-xs text-gray-300">
               {lang === "km"
                 ? "ទិន្នន័យទីតាំងពិតប្រាកដក្នុងខេត្តកំពង់ចាម ភ្ជាប់ទៅកាន់ Google Maps និងការនាំផ្លូវផ្ទាល់"
-                : "Real verified coordinates & places in Kampong Cham with official Google Maps data"}
+                : "Real verified coordinates & places in Kampong Cham with official Google Maps directions"}
             </p>
           </div>
         </div>
@@ -397,9 +401,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             allowFullScreen
             src={`https://maps.google.com/maps?q=${
               activeDestination
-                ? encodeURIComponent(`${activeDestination.title.en}, Kampong Cham`)
+                ? `${activeDestination.latitude},${activeDestination.longitude}`
                 : `${HOTEL_INFO.latitude},${HOTEL_INFO.longitude}`
-            }&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+            }&hl=${lang === "km" ? "km" : "en"}&z=16&output=embed`}
             className="w-full h-full"
           />
           <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-lg border border-gray-200 flex flex-wrap items-center justify-between gap-2 z-20">

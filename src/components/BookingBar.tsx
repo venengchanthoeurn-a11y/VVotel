@@ -132,7 +132,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 85,
         size: "34 m²",
         bed: "1 King Bed or 2 Twins",
-        img: "/images/rooms/vv_standard_king.jpg",
+        img: "/images/rooms/vv_real_room_1280_5.jpg",
       },
       "superior-river": {
         nameEn: "Superior Room River View",
@@ -140,7 +140,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 125,
         size: "42 m²",
         bed: "1 King Bed / Balcony",
-        img: "/images/rooms/vv_superior_bed.jpg",
+        img: "/images/rooms/vv_google_maps_photo.jpg",
       },
       "executive-suite": {
         nameEn: "Executive Mekong Suite (1 Bedroom)",
@@ -156,7 +156,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 280,
         size: "95 m²",
         bed: "2 En-suite Bedrooms / Dining Area",
-        img: "/images/rooms/vv_family_space.jpg",
+        img: "/images/rooms/vv_executive_living.jpg",
       },
       "royal-family": {
         nameEn: "Royal Family River Suite (2 Bedroom)",
@@ -164,7 +164,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 280,
         size: "95 m²",
         bed: "2 En-suite Bedrooms / Dining Area",
-        img: "/images/rooms/vv_family_space.jpg",
+        img: "/images/rooms/vv_executive_living.jpg",
       },
     };
 

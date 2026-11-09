@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import {
@@ -110,11 +110,11 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         formSettings,
         clientBookings,
         "manual",
-        "ការបម្រុងទុកដោយដៃ (Manual Snapshot ដោយ Manager)"
+        "áž€áž¶ážšáž”áž˜áŸ’ážšáž»áž„áž‘áž»áž€ážŠáŸ„áž™ážŠáŸƒ (Manual Snapshot ážŠáŸ„áž™ Manager)"
       );
       setBackupNotice({
         type: "success",
-        msg: lang === "km" ? `បានបង្កើត Snapshot ដោយជោគជ័យ! (${snapshot.id})` : `Snapshot created! (${snapshot.id})`,
+        msg: lang === "km" ? `áž”áž¶áž“áž”áž„áŸ’áž€áž¾áž Snapshot ážŠáŸ„áž™áž‡áŸ„áž‚áž‡áŸáž™! (${snapshot.id})` : `Snapshot created! (${snapshot.id})`,
       });
       await loadSnapshots();
     } catch (e) {
@@ -142,7 +142,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
   const handleRestoreSnapshot = async (snapshot: BackupSnapshot) => {
     const confirmMsg = lang === "km"
-      ? `តើអ្នកពិតជាចង់ស្ដារទិន្នន័យពី Snapshot នេះមែនទេ? (${snapshot.timestamp})\nបន្ទប់: ${snapshot.stats.roomCount}, ម្ហូប: ${snapshot.stats.diningCount}, ទីតាំង: ${snapshot.stats.destinationCount}, ការកក់: ${snapshot.stats.bookingCount}`
+      ? `ážáž¾áž¢áŸ’áž“áž€áž–áž·ážáž‡áž¶áž…áž„áŸ‹ážŸáŸ’ážŠáž¶ážšáž‘áž·áž“áŸ’áž“áž“áŸáž™áž–áž¸ Snapshot áž“áŸáŸ‡áž˜áŸ‚áž“áž‘áŸ? (${snapshot.timestamp})\náž”áž“áŸ’áž‘áž”áŸ‹: ${snapshot.stats.roomCount}, áž˜áŸ’áž áž¼áž”: ${snapshot.stats.diningCount}, áž‘áž¸ážáž¶áŸ†áž„: ${snapshot.stats.destinationCount}, áž€áž¶ážšáž€áž€áŸ‹: ${snapshot.stats.bookingCount}`
       : `Restore this backup snapshot from ${snapshot.timestamp}?`;
     if (!confirm(confirmMsg)) return;
 
@@ -167,7 +167,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
       setBackupNotice({
         type: "success",
-        msg: lang === "km" ? "🎉 ស្ដារទិន្នន័យបានជោគជ័យពេញលេញ!" : "🎉 Data successfully restored!",
+        msg: lang === "km" ? "ðŸŽ‰ ážŸáŸ’ážŠáž¶ážšáž‘áž·áž“áŸ’áž“áž“áŸáž™áž”áž¶áž“áž‡áŸ„áž‚áž‡áŸáž™áž–áŸáž‰áž›áŸáž‰!" : "ðŸŽ‰ Data successfully restored!",
       });
       await refreshSettings();
       await loadSnapshots();
@@ -189,7 +189,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         const text = event.target?.result as string;
         const parsed: BackupSnapshot = JSON.parse(text);
         if (!parsed.settings) {
-          alert(lang === "km" ? "ឯកសារនេះមិនមែនជាទម្រង់ Backup ត្រឹមត្រូវទេ!" : "Invalid backup file format");
+          alert(lang === "km" ? "áž¯áž€ážŸáž¶ážšáž“áŸáŸ‡áž˜áž·áž“áž˜áŸ‚áž“áž‡áž¶áž‘áž˜áŸ’ážšáž„áŸ‹ Backup ážáŸ’ážšáž¹áž˜ážáŸ’ážšáž¼ážœáž‘áŸ!" : "Invalid backup file format");
           return;
         }
         await handleRestoreSnapshot(parsed);
@@ -209,7 +209,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      alert(lang === "km" ? "សូមជ្រើសរើសឯកសាររូបភាព (JPG, PNG, WebP)" : "Please select an image file (JPG, PNG, WebP)");
+      alert(lang === "km" ? "ážŸáž¼áž˜áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸáž¯áž€ážŸáž¶ážšážšáž¼áž”áž—áž¶áž– (JPG, PNG, WebP)" : "Please select an image file (JPG, PNG, WebP)");
       return;
     }
     const reader = new FileReader();
@@ -249,22 +249,22 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
     id: "",
     nameKm: "",
     nameEn: "",
-    categoryKm: "ប្រណីតភាព",
+    categoryKm: "áž”áŸ’ážšážŽáž¸ážáž—áž¶áž–",
     categoryEn: "Luxury",
     basePrice: 95,
     originalPrice: 120,
     sizeSqm: 38,
-    bedTypeKm: "គ្រែឃីង ១ ឬគ្រែទោល ២",
+    bedTypeKm: "áž‚áŸ’ážšáŸ‚ážƒáž¸áž„ áŸ¡ áž¬áž‚áŸ’ážšáŸ‚áž‘áŸ„áž› áŸ¢",
     bedTypeEn: "1 King or 2 Twin Beds",
     capacityAdults: 2,
     capacityChildren: 1,
     availableCount: 8,
-    viewKm: "ទេសភាពទន្លេមេគង្គ",
+    viewKm: "áž‘áŸážŸáž—áž¶áž–áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚",
     viewEn: "Mekong River View",
-    viewTypeKm: "ទេសភាពទន្លេមេគង្គ",
+    viewTypeKm: "áž‘áŸážŸáž—áž¶áž–áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚",
     viewTypeEn: "Mekong River View",
     imageUrl: "/images/rooms/vv_deluxe_double.jpg",
-    descriptionKm: "បន្ទប់ប្រណីតបំពាក់គ្រឿងសង្ហារិមទំនើប និងមានយ៉រគយគន់ទន្លេមេគង្គ។",
+    descriptionKm: "áž”áž“áŸ’áž‘áž”áŸ‹áž”áŸ’ážšážŽáž¸ážáž”áŸ†áž–áž¶áž€áŸ‹áž‚áŸ’ážšáž¿áž„ážŸáž„áŸ’áž áž¶ážšáž·áž˜áž‘áŸ†áž“áž¾áž” áž“áž·áž„áž˜áž¶áž“áž™áŸ‰ážšáž‚áž™áž‚áž“áŸ‹áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚áŸ”",
     descriptionEn: "Modern luxury room with private balcony overlooking the Mekong River.",
     enabled: true,
   });
@@ -285,7 +285,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
     const updated = [...formSettings.rooms];
     updated[editingRoomIndex] = {
       ...editingRoom,
-      viewKm: editingRoom.viewKm || editingRoom.viewTypeKm || "ទេសភាពទន្លេមេគង្គ",
+      viewKm: editingRoom.viewKm || editingRoom.viewTypeKm || "áž‘áŸážŸáž—áž¶áž–áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚",
       viewEn: editingRoom.viewEn || editingRoom.viewTypeEn || "Mekong River View",
     };
     const nextSettings = { ...formSettings, rooms: updated };
@@ -299,14 +299,14 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
   const handleAddRoom = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRoom.nameKm || !newRoom.nameEn) {
-      alert(lang === "km" ? "សូមបញ្ចូលឈ្មោះបន្ទប់ទាំងខ្មែរ និងអង់គ្លេស" : "Please enter room names");
+      alert(lang === "km" ? "ážŸáž¼áž˜áž”áž‰áŸ’áž…áž¼áž›ážˆáŸ’áž˜áŸ„áŸ‡áž”áž“áŸ’áž‘áž”áŸ‹áž‘áž¶áŸ†áž„ážáŸ’áž˜áŸ‚ážš áž“áž·áž„áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ" : "Please enter room names");
       return;
     }
     const roomId = newRoom.id || newRoom.nameEn.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     const roomToAdd: RoomSetting = {
       ...newRoom,
       id: roomId,
-      viewKm: newRoom.viewKm || newRoom.viewTypeKm || "ទេសភាពទន្លេមេគង្គ",
+      viewKm: newRoom.viewKm || newRoom.viewTypeKm || "áž‘áŸážŸáž—áž¶áž–áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚",
       viewEn: newRoom.viewEn || newRoom.viewTypeEn || "Mekong River View",
     };
     const nextSettings = {
@@ -320,22 +320,22 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       id: "",
       nameKm: "",
       nameEn: "",
-      categoryKm: "ប្រណីតភាព",
+      categoryKm: "áž”áŸ’ážšážŽáž¸ážáž—áž¶áž–",
       categoryEn: "Luxury",
       basePrice: 95,
       originalPrice: 120,
       sizeSqm: 38,
-      bedTypeKm: "គ្រែឃីង ១ ឬគ្រែទោល ២",
+      bedTypeKm: "áž‚áŸ’ážšáŸ‚ážƒáž¸áž„ áŸ¡ áž¬áž‚áŸ’ážšáŸ‚áž‘áŸ„áž› áŸ¢",
       bedTypeEn: "1 King or 2 Twin Beds",
       capacityAdults: 2,
       capacityChildren: 1,
       availableCount: 8,
-      viewKm: "ទេសភាពទន្លេមេគង្គ",
+      viewKm: "áž‘áŸážŸáž—áž¶áž–áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚",
       viewEn: "Mekong River View",
-      viewTypeKm: "ទេសភាពទន្លេមេគង្គ",
+      viewTypeKm: "áž‘áŸážŸáž—áž¶áž–áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚",
       viewTypeEn: "Mekong River View",
       imageUrl: "/images/rooms/vv_deluxe_double.jpg",
-      descriptionKm: "បន្ទប់ប្រណីតបំពាក់គ្រឿងសង្ហារិមទំនើប និងមានយ៉រគយគន់ទន្លេមេគង្គ។",
+      descriptionKm: "áž”áž“áŸ’áž‘áž”áŸ‹áž”áŸ’ážšážŽáž¸ážáž”áŸ†áž–áž¶áž€áŸ‹áž‚áŸ’ážšáž¿áž„ážŸáž„áŸ’áž áž¶ážšáž·áž˜áž‘áŸ†áž“áž¾áž” áž“áž·áž„áž˜áž¶áž“áž™áŸ‰ážšáž‚áž™áž‚áž“áŸ‹áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚áŸ”",
       descriptionEn: "Modern luxury room with private balcony overlooking the Mekong River.",
       enabled: true,
     });
@@ -343,7 +343,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
   const handleDeleteRoom = (index: number) => {
     const room = formSettings.rooms[index];
-    if (!confirm(lang === "km" ? `តើអ្នកពិតជាចង់លុបបន្ទប់ "${room.nameKm}" មែនទេ?` : `Delete room "${room.nameEn}"?`)) return;
+    if (!confirm(lang === "km" ? `ážáž¾áž¢áŸ’áž“áž€áž–áž·ážáž‡áž¶áž…áž„áŸ‹áž›áž»áž”áž”áž“áŸ’áž‘áž”áŸ‹ "${room.nameKm}" áž˜áŸ‚áž“áž‘áŸ?` : `Delete room "${room.nameEn}"?`)) return;
     const nextSettings = {
       ...formSettings,
       rooms: formSettings.rooms.filter((_, i) => i !== index),
@@ -358,18 +358,18 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
     id: "",
     nameKm: "",
     nameEn: "",
-    cuisineKm: "ម្ហូបខ្មែរ & អន្តរជាតិ",
+    cuisineKm: "áž˜áŸ’áž áž¼áž”ážáŸ’áž˜áŸ‚ážš & áž¢áž“áŸ’ážážšáž‡áž¶ážáž·",
     cuisineEn: "Khmer & International Cuisine",
-    hoursKm: "០៦:០០ - ២២:០០",
+    hoursKm: "áŸ áŸ¦:áŸ áŸ  - áŸ¢áŸ¢:áŸ áŸ ",
     hoursEn: "06:00 - 22:00 Daily",
-    dressCodeKm: "សម្លៀកបំពាក់សមរម្យ",
+    dressCodeKm: "ážŸáž˜áŸ’áž›áŸ€áž€áž”áŸ†áž–áž¶áž€áŸ‹ážŸáž˜ážšáž˜áŸ’áž™",
     dressCodeEn: "Smart Casual",
     priceRangeUSD: "$$ - $$$",
-    taglineKm: "រសជាតិប្រណីតមាត់ទន្លេមេគង្គ",
+    taglineKm: "ážšážŸáž‡áž¶ážáž·áž”áŸ’ážšážŽáž¸ážáž˜áž¶ážáŸ‹áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚",
     taglineEn: "Riverside fine dining experience",
-    descriptionKm: "ភោជនីយដ្ឋានផ្តល់ជូនម្ហូបឆ្ងាញ់ៗ និងស្រស់ៗ រួមជាមួយទេសភាពទន្លេមេគង្គដ៏ស្រស់បំព្រង។",
+    descriptionKm: "áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“áž•áŸ’ážáž›áŸ‹áž‡áž¼áž“áž˜áŸ’áž áž¼áž”áž†áŸ’áž„áž¶áž‰áŸ‹áŸ— áž“áž·áž„ážŸáŸ’ážšážŸáŸ‹áŸ— ážšáž½áž˜áž‡áž¶áž˜áž½áž™áž‘áŸážŸáž—áž¶áž–áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚ážŠáŸážŸáŸ’ážšážŸáŸ‹áž”áŸ†áž–áŸ’ážšáž„áŸ”",
     descriptionEn: "Offering gourmet dishes and fresh local flavors overlooking the majestic Mekong River.",
-    signatureDishesKm: ["អាម៉ុកត្រីមេគង្គ", "បង្កងអាំងទឹកត្រីកោះកុង"],
+    signatureDishesKm: ["áž¢áž¶áž˜áŸ‰áž»áž€ážáŸ’ážšáž¸áž˜áŸáž‚áž„áŸ’áž‚", "áž”áž„áŸ’áž€áž„áž¢áž¶áŸ†áž„áž‘áž¹áž€ážáŸ’ážšáž¸áž€áŸ„áŸ‡áž€áž»áž„"],
     signatureDishesEn: ["Mekong Fish Amok", "Grilled River Lobster"],
     imageUrl: "/images/rooms/vv_room_interior_1.jpg",
     enabled: true,
@@ -401,7 +401,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
   const handleAddDining = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDining.nameKm || !newDining.nameEn) {
-      alert(lang === "km" ? "សូមបញ្ចូលឈ្មោះភោជនីយដ្ឋាន/មុខម្ហូបទាំងខ្មែរ និងអង់គ្លេស" : "Please enter venue names");
+      alert(lang === "km" ? "ážŸáž¼áž˜áž”áž‰áŸ’áž…áž¼áž›ážˆáŸ’áž˜áŸ„áŸ‡áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“/áž˜áž»ážáž˜áŸ’áž áž¼áž”áž‘áž¶áŸ†áž„ážáŸ’áž˜áŸ‚ážš áž“áž·áž„áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ" : "Please enter venue names");
       return;
     }
     const diningId = newDining.id || newDining.nameEn.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -420,18 +420,18 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       id: "",
       nameKm: "",
       nameEn: "",
-      cuisineKm: "ម្ហូបខ្មែរ & អន្តរជាតិ",
+      cuisineKm: "áž˜áŸ’áž áž¼áž”ážáŸ’áž˜áŸ‚ážš & áž¢áž“áŸ’ážážšáž‡áž¶ážáž·",
       cuisineEn: "Khmer & International Cuisine",
-      hoursKm: "០៦:០០ - ២២:០០",
+      hoursKm: "áŸ áŸ¦:áŸ áŸ  - áŸ¢áŸ¢:áŸ áŸ ",
       hoursEn: "06:00 - 22:00 Daily",
-      dressCodeKm: "សម្លៀកបំពាក់សមរម្យ",
+      dressCodeKm: "ážŸáž˜áŸ’áž›áŸ€áž€áž”áŸ†áž–áž¶áž€áŸ‹ážŸáž˜ážšáž˜áŸ’áž™",
       dressCodeEn: "Smart Casual",
       priceRangeUSD: "$$ - $$$",
-      taglineKm: "រសជាតិប្រណីតមាត់ទន្លេមេគង្គ",
+      taglineKm: "ážšážŸáž‡áž¶ážáž·áž”áŸ’ážšážŽáž¸ážáž˜áž¶ážáŸ‹áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚",
       taglineEn: "Riverside fine dining experience",
-      descriptionKm: "ភោជនីយដ្ឋានផ្តល់ជូនម្ហូបឆ្ងាញ់ៗ និងស្រស់ៗ រួមជាមួយទេសភាពទន្លេមេគង្គដ៏ស្រស់បំព្រង។",
+      descriptionKm: "áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“áž•áŸ’ážáž›áŸ‹áž‡áž¼áž“áž˜áŸ’áž áž¼áž”áž†áŸ’áž„áž¶áž‰áŸ‹áŸ— áž“áž·áž„ážŸáŸ’ážšážŸáŸ‹áŸ— ážšáž½áž˜áž‡áž¶áž˜áž½áž™áž‘áŸážŸáž—áž¶áž–áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚ážŠáŸážŸáŸ’ážšážŸáŸ‹áž”áŸ†áž–áŸ’ážšáž„áŸ”",
       descriptionEn: "Offering gourmet dishes and fresh local flavors overlooking the majestic Mekong River.",
-      signatureDishesKm: ["អាម៉ុកត្រីមេគង្គ", "បង្កងអាំងទឹកត្រីកោះកុង"],
+      signatureDishesKm: ["áž¢áž¶áž˜áŸ‰áž»áž€ážáŸ’ážšáž¸áž˜áŸáž‚áž„áŸ’áž‚", "áž”áž„áŸ’áž€áž„áž¢áž¶áŸ†áž„áž‘áž¹áž€ážáŸ’ážšáž¸áž€áŸ„áŸ‡áž€áž»áž„"],
       signatureDishesEn: ["Mekong Fish Amok", "Grilled River Lobster"],
       imageUrl: "/images/rooms/vv_room_interior_1.jpg",
       enabled: true,
@@ -440,7 +440,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
   const handleDeleteDining = (index: number) => {
     const venue = (formSettings.dining || [])[index];
-    if (!confirm(lang === "km" ? `តើអ្នកពិតជាចង់លុប "${venue.nameKm}" មែនទេ?` : `Delete venue "${venue.nameEn}"?`)) return;
+    if (!confirm(lang === "km" ? `ážáž¾áž¢áŸ’áž“áž€áž–áž·ážáž‡áž¶áž…áž„áŸ‹áž›áž»áž” "${venue.nameKm}" áž˜áŸ‚áž“áž‘áŸ?` : `Delete venue "${venue.nameEn}"?`)) return;
     const nextSettings = {
       ...formSettings,
       dining: (formSettings.dining || []).filter((_, i) => i !== index),
@@ -463,7 +463,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
     nameKm: "",
     nameEn: "",
     category: "culture-local-life",
-    categoryNameKm: "វប្បធម៌ & ជីវភាពអ្នកស្រុក",
+    categoryNameKm: "ážœáž”áŸ’áž”áž’áž˜áŸŒ & áž‡áž¸ážœáž—áž¶áž–áž¢áŸ’áž“áž€ážŸáŸ’ážšáž»áž€",
     categoryNameEn: "Culture & Local Life",
     distanceKm: 2.5,
     travelTimeMinutes: 8,
@@ -560,7 +560,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
   };
 
   const handleDeleteDestination = (id: number) => {
-    if (!confirm(lang === "km" ? "តើអ្នកពិតជាចង់លុបទីតាំងនេះមែនទេ?" : "Delete this destination?")) return;
+    if (!confirm(lang === "km" ? "ážáž¾áž¢áŸ’áž“áž€áž–áž·ážáž‡áž¶áž…áž„áŸ‹áž›áž»áž”áž‘áž¸ážáž¶áŸ†áž„áž“áŸáŸ‡áž˜áŸ‚áž“áž‘áŸ?" : "Delete this destination?")) return;
     const nextSettings = {
       ...formSettings,
       destinations: formSettings.destinations.filter((d) => d.id !== id),
@@ -573,7 +573,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
   const handleAddDestination = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDest.nameKm || !newDest.nameEn) {
-      alert(lang === "km" ? "សូមបញ្ចូលឈ្មោះទីតាំងទាំងភាសាខ្មែរ និងអង់គ្លេស" : "Please enter location names");
+      alert(lang === "km" ? "ážŸáž¼áž˜áž”áž‰áŸ’áž…áž¼áž›ážˆáŸ’áž˜áŸ„áŸ‡áž‘áž¸ážáž¶áŸ†áž„áž‘áž¶áŸ†áž„áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš áž“áž·áž„áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ" : "Please enter location names");
       return;
     }
 
@@ -587,9 +587,9 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       nameKm: newDest.nameKm || "",
       nameEn: newDest.nameEn || "",
       category: newDest.category || "culture-local-life",
-      categoryNameKm: newDest.category === "beaches-nature" ? "ឆ្នេរខ្សាច់ & ធម្មជាតិ" :
-        newDest.category === "sports-activities" ? "កីឡា & សកម្មភាពផ្សងព្រេង" :
-        newDest.category === "restaurants" ? "ភោជនីយដ្ឋាន & ម្ហូបអាហារ" : "វប្បធម៌ & ជីវភាពអ្នកស្រុក",
+      categoryNameKm: newDest.category === "beaches-nature" ? "áž†áŸ’áž“áŸážšážáŸ’ážŸáž¶áž…áŸ‹ & áž’áž˜áŸ’áž˜áž‡áž¶ážáž·" :
+        newDest.category === "sports-activities" ? "áž€áž¸áž¡áž¶ & ážŸáž€áž˜áŸ’áž˜áž—áž¶áž–áž•áŸ’ážŸáž„áž–áŸ’ážšáŸáž„" :
+        newDest.category === "restaurants" ? "áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“ & áž˜áŸ’áž áž¼áž”áž¢áž¶áž áž¶ážš" : "ážœáž”áŸ’áž”áž’áž˜áŸŒ & áž‡áž¸ážœáž—áž¶áž–áž¢áŸ’áž“áž€ážŸáŸ’ážšáž»áž€",
       categoryNameEn: newDest.category === "beaches-nature" ? "Beaches & Nature" :
         newDest.category === "sports-activities" ? "Sports & Activities" :
         newDest.category === "restaurants" ? "Restaurants & Cafes" : "Culture & Local Life",
@@ -619,7 +619,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       nameKm: "",
       nameEn: "",
       category: "culture-local-life",
-      categoryNameKm: "វប្បធម៌ & ជីវភាពអ្នកស្រុក",
+      categoryNameKm: "ážœáž”áŸ’áž”áž’áž˜áŸŒ & áž‡áž¸ážœáž—áž¶áž–áž¢áŸ’áž“áž€ážŸáŸ’ážšáž»áž€",
       categoryNameEn: "Culture & Local Life",
       distanceKm: 2.5,
       travelTimeMinutes: 8,
@@ -644,12 +644,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       if (ok) {
         setSaveSuccessMsg(
           lang === "km"
-            ? "✅ ការកំណត់ត្រូវបានរក្សាទុក និង sync ទៅកាន់គេហទំព័រទាំងមូលដោយជោគជ័យ!"
-            : "✅ Settings successfully saved and synchronized across the entire website!"
+            ? "âœ… áž€áž¶ážšáž€áŸ†ážŽážáŸ‹ážáŸ’ážšáž¼ážœáž”áž¶áž“ážšáž€áŸ’ážŸáž¶áž‘áž»áž€ áž“áž·áž„ sync áž‘áŸ…áž€áž¶áž“áŸ‹áž‚áŸáž áž‘áŸ†áž–áŸážšáž‘áž¶áŸ†áž„áž˜áž¼áž›ážŠáŸ„áž™áž‡áŸ„áž‚áž‡áŸáž™!"
+            : "âœ… Settings successfully saved and synchronized across the entire website!"
         );
         setTimeout(() => setSaveSuccessMsg(""), 6000);
       } else {
-        alert(lang === "km" ? "មិនអាចរក្សាទុកការកំណត់បានទេ សូមព្យាយាមម្តងទៀត" : "Failed to save settings");
+        alert(lang === "km" ? "áž˜áž·áž“áž¢áž¶áž…ážšáž€áŸ’ážŸáž¶áž‘áž»áž€áž€áž¶ážšáž€áŸ†ážŽážáŸ‹áž”áž¶áž“áž‘áŸ ážŸáž¼áž˜áž–áŸ’áž™áž¶áž™áž¶áž˜áž˜áŸ’ážáž„áž‘áŸ€áž" : "Failed to save settings");
       }
     } catch (err) {
       console.error(err);
@@ -669,8 +669,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <h2 className="font-mool text-lg sm:text-xl text-[#0c2340]">
-                {lang === "km" ? "ការកំណត់ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ VVotel" : "VVotel System Settings Portal"}
+              <h2 className="font-siemreap font-bold text-lg sm:text-xl text-[#0c2340]">
+                {lang === "km" ? "áž€áž¶ážšáž€áŸ†ážŽážáŸ‹áž”áŸ’ážšáž–áŸáž“áŸ’áž’áž‚áŸ’ážšáž”áŸ‹áž‚áŸ’ážšáž„ážŸážŽáŸ’áž‹áž¶áž‚áž¶ážš VVotel" : "VVotel System Settings Portal"}
               </h2>
               <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
                 Dynamic Sync
@@ -678,7 +678,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             </div>
             <p className="text-xs text-gray-500 mt-0.5">
               {lang === "km"
-                ? "កំណត់ព័ត៌មាន Logo, ធនាគារ KHQR, តម្លៃបន្ទប់, ទីតាំងទេសចរណ៍ និងមុខងារវេបសាយទាំងអស់"
+                ? "áž€áŸ†ážŽážáŸ‹áž–áŸážáŸŒáž˜áž¶áž“ Logo, áž’áž“áž¶áž‚áž¶ážš KHQR, ážáž˜áŸ’áž›áŸƒáž”áž“áŸ’áž‘áž”áŸ‹, áž‘áž¸ážáž¶áŸ†áž„áž‘áŸážŸáž…ážšážŽáŸ áž“áž·áž„áž˜áž»ážáž„áž¶ážšážœáŸáž”ážŸáž¶áž™áž‘áž¶áŸ†áž„áž¢ážŸáŸ‹"
                 : "Manage hotel branding, logo, bank accounts, room pricing, tourist locations & feature toggles."}
             </p>
           </div>
@@ -698,8 +698,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             )}
             <span>
               {isSaving
-                ? (lang === "km" ? "កំពុងរក្សាទុក..." : "Saving...")
-                : (lang === "km" ? "រក្សាទុកការកំណត់ទាំងអស់ (Save All)" : "Save All Settings")}
+                ? (lang === "km" ? "áž€áŸ†áž–áž»áž„ážšáž€áŸ’ážŸáž¶áž‘áž»áž€..." : "Saving...")
+                : (lang === "km" ? "ážšáž€áŸ’ážŸáž¶áž‘áž»áž€áž€áž¶ážšáž€áŸ†ážŽážáŸ‹áž‘áž¶áŸ†áž„áž¢ážŸáŸ‹ (Save All)" : "Save All Settings")}
             </span>
           </button>
         </div>
@@ -724,14 +724,14 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       {/* Sub Tabs Pill Navigation */}
       <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
         {[
-          { key: "general", labelKm: "🏨 ព័ត៌មានទូទៅ & Logo", labelEn: "🏨 General & Logo" },
-          { key: "banking", labelKm: "🏦 ធនាគារ & Bakong KHQR", labelEn: "🏦 Banking & KHQR" },
-          { key: "rooms", labelKm: "🛏️ បន្ទប់ & តម្លៃស្នាក់នៅ", labelEn: "🛏️ Rooms & Pricing" },
-          { key: "dining", labelKm: "🍽️ អាហារ & ភោជនីយដ្ឋាន", labelEn: "🍽️ Dining & Venues" },
-          { key: "destinations", labelKm: "🗺️ ទីតាំងទេសចរណ៍ & ផែនទី", labelEn: "🗺️ Destinations & Map" },
-          { key: "features", labelKm: "🎛️ បើក/បិទ មុខងារប្រព័ន្ធ", labelEn: "🎛️ Feature Toggles" },
-          { key: "telegram", labelKm: "🤖 Telegram Bot", labelEn: "🤖 Telegram Bot" },
-          { key: "backup", labelKm: "💾 បម្រុងទុក & ស្ដារ (Auto Backup)", labelEn: "💾 Auto Backup & Restore" },
+          { key: "general", labelKm: "ðŸ¨ áž–áŸážáŸŒáž˜áž¶áž“áž‘áž¼áž‘áŸ… & Logo", labelEn: "ðŸ¨ General & Logo" },
+          { key: "banking", labelKm: "ðŸ¦ áž’áž“áž¶áž‚áž¶ážš & Bakong KHQR", labelEn: "ðŸ¦ Banking & KHQR" },
+          { key: "rooms", labelKm: "ðŸ›ï¸ áž”áž“áŸ’áž‘áž”áŸ‹ & ážáž˜áŸ’áž›áŸƒážŸáŸ’áž“áž¶áž€áŸ‹áž“áŸ…", labelEn: "ðŸ›ï¸ Rooms & Pricing" },
+          { key: "dining", labelKm: "ðŸ½ï¸ áž¢áž¶áž áž¶ážš & áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“", labelEn: "ðŸ½ï¸ Dining & Venues" },
+          { key: "destinations", labelKm: "ðŸ—ºï¸ áž‘áž¸ážáž¶áŸ†áž„áž‘áŸážŸáž…ážšážŽáŸ & áž•áŸ‚áž“áž‘áž¸", labelEn: "ðŸ—ºï¸ Destinations & Map" },
+          { key: "features", labelKm: "ðŸŽ›ï¸ áž”áž¾áž€/áž”áž·áž‘ áž˜áž»ážáž„áž¶ážšáž”áŸ’ážšáž–áŸáž“áŸ’áž’", labelEn: "ðŸŽ›ï¸ Feature Toggles" },
+          { key: "telegram", labelKm: "ðŸ¤– Telegram Bot", labelEn: "ðŸ¤– Telegram Bot" },
+          { key: "backup", labelKm: "ðŸ’¾ áž”áž˜áŸ’ážšáž»áž„áž‘áž»áž€ & ážŸáŸ’ážŠáž¶ážš (Auto Backup)", labelEn: "ðŸ’¾ Auto Backup & Restore" },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -752,12 +752,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       {activeTab === "general" && (
         <div className="bg-white border border-amber-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
           <div className="border-b border-gray-100 pb-4">
-            <h3 className="font-mool text-base sm:text-lg text-[#0c2340]">
-              {lang === "km" ? "ព័ត៌មានអត្តសញ្ញាណសណ្ឋាគារ & Logo" : "Hotel Branding, Contact & Logo"}
+            <h3 className="font-siemreap font-bold text-base sm:text-lg text-[#0c2340]">
+              {lang === "km" ? "áž–áŸážáŸŒáž˜áž¶áž“áž¢ážáŸ’ážážŸáž‰áŸ’áž‰áž¶ážŽážŸážŽáŸ’áž‹áž¶áž‚áž¶ážš & Logo" : "Hotel Branding, Contact & Logo"}
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
               {lang === "km"
-                ? "ព័ត៌មានទាំងនេះនឹងបង្ហាញនៅលើ Header, Footer, Hero, និងរបាយការណ៍រដ្ឋបាលទាំងអស់។"
+                ? "áž–áŸážáŸŒáž˜áž¶áž“áž‘áž¶áŸ†áž„áž“áŸáŸ‡áž“áž¹áž„áž”áž„áŸ’áž áž¶áž‰áž“áŸ…áž›áž¾ Header, Footer, Hero, áž“áž·áž„ážšáž”áž¶áž™áž€áž¶ážšážŽáŸážšážŠáŸ’áž‹áž”áž¶áž›áž‘áž¶áŸ†áž„áž¢ážŸáŸ‹áŸ”"
                 : "These properties are rendered on the Header, Footer, Hero, and Official Reports."}
             </p>
           </div>
@@ -766,7 +766,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Hotel Name KM */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "ឈ្មោះសណ្ឋាគារ (ភាសាខ្មែរ):" : "Hotel Name (Khmer):"}
+                {lang === "km" ? "ážˆáŸ’áž˜áŸ„áŸ‡ážŸážŽáŸ’áž‹áž¶áž‚áž¶ážš (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš):" : "Hotel Name (Khmer):"}
               </label>
               <input
                 type="text"
@@ -779,7 +779,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Hotel Name EN */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "ឈ្មោះសណ្ឋាគារ (ភាសាអង់គ្លេស):" : "Hotel Name (English):"}
+                {lang === "km" ? "ážˆáŸ’áž˜áŸ„áŸ‡ážŸážŽáŸ’áž‹áž¶áž‚áž¶ážš (áž—áž¶ážŸáž¶áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ):" : "Hotel Name (English):"}
               </label>
               <input
                 type="text"
@@ -792,13 +792,13 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Admin Portal Title KM */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "ចំណងជើង Admin Portal (ភាសាខ្មែរ):" : "Admin Portal Title (Khmer):"}
+                {lang === "km" ? "áž…áŸ†ážŽáž„áž‡áž¾áž„ Admin Portal (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš):" : "Admin Portal Title (Khmer):"}
               </label>
               <input
                 type="text"
                 value={formSettings.adminPortalTitleKm || ""}
                 onChange={(e) => handleFieldChange("adminPortalTitleKm", e.target.value)}
-                placeholder="ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារ និងភោជនីយដ្ឋាន VVotel"
+                placeholder="áž”áŸ’ážšáž–áŸáž“áŸ’áž’áž‚áŸ’ážšáž”áŸ‹áž‚áŸ’ážšáž„ážŸážŽáŸ’áž‹áž¶áž‚áž¶ážš áž“áž·áž„áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“ VVotel"
                 className="w-full bg-[#FAF8F4] border border-amber-200 rounded-xl px-4 py-3 text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-amber-500 font-siemreap"
               />
             </div>
@@ -806,7 +806,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Admin Portal Title EN */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "ចំណងជើង Admin Portal (ភាសាអង់គ្លេស):" : "Admin Portal Title (English):"}
+                {lang === "km" ? "áž…áŸ†ážŽáž„áž‡áž¾áž„ Admin Portal (áž—áž¶ážŸáž¶áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ):" : "Admin Portal Title (English):"}
               </label>
               <input
                 type="text"
@@ -820,7 +820,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Tagline KM */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "ពាក្យស្លោក/Tagline (ភាសាខ្មែរ):" : "Hotel Tagline (Khmer):"}
+                {lang === "km" ? "áž–áž¶áž€áŸ’áž™ážŸáŸ’áž›áŸ„áž€/Tagline (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš):" : "Hotel Tagline (Khmer):"}
               </label>
               <input
                 type="text"
@@ -833,7 +833,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Tagline EN */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "ពាក្យស្លោក/Tagline (ភាសាអង់គ្លេស):" : "Hotel Tagline (English):"}
+                {lang === "km" ? "áž–áž¶áž€áŸ’áž™ážŸáŸ’áž›áŸ„áž€/Tagline (áž—áž¶ážŸáž¶áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ):" : "Hotel Tagline (English):"}
               </label>
               <input
                 type="text"
@@ -847,7 +847,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-5 p-5 bg-gradient-to-br from-amber-50/70 to-orange-50/40 rounded-2xl border-2 border-amber-200">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                  {lang === "km" ? "អក្សរ Logo សង្ខេប (Logo Text Badge):" : "Logo Text Badge:"}
+                  {lang === "km" ? "áž¢áž€áŸ’ážŸážš Logo ážŸáž„áŸ’ážáŸáž” (Logo Text Badge):" : "Logo Text Badge:"}
                 </label>
                 <input
                   type="text"
@@ -856,14 +856,14 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                   className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-amber-500 font-bold"
                 />
                 <p className="text-[11px] text-gray-500 mt-1">
-                  {lang === "km" ? "បង្ហាញជំនួសពេលគ្មានរូបភាព (ឧ. VVOTEL)" : "Used as fallback badge if no image"}
+                  {lang === "km" ? "áž”áž„áŸ’áž áž¶áž‰áž‡áŸ†áž“áž½ážŸáž–áŸáž›áž‚áŸ’áž˜áž¶áž“ážšáž¼áž”áž—áž¶áž– (áž§. VVOTEL)" : "Used as fallback badge if no image"}
                 </p>
               </div>
 
               <div className="md:col-span-2 space-y-3">
                 <label className="block text-xs font-bold text-gray-700">
                   {lang === "km"
-                    ? "រូបភាព Logo សណ្ឋាគារ & Admin (ជ្រើសរើសរូបភាពពីទូរស័ព្ទ / កុំព្យូទ័រ ឬ URL):"
+                    ? "ážšáž¼áž”áž—áž¶áž– Logo ážŸážŽáŸ’áž‹áž¶áž‚áž¶ážš & Admin (áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸážšáž¼áž”áž—áž¶áž–áž–áž¸áž‘áž¼ážšážŸáŸáž–áŸ’áž‘ / áž€áž»áŸ†áž–áŸ’áž™áž¼áž‘áŸážš áž¬ URL):"
                     : "Official Hotel & Admin Logo (Upload from Phone/PC or paste URL):"}
                 </label>
 
@@ -873,8 +873,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                     <Upload className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform shrink-0" />
                     <span>
                       {lang === "km"
-                        ? "📁 ចុចត្រង់នេះដើម្បីជ្រើសរើសរូបភាព Logo (Upload File)"
-                        : "📁 Click here to Upload Logo Image"}
+                        ? "ðŸ“ áž…áž»áž…ážáŸ’ážšáž„áŸ‹áž“áŸáŸ‡ážŠáž¾áž˜áŸ’áž”áž¸áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸážšáž¼áž”áž—áž¶áž– Logo (Upload File)"
+                        : "ðŸ“ Click here to Upload Logo Image"}
                     </span>
                     <input
                       type="file"
@@ -920,7 +920,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                           updateSettings(updated);
                         }}
                         className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition"
-                        title={lang === "km" ? "លុបរូបភាព" : "Clear Logo"}
+                        title={lang === "km" ? "áž›áž»áž”ážšáž¼áž”áž—áž¶áž–" : "Clear Logo"}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -932,7 +932,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 <div className="pt-1">
                   <input
                     type="text"
-                    placeholder="ឬ បញ្ចូលតំណភ្ជាប់ URL (https://.../logo.png)"
+                    placeholder="áž¬ áž”áž‰áŸ’áž…áž¼áž›ážáŸ†ážŽáž—áŸ’áž‡áž¶áž”áŸ‹ URL (https://.../logo.png)"
                     value={formSettings.logoImageUrl}
                     onChange={(e) => handleFieldChange("logoImageUrl", e.target.value)}
                     className="w-full bg-white border border-amber-200 rounded-xl px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:border-amber-500 font-mono"
@@ -944,7 +944,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Contact Phone & Email */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "លេខទូរស័ព្ទផ្លូវការ:" : "Official Phone Number:"}
+                {lang === "km" ? "áž›áŸážáž‘áž¼ážšážŸáŸáž–áŸ’áž‘áž•áŸ’áž›áž¼ážœáž€áž¶ážš:" : "Official Phone Number:"}
               </label>
               <div className="relative">
                 <input
@@ -959,7 +959,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "អ៊ីមែលផ្លូវការ:" : "Official Email Address:"}
+                {lang === "km" ? "áž¢áŸŠáž¸áž˜áŸ‚áž›áž•áŸ’áž›áž¼ážœáž€áž¶ážš:" : "Official Email Address:"}
               </label>
               <div className="relative">
                 <input
@@ -975,7 +975,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Address KM */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "អាសយដ្ឋាន (ភាសាខ្មែរ):" : "Address (Khmer):"}
+                {lang === "km" ? "áž¢áž¶ážŸáž™ážŠáŸ’áž‹áž¶áž“ (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš):" : "Address (Khmer):"}
               </label>
               <textarea
                 rows={2}
@@ -988,7 +988,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Address EN */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "អាសយដ្ឋាន (ភាសាអង់គ្លេស):" : "Address (English):"}
+                {lang === "km" ? "áž¢áž¶ážŸáž™ážŠáŸ’áž‹áž¶áž“ (áž—áž¶ážŸáž¶áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ):" : "Address (English):"}
               </label>
               <textarea
                 rows={2}
@@ -1001,7 +1001,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Coordinates Lat / Lng */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "កូអរដោនេ Latitude (GPS):" : "Latitude (GPS):"}
+                {lang === "km" ? "áž€áž¼áž¢ážšážŠáŸ„áž“áŸ Latitude (GPS):" : "Latitude (GPS):"}
               </label>
               <input
                 type="number"
@@ -1014,7 +1014,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "កូអរដោនេ Longitude (GPS):" : "Longitude (GPS):"}
+                {lang === "km" ? "áž€áž¼áž¢ážšážŠáŸ„áž“áŸ Longitude (GPS):" : "Longitude (GPS):"}
               </label>
               <input
                 type="number"
@@ -1032,12 +1032,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       {activeTab === "banking" && (
         <div className="bg-white border border-amber-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
           <div className="border-b border-gray-100 pb-4">
-            <h3 className="font-mool text-base sm:text-lg text-[#0c2340]">
-              {lang === "km" ? "ការកំណត់កុងធនាគារ & ប្រព័ន្ធទូទាត់ Bakong KHQR" : "Banking & Bakong KHQR Gateway"}
+            <h3 className="font-siemreap font-bold text-base sm:text-lg text-[#0c2340]">
+              {lang === "km" ? "áž€áž¶ážšáž€áŸ†ážŽážáŸ‹áž€áž»áž„áž’áž“áž¶áž‚áž¶ážš & áž”áŸ’ážšáž–áŸáž“áŸ’áž’áž‘áž¼áž‘áž¶ážáŸ‹ Bakong KHQR" : "Banking & Bakong KHQR Gateway"}
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
               {lang === "km"
-                ? "កំណត់គណនីធនាគារទទួលប្រាក់ និងបើកដំណើរការមុខងារផ្ទៀងផ្ទាត់លុយចូលកុងពិតប្រាកដមុនពេលកក់"
+                ? "áž€áŸ†ážŽážáŸ‹áž‚ážŽáž“áž¸áž’áž“áž¶áž‚áž¶ážšáž‘áž‘áž½áž›áž”áŸ’ážšáž¶áž€áŸ‹ áž“áž·áž„áž”áž¾áž€ážŠáŸ†ážŽáž¾ážšáž€áž¶ážšáž˜áž»ážáž„áž¶ážšáž•áŸ’áž‘áŸ€áž„áž•áŸ’áž‘áž¶ážáŸ‹áž›áž»áž™áž…áž¼áž›áž€áž»áž„áž–áž·ážáž”áŸ’ážšáž¶áž€ážŠáž˜áž»áž“áž–áŸáž›áž€áž€áŸ‹"
                 : "Configure merchant bank account, custom QR, and strict real-time verification rules."}
             </p>
           </div>
@@ -1050,9 +1050,9 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               </div>
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
-                  <h4 className="font-mool text-[#0c2340] text-sm sm:text-base">
+                  <h4 className="font-siemreap font-bold text-[#0c2340] text-sm sm:text-base">
                     {lang === "km"
-                      ? "ត្រួតពិនិត្យប្រាក់ចូលកុងពិតប្រាកដ (Strict Real-time Bank Check)"
+                      ? "ážáŸ’ážšáž½ážáž–áž·áž“áž·ážáŸ’áž™áž”áŸ’ážšáž¶áž€áŸ‹áž…áž¼áž›áž€áž»áž„áž–áž·ážáž”áŸ’ážšáž¶áž€ážŠ (Strict Real-time Bank Check)"
                       : "Strict Real-time Bank Verification (NBC Bakong)"}
                   </h4>
                   <span
@@ -1062,12 +1062,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                         : "bg-gray-200 text-gray-700"
                     }`}
                   >
-                    {formSettings.strictBakongVerification ? "Active (តឹងរ៉ឹង)" : "Off"}
+                    {formSettings.strictBakongVerification ? "Active (ážáž¹áž„ážšáŸ‰áž¹áž„)" : "Off"}
                   </span>
                 </div>
                 <p className="text-xs text-gray-700 leading-relaxed">
                   {lang === "km"
-                    ? "នៅពេលបើក៖ ភ្ញៀវត្រូវតែបាញ់ប្រាក់ចូលកុងធនាគារពិតប្រាកដ ទើបប្រព័ន្ធអនុញ្ញាតឱ្យ verify និងចេញវិក្កយបត្រកក់រួចរាល់ ដោយស្វ័យប្រវត្តិតាមរយៈ NBC Bakong OpenAPI MD5 Hash check!"
+                    ? "áž“áŸ…áž–áŸáž›áž”áž¾áž€áŸ– áž—áŸ’áž‰áŸ€ážœážáŸ’ážšáž¼ážœážáŸ‚áž”áž¶áž‰áŸ‹áž”áŸ’ážšáž¶áž€áŸ‹áž…áž¼áž›áž€áž»áž„áž’áž“áž¶áž‚áž¶ážšáž–áž·ážáž”áŸ’ážšáž¶áž€ážŠ áž‘áž¾áž”áž”áŸ’ážšáž–áŸáž“áŸ’áž’áž¢áž“áž»áž‰áŸ’áž‰áž¶ážáž±áŸ’áž™ verify áž“áž·áž„áž…áŸáž‰ážœáž·áž€áŸ’áž€áž™áž”ážáŸ’ážšáž€áž€áŸ‹ážšáž½áž…ážšáž¶áž›áŸ‹ ážŠáŸ„áž™ážŸáŸ’ážœáŸáž™áž”áŸ’ážšážœážáŸ’ážáž·ážáž¶áž˜ážšáž™áŸˆ NBC Bakong OpenAPI MD5 Hash check!"
                     : "When enabled: The system queries NBC Bakong OpenAPI to verify that money was genuinely received before confirming bookings."}
                 </p>
               </div>
@@ -1084,7 +1084,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                   : "bg-gray-200 hover:bg-gray-300 text-gray-800"
               }`}
             >
-              <span>{formSettings.strictBakongVerification ? "✓ បានបើក (Enabled)" : "បិទ (Disabled)"}</span>
+              <span>{formSettings.strictBakongVerification ? "âœ“ áž”áž¶áž“áž”áž¾áž€ (Enabled)" : "áž”áž·áž‘ (Disabled)"}</span>
             </button>
           </div>
 
@@ -1092,7 +1092,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Bank Name */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "ឈ្មោះធនាគារ (Bank Name):" : "Bank Name:"}
+                {lang === "km" ? "ážˆáŸ’áž˜áŸ„áŸ‡áž’áž“áž¶áž‚áž¶ážš (Bank Name):" : "Bank Name:"}
               </label>
               <input
                 type="text"
@@ -1106,7 +1106,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Bank Account Name */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "ឈ្មោះម្ចាស់គណនី (Account Name):" : "Account Holder Name:"}
+                {lang === "km" ? "ážˆáŸ’áž˜áŸ„áŸ‡áž˜áŸ’áž…áž¶ážŸáŸ‹áž‚ážŽáž“áž¸ (Account Name):" : "Account Holder Name:"}
               </label>
               <input
                 type="text"
@@ -1120,7 +1120,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Bank Account Number */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "លេខកុងធនាគារ (Account Number):" : "Account Number:"}
+                {lang === "km" ? "áž›áŸážáž€áž»áž„áž’áž“áž¶áž‚áž¶ážš (Account Number):" : "Account Number:"}
               </label>
               <input
                 type="text"
@@ -1148,7 +1148,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {/* Bakong Merchant ID */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "Bakong Merchant ID (បើមាន):" : "Merchant ID:"}
+                {lang === "km" ? "Bakong Merchant ID (áž”áž¾áž˜áž¶áž“):" : "Merchant ID:"}
               </label>
               <input
                 type="text"
@@ -1186,7 +1186,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             <div className="md:col-span-2 p-5 bg-gradient-to-br from-amber-50/70 to-orange-50/40 rounded-2xl border-2 border-amber-200 space-y-3">
               <label className="block text-xs font-bold text-gray-700">
                 {lang === "km"
-                  ? "រូបភាព QR Code ផ្ទាល់ខ្លួន (ជ្រើសរើសរូបភាពពីទូរស័ព្ទ / កុំព្យូទ័រ ឬ បញ្ចូល URL):"
+                  ? "ážšáž¼áž”áž—áž¶áž– QR Code áž•áŸ’áž‘áž¶áž›áŸ‹ážáŸ’áž›áž½áž“ (áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸážšáž¼áž”áž—áž¶áž–áž–áž¸áž‘áž¼ážšážŸáŸáž–áŸ’áž‘ / áž€áž»áŸ†áž–áŸ’áž™áž¼áž‘áŸážš áž¬ áž”áž‰áŸ’áž…áž¼áž› URL):"
                   : "Custom QR Code Image (Upload from Phone/PC or paste URL):"}
               </label>
 
@@ -1196,8 +1196,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                   <Upload className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform shrink-0" />
                   <span>
                     {lang === "km"
-                      ? "📁 ចុចត្រង់នេះដើម្បីជ្រើសរើសរូបភាព QR Code (Upload File)"
-                      : "📁 Click here to Upload QR Code Image"}
+                      ? "ðŸ“ áž…áž»áž…ážáŸ’ážšáž„áŸ‹áž“áŸáŸ‡ážŠáž¾áž˜áŸ’áž”áž¸áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸážšáž¼áž”áž—áž¶áž– QR Code (Upload File)"
+                      : "ðŸ“ Click here to Upload QR Code Image"}
                   </span>
                   <input
                     type="file"
@@ -1234,7 +1234,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                         updateSettings(updated);
                       }}
                       className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition shrink-0"
-                      title={lang === "km" ? "លុបរូបភាព QR" : "Clear QR"}
+                      title={lang === "km" ? "áž›áž»áž”ážšáž¼áž”áž—áž¶áž– QR" : "Clear QR"}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -1248,14 +1248,14 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                   type="text"
                   value={formSettings.qrCustomImageUrl}
                   onChange={(e) => handleFieldChange("qrCustomImageUrl", e.target.value)}
-                  placeholder="ឬ បញ្ចូលតំណភ្ជាប់ URL (https://.../my-aba-khqr.png)"
+                  placeholder="áž¬ áž”áž‰áŸ’áž…áž¼áž›ážáŸ†ážŽáž—áŸ’áž‡áž¶áž”áŸ‹ URL (https://.../my-aba-khqr.png)"
                   className="w-full bg-white border border-amber-200 rounded-xl px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:border-amber-500 font-mono"
                 />
               </div>
 
               <p className="text-[11px] text-gray-500">
                 {lang === "km"
-                  ? "ចំណាំ៖ លោកអ្នកអាច Upload រូបភាពកូដ QR ពីទូរស័ព្ទផ្ទាល់ ឬប្រើប្រព័ន្ធ Dynamic Bakong KHQR EMVCo ផ្លូវការ។"
+                  ? "áž…áŸ†ážŽáž¶áŸ†áŸ– áž›áŸ„áž€áž¢áŸ’áž“áž€áž¢áž¶áž… Upload ážšáž¼áž”áž—áž¶áž–áž€áž¼ážŠ QR áž–áž¸áž‘áž¼ážšážŸáŸáž–áŸ’áž‘áž•áŸ’áž‘áž¶áž›áŸ‹ áž¬áž”áŸ’ážšáž¾áž”áŸ’ážšáž–áŸáž“áŸ’áž’ Dynamic Bakong KHQR EMVCo áž•áŸ’áž›áž¼ážœáž€áž¶ážšáŸ”"
                   : "Note: You can upload your official QR code image directly or use dynamic EMVCo Bakong KHQR."}
               </p>
             </div>
@@ -1268,12 +1268,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         <div className="bg-white border border-amber-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
             <div>
-              <h3 className="font-mool text-base sm:text-lg text-[#0c2340]">
-                {lang === "km" ? "គ្រប់គ្រងបន្ទប់ & កែសម្រួលតម្លៃស្នាក់នៅ" : "Manage Rooms & Room Pricing"}
+              <h3 className="font-siemreap font-bold text-base sm:text-lg text-[#0c2340]">
+                {lang === "km" ? "áž‚áŸ’ážšáž”áŸ‹áž‚áŸ’ážšáž„áž”áž“áŸ’áž‘áž”áŸ‹ & áž€áŸ‚ážŸáž˜áŸ’ážšáž½áž›ážáž˜áŸ’áž›áŸƒážŸáŸ’áž“áž¶áž€áŸ‹áž“áŸ…" : "Manage Rooms & Room Pricing"}
               </h3>
               <p className="text-xs text-gray-500 mt-0.5">
                 {lang === "km"
-                  ? "តម្លៃដែលបានកែសម្រួលនៅទីនេះ នឹង update លើ BookingBar, Accommodation Section, និងប្រព័ន្ធកក់ភ្លាមៗ។"
+                  ? "ážáž˜áŸ’áž›áŸƒážŠáŸ‚áž›áž”áž¶áž“áž€áŸ‚ážŸáž˜áŸ’ážšáž½áž›áž“áŸ…áž‘áž¸áž“áŸáŸ‡ áž“áž¹áž„ update áž›áž¾ BookingBar, Accommodation Section, áž“áž·áž„áž”áŸ’ážšáž–áŸáž“áŸ’áž’áž€áž€áŸ‹áž—áŸ’áž›áž¶áž˜áŸ—áŸ”"
                   : "Pricing edits here immediately update the BookingBar, Accommodation grid, and booking catalog."}
               </p>
             </div>
@@ -1286,13 +1286,13 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow transition shrink-0"
               >
                 <Plus className="w-4 h-4" />
-                <span>{lang === "km" ? "បន្ថែមបន្ទប់ថ្មី (Add Room)" : "+ Add New Room"}</span>
+                <span>{lang === "km" ? "áž”áž“áŸ’ážáŸ‚áž˜áž”áž“áŸ’áž‘áž”áŸ‹ážáŸ’áž˜áž¸ (Add Room)" : "+ Add New Room"}</span>
               </button>
 
               {/* Breakfast price setting */}
               <div className="flex items-center space-x-2 bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-xl shrink-0">
                 <span className="text-xs font-bold text-gray-700">
-                  {lang === "km" ? "អាហារពេលព្រឹក/នាក់:" : "Breakfast Rate:"}
+                  {lang === "km" ? "áž¢áž¶áž áž¶ážšáž–áŸáž›áž–áŸ’ážšáž¹áž€/áž“áž¶áž€áŸ‹:" : "Breakfast Rate:"}
                 </span>
                 <div className="flex items-center space-x-1">
                   <span className="font-bold text-vvotel-navy font-mono">$</span>
@@ -1313,14 +1313,14 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-[#FAF8F4] border-b border-gray-200 text-gray-600 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4">បន្ទប់ / Room</th>
-                  <th className="py-3 px-4">តម្លៃ ($/យប់)</th>
-                  <th className="py-3 px-4">តម្លៃដើម ($)</th>
-                  <th className="py-3 px-4">ទំហំ (m²)</th>
-                  <th className="py-3 px-4">មនុស្សចាស់ / ក្មេង</th>
-                  <th className="py-3 px-4">ចំនួនបន្ទប់</th>
-                  <th className="py-3 px-4 text-center">ស្ថានភាព</th>
-                  <th className="py-3 px-4 text-center">សកម្មភាព</th>
+                  <th className="py-3 px-4">áž”áž“áŸ’áž‘áž”áŸ‹ / Room</th>
+                  <th className="py-3 px-4">ážáž˜áŸ’áž›áŸƒ ($/áž™áž”áŸ‹)</th>
+                  <th className="py-3 px-4">ážáž˜áŸ’áž›áŸƒážŠáž¾áž˜ ($)</th>
+                  <th className="py-3 px-4">áž‘áŸ†áž áŸ† (mÂ²)</th>
+                  <th className="py-3 px-4">áž˜áž“áž»ážŸáŸ’ážŸáž…áž¶ážŸáŸ‹ / áž€áŸ’áž˜áŸáž„</th>
+                  <th className="py-3 px-4">áž…áŸ†áž“áž½áž“áž”áž“áŸ’áž‘áž”áŸ‹</th>
+                  <th className="py-3 px-4 text-center">ážŸáŸ’ážáž¶áž“áž—áž¶áž–</th>
+                  <th className="py-3 px-4 text-center">ážŸáž€áž˜áŸ’áž˜áž—áž¶áž–</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 font-siemreap">
@@ -1338,7 +1338,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                             {lang === "km" ? room.nameKm : room.nameEn}
                           </div>
                           <span className="text-[10px] text-amber-700 font-mono block">
-                            {room.id} • {room.categoryEn}
+                            {room.id} â€¢ {room.categoryEn}
                           </span>
                         </div>
                       </div>
@@ -1429,7 +1429,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                             : "bg-gray-100 text-gray-400 border border-gray-200"
                         }`}
                       >
-                        {room.enabled ? "បើក" : "បិទ"}
+                        {room.enabled ? "áž”áž¾áž€" : "áž”áž·áž‘"}
                       </button>
                     </td>
 
@@ -1440,7 +1440,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                           type="button"
                           onClick={() => handleOpenEditRoom(idx)}
                           className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg transition"
-                          title={lang === "km" ? "កែប្រែបន្ទប់" : "Edit Room"}
+                          title={lang === "km" ? "áž€áŸ‚áž”áŸ’ážšáŸ‚áž”áž“áŸ’áž‘áž”áŸ‹" : "Edit Room"}
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
@@ -1448,7 +1448,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                           type="button"
                           onClick={() => handleDeleteRoom(idx)}
                           className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg transition"
-                          title={lang === "km" ? "លុបបន្ទប់" : "Delete Room"}
+                          title={lang === "km" ? "áž›áž»áž”áž”áž“áŸ’áž‘áž”áŸ‹" : "Delete Room"}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -1467,12 +1467,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         <div className="bg-white border border-amber-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
             <div>
-              <h3 className="font-mool text-base sm:text-lg text-[#0c2340]">
-                {lang === "km" ? "🍽️ គ្រប់គ្រងភោជនីយដ្ឋាន បារ & មុខម្ហូបពិសេស" : "🍽️ Manage Dining, Bars & Menus"}
+              <h3 className="font-siemreap font-bold text-base sm:text-lg text-[#0c2340]">
+                {lang === "km" ? "ðŸ½ï¸ áž‚áŸ’ážšáž”áŸ‹áž‚áŸ’ážšáž„áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“ áž”áž¶ážš & áž˜áž»ážáž˜áŸ’áž áž¼áž”áž–áž·ážŸáŸážŸ" : "ðŸ½ï¸ Manage Dining, Bars & Menus"}
               </h3>
               <p className="text-xs text-gray-500 mt-0.5">
                 {lang === "km"
-                  ? "បន្ថែម កែប្រែរូបភាព ម៉ោងបើក តម្លៃ និងមុខម្ហូបល្បីៗប្រចាំហាង ដែលបង្ហាញលើគេហទំព័រ និងប្រព័ន្ធកក់តុ។"
+                  ? "áž”áž“áŸ’ážáŸ‚áž˜ áž€áŸ‚áž”áŸ’ážšáŸ‚ážšáž¼áž”áž—áž¶áž– áž˜áŸ‰áŸ„áž„áž”áž¾áž€ ážáž˜áŸ’áž›áŸƒ áž“áž·áž„áž˜áž»ážáž˜áŸ’áž áž¼áž”áž›áŸ’áž”áž¸áŸ—áž”áŸ’ážšáž…áž¶áŸ†áž áž¶áž„ ážŠáŸ‚áž›áž”áž„áŸ’áž áž¶áž‰áž›áž¾áž‚áŸáž áž‘áŸ†áž–áŸážš áž“áž·áž„áž”áŸ’ážšáž–áŸáž“áŸ’áž’áž€áž€áŸ‹ážáž»áŸ”"
                   : "Add or edit restaurant venues, upload dining photos, set hours, dress code, and signature dishes."}
               </p>
             </div>
@@ -1483,7 +1483,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow transition shrink-0"
             >
               <Plus className="w-4 h-4" />
-              <span>{lang === "km" ? "បន្ថែមភោជនីយដ្ឋាន/មុខម្ហូប" : "+ Add Dining Venue"}</span>
+              <span>{lang === "km" ? "áž”áž“áŸ’ážáŸ‚áž˜áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“/áž˜áž»ážáž˜áŸ’áž áž¼áž”" : "+ Add Dining Venue"}</span>
             </button>
           </div>
 
@@ -1524,7 +1524,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                             : "bg-gray-200 text-gray-600"
                         }`}
                       >
-                        {venue.enabled ? (lang === "km" ? "បើក" : "Active") : (lang === "km" ? "បិទ" : "Disabled")}
+                        {venue.enabled ? (lang === "km" ? "áž”áž¾áž€" : "Active") : (lang === "km" ? "áž”áž·áž‘" : "Disabled")}
                       </button>
                     </div>
 
@@ -1541,7 +1541,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                         <Clock className="w-3 h-3 text-amber-600" />
                         <span>{lang === "km" ? venue.hoursKm : venue.hoursEn}</span>
                       </span>
-                      <span>•</span>
+                      <span>â€¢</span>
                       <span>{lang === "km" ? venue.dressCodeKm : venue.dressCodeEn}</span>
                     </div>
                   </div>
@@ -1557,7 +1557,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                       : []
                     ).slice(0, 2).map((dish, di) => (
                       <span key={di} className="text-[10px] bg-white border border-amber-200 text-amber-900 px-2 py-0.5 rounded-md font-medium">
-                        🍴 {dish}
+                        ðŸ´ {dish}
                       </span>
                     ))}
                   </div>
@@ -1567,16 +1567,16 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                       type="button"
                       onClick={() => handleOpenEditDining(idx)}
                       className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg text-xs font-bold transition flex items-center space-x-1"
-                      title={lang === "km" ? "កែប្រែ" : "Edit"}
+                      title={lang === "km" ? "áž€áŸ‚áž”áŸ’ážšáŸ‚" : "Edit"}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">{lang === "km" ? "កែប្រែ" : "Edit"}</span>
+                      <span className="hidden sm:inline">{lang === "km" ? "áž€áŸ‚áž”áŸ’ážšáŸ‚" : "Edit"}</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDeleteDining(idx)}
                       className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-xs font-bold transition"
-                      title={lang === "km" ? "លុប" : "Delete"}
+                      title={lang === "km" ? "áž›áž»áž”" : "Delete"}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -1593,12 +1593,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         <div className="bg-white border border-amber-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
             <div>
-              <h3 className="font-mool text-base sm:text-lg text-[#0c2340]">
-                {lang === "km" ? "ទីតាំងទេសចរណ៍ខេត្តកំពង់ចាម & ផែនទី" : "Kampong Cham Tourist Destinations & Map"}
+              <h3 className="font-siemreap font-bold text-base sm:text-lg text-[#0c2340]">
+                {lang === "km" ? "áž‘áž¸ážáž¶áŸ†áž„áž‘áŸážŸáž…ážšážŽáŸážáŸážáŸ’ážáž€áŸ†áž–áž„áŸ‹áž…áž¶áž˜ & áž•áŸ‚áž“áž‘áž¸" : "Kampong Cham Tourist Destinations & Map"}
               </h3>
               <p className="text-xs text-gray-500 mt-0.5">
                 {lang === "km"
-                  ? "គ្រប់គ្រងទីតាំង បន្ថែមទីតាំងថ្មី និងកូអរដោនេលើផែនទីអន្តរកម្ម Live Google Maps / Leaflet"
+                  ? "áž‚áŸ’ážšáž”áŸ‹áž‚áŸ’ážšáž„áž‘áž¸ážáž¶áŸ†áž„ áž”áž“áŸ’ážáŸ‚áž˜áž‘áž¸ážáž¶áŸ†áž„ážáŸ’áž˜áž¸ áž“áž·áž„áž€áž¼áž¢ážšážŠáŸ„áž“áŸáž›áž¾áž•áŸ‚áž“áž‘áž¸áž¢áž“áŸ’ážážšáž€áž˜áŸ’áž˜ Live Google Maps / Leaflet"
                   : "Manage tourist spots, add new locations, and verify exact GPS coordinates."}
               </p>
             </div>
@@ -1609,7 +1609,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow transition shrink-0"
             >
               <Plus className="w-4 h-4" />
-              <span>{lang === "km" ? "បន្ថែមទីតាំងថ្មី (Add Location)" : "+ Add New Destination"}</span>
+              <span>{lang === "km" ? "áž”áž“áŸ’ážáŸ‚áž˜áž‘áž¸ážáž¶áŸ†áž„ážáŸ’áž˜áž¸ (Add Location)" : "+ Add New Destination"}</span>
             </button>
           </div>
 
@@ -1652,8 +1652,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                     </h4>
                     <p className="text-[11px] text-gray-500 flex items-center space-x-2 mt-1">
                       <span>{dest.distanceKm} km</span>
-                      <span>•</span>
-                      <span>{dest.travelTimeMinutes} នាទី</span>
+                      <span>â€¢</span>
+                      <span>{dest.travelTimeMinutes} áž“áž¶áž‘áž¸</span>
                     </p>
                   </div>
                 </div>
@@ -1667,7 +1667,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                       type="button"
                       onClick={() => handleOpenEditDest(dest)}
                       className="p-1.5 text-amber-700 hover:bg-amber-50 rounded-lg transition"
-                      title={lang === "km" ? "កែប្រែទីតាំង" : "Edit Destination"}
+                      title={lang === "km" ? "áž€áŸ‚áž”áŸ’ážšáŸ‚áž‘áž¸ážáž¶áŸ†áž„" : "Edit Destination"}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
@@ -1700,12 +1700,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       {activeTab === "features" && (
         <div className="bg-white border border-amber-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
           <div className="border-b border-gray-100 pb-4">
-            <h3 className="font-mool text-base sm:text-lg text-[#0c2340]">
-              {lang === "km" ? "បើក/បិទ មុខងារប្រព័ន្ធនៅលើ Website" : "Website Feature Flags & Controls"}
+            <h3 className="font-siemreap font-bold text-base sm:text-lg text-[#0c2340]">
+              {lang === "km" ? "áž”áž¾áž€/áž”áž·áž‘ áž˜áž»ážáž„áž¶ážšáž”áŸ’ážšáž–áŸáž“áŸ’áž’áž“áŸ…áž›áž¾ Website" : "Website Feature Flags & Controls"}
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
               {lang === "km"
-                ? "លោកអ្នកអាចបើក ឬបិទមុខងារនីមួយៗបានយ៉ាងងាយស្រួលដោយគ្រាន់តែចុចប៊ូតុងខាងក្រោម។"
+                ? "áž›áŸ„áž€áž¢áŸ’áž“áž€áž¢áž¶áž…áž”áž¾áž€ áž¬áž”áž·áž‘áž˜áž»ážáž„áž¶ážšáž“áž¸áž˜áž½áž™áŸ—áž”áž¶áž“áž™áŸ‰áž¶áž„áž„áž¶áž™ážŸáŸ’ážšáž½áž›ážŠáŸ„áž™áž‚áŸ’ážšáž¶áž“áŸ‹ážáŸ‚áž…áž»áž…áž”áŸŠáž¼ážáž»áž„ážáž¶áž„áž€áŸ’ážšáŸ„áž˜áŸ”"
                 : "Toggle platform modules on/off dynamically across the entire website."}
             </p>
           </div>
@@ -1714,75 +1714,75 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
             {[
               {
                 key: "enableDiningBooking" as const,
-                titleKm: "ប្រព័ន្ធកក់តុអាហារ",
+                titleKm: "áž”áŸ’ážšáž–áŸáž“áŸ’áž’áž€áž€áŸ‹ážáž»áž¢áž¶áž áž¶ážš",
                 titleEn: "Dining Table Reservation",
-                descKm: "អនុញ្ញាតឱ្យភ្ញៀវកក់តុអាហារនៅភោជនីយដ្ឋាន Mekong Breeze និង Sunset Lounge",
+                descKm: "áž¢áž“áž»áž‰áŸ’áž‰áž¶ážáž±áŸ’áž™áž—áŸ’áž‰áŸ€ážœáž€áž€áŸ‹ážáž»áž¢áž¶áž áž¶ážšáž“áŸ…áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“ Mekong Breeze áž“áž·áž„ Sunset Lounge",
                 descEn: "Enable live restaurant reservations and dining orders",
-                icon: "🍽️",
+                icon: "ðŸ½ï¸",
               },
               {
                 key: "enableKhqrBakong" as const,
-                titleKm: "ការទូទាត់ Bakong KHQR",
+                titleKm: "áž€áž¶ážšáž‘áž¼áž‘áž¶ážáŸ‹ Bakong KHQR",
                 titleEn: "NBC Bakong KHQR Gateway",
-                descKm: "បង្កើតកូដ KHQR ស្តង់ដារ EMVCo សម្រាប់ស្កេនទូទាត់តាម App ធនាគារគ្រប់ប្រភេទ",
+                descKm: "áž”áž„áŸ’áž€áž¾ážáž€áž¼ážŠ KHQR ážŸáŸ’ážáž„áŸ‹ážŠáž¶ážš EMVCo ážŸáž˜áŸ’ážšáž¶áž”áŸ‹ážŸáŸ’áž€áŸáž“áž‘áž¼áž‘áž¶ážáŸ‹ážáž¶áž˜ App áž’áž“áž¶áž‚áž¶ážšáž‚áŸ’ážšáž”áŸ‹áž”áŸ’ážšáž—áŸáž‘",
                 descEn: "Enable dynamic EMVCo KHQR code generator for mobile banking",
-                icon: "💳",
+                icon: "ðŸ’³",
               },
               {
                 key: "enableCard3DS" as const,
-                titleKm: "កាតឥណទាន 3D Secure",
+                titleKm: "áž€áž¶ážáž¥ážŽáž‘áž¶áž“ 3D Secure",
                 titleEn: "3D Secure Card Gateway",
-                descKm: "ទទួលការទូទាត់តាមកាត Visa, Mastercard, JCB, UnionPay",
+                descKm: "áž‘áž‘áž½áž›áž€áž¶ážšáž‘áž¼áž‘áž¶ážáŸ‹ážáž¶áž˜áž€áž¶áž Visa, Mastercard, JCB, UnionPay",
                 descEn: "Accept Visa, Mastercard, JCB with OTP authentication",
-                icon: "🔒",
+                icon: "ðŸ”’",
               },
               {
                 key: "enablePayAtHotel" as const,
-                titleKm: "ទូទាត់ផ្ទាល់នៅសណ្ឋាគារ",
+                titleKm: "áž‘áž¼áž‘áž¶ážáŸ‹áž•áŸ’áž‘áž¶áž›áŸ‹áž“áŸ…ážŸážŽáŸ’áž‹áž¶áž‚áž¶ážš",
                 titleEn: "Pay at Hotel (Cash/Card)",
-                descKm: "អនុញ្ញាតឱ្យភ្ញៀវកក់ទុកមុន ហើយមកទូទាត់ប្រាក់នៅ Front Desk ពេល Check-in",
+                descKm: "áž¢áž“áž»áž‰áŸ’áž‰áž¶ážáž±áŸ’áž™áž—áŸ’áž‰áŸ€ážœáž€áž€áŸ‹áž‘áž»áž€áž˜áž»áž“ áž áž¾áž™áž˜áž€áž‘áž¼áž‘áž¶ážáŸ‹áž”áŸ’ážšáž¶áž€áŸ‹áž“áŸ… Front Desk áž–áŸáž› Check-in",
                 descEn: "Allow guests to reserve and pay upon arrival at Front Desk",
-                icon: "🏨",
+                icon: "ðŸ¨",
               },
               {
                 key: "enableTelegramAlerts" as const,
                 titleKm: "Telegram Bot Alert (@vvotel_bot)",
                 titleEn: "Instant Telegram Alerts",
-                descKm: "ផ្ញើការជូនដំណឹងភ្លាមៗទៅកាន់ Bot រាល់ពេលមានការកក់បន្ទប់ ឬតុអាហារថ្មី",
+                descKm: "áž•áŸ’áž‰áž¾áž€áž¶ážšáž‡áž¼áž“ážŠáŸ†ážŽáž¹áž„áž—áŸ’áž›áž¶áž˜áŸ—áž‘áŸ…áž€áž¶áž“áŸ‹ Bot ážšáž¶áž›áŸ‹áž–áŸáž›áž˜áž¶áž“áž€áž¶ážšáž€áž€áŸ‹áž”áž“áŸ’áž‘áž”áŸ‹ áž¬ážáž»áž¢áž¶áž áž¶ážšážáŸ’áž˜áž¸",
                 descEn: "Dispatch instant reservation alerts to @vvotel_bot",
-                icon: "🤖",
+                icon: "ðŸ¤–",
               },
               {
                 key: "enableLeafletMap" as const,
-                titleKm: "ផែនទីអន្តរកម្មខេត្តកំពង់ចាម",
+                titleKm: "áž•áŸ‚áž“áž‘áž¸áž¢áž“áŸ’ážážšáž€áž˜áŸ’áž˜ážáŸážáŸ’ážáž€áŸ†áž–áž„áŸ‹áž…áž¶áž˜",
                 titleEn: "Interactive Tourist Map",
-                descKm: "បង្ហាញផែនទីរុករកតំបន់ទេសចរណ៍ និងបង្ហាញកូអរដោនេផ្លូវធ្វើដំណើរ",
+                descKm: "áž”áž„áŸ’áž áž¶áž‰áž•áŸ‚áž“áž‘áž¸ážšáž»áž€ážšáž€ážáŸ†áž”áž“áŸ‹áž‘áŸážŸáž…ážšážŽáŸ áž“áž·áž„áž”áž„áŸ’áž áž¶áž‰áž€áž¼áž¢ážšážŠáŸ„áž“áŸáž•áŸ’áž›áž¼ážœáž’áŸ’ážœáž¾ážŠáŸ†ážŽáž¾ážš",
                 descEn: "Display interactive Leaflet & Google Map with tourist pins",
-                icon: "🗺️",
+                icon: "ðŸ—ºï¸",
               },
               {
                 key: "enablePwaInstall" as const,
-                titleKm: "ការដំឡើងកម្មវិធី PWA App",
+                titleKm: "áž€áž¶ážšážŠáŸ†áž¡áž¾áž„áž€áž˜áŸ’áž˜ážœáž·áž’áž¸ PWA App",
                 titleEn: "PWA Mobile App Install",
-                descKm: "បង្ហាញផ្ទាំងឱ្យភ្ញៀវ Install គេហទំព័រទៅក្នុងទូរស័ព្ទដូច App ផ្លូវការ",
+                descKm: "áž”áž„áŸ’áž áž¶áž‰áž•áŸ’áž‘áž¶áŸ†áž„áž±áŸ’áž™áž—áŸ’áž‰áŸ€ážœ Install áž‚áŸáž áž‘áŸ†áž–áŸážšáž‘áŸ…áž€áŸ’áž“áž»áž„áž‘áž¼ážšážŸáŸáž–áŸ’áž‘ážŠáž¼áž… App áž•áŸ’áž›áž¼ážœáž€áž¶ážš",
                 descEn: "Display mobile PWA install prompts for iOS & Android",
-                icon: "📲",
+                icon: "ðŸ“²",
               },
               {
                 key: "enableAccessibilityPanel" as const,
-                titleKm: "ផ្ទាំងជំនួយការមើល និងអាន",
+                titleKm: "áž•áŸ’áž‘áž¶áŸ†áž„áž‡áŸ†áž“áž½áž™áž€áž¶ážšáž˜áž¾áž› áž“áž·áž„áž¢áž¶áž“",
                 titleEn: "Accessibility Controls",
-                descKm: "ឧបករណ៍ពង្រីកអក្សរ ប្តូរពណ៌កម្រិតខ្ពស់ និងជំនួយជនពិការ",
+                descKm: "áž§áž”áž€ážšážŽáŸáž–áž„áŸ’ážšáž¸áž€áž¢áž€áŸ’ážŸážš áž”áŸ’ážáž¼ážšáž–ážŽáŸŒáž€áž˜áŸ’ážšáž·ážážáŸ’áž–ážŸáŸ‹ áž“áž·áž„áž‡áŸ†áž“áž½áž™áž‡áž“áž–áž·áž€áž¶ážš",
                 descEn: "High contrast, font scaling, and voice reading aids",
-                icon: "👁️",
+                icon: "ðŸ‘ï¸",
               },
               {
                 key: "enableWeatherWidget" as const,
-                titleKm: "ការព្យាករណ៍អាកាសធាតុប្រចាំថ្ងៃ",
+                titleKm: "áž€áž¶ážšáž–áŸ’áž™áž¶áž€ážšážŽáŸáž¢áž¶áž€áž¶ážŸáž’áž¶ážáž»áž”áŸ’ážšáž…áž¶áŸ†ážáŸ’áž„áŸƒ",
                 titleEn: "Live Weather Widget",
-                descKm: "បង្ហាញសីតុណ្ហភាព និងអាកាសធាតុនៅក្រុងកំពង់ចាមផ្ទាល់",
+                descKm: "áž”áž„áŸ’áž áž¶áž‰ážŸáž¸ážáž»ážŽáŸ’áž áž—áž¶áž– áž“áž·áž„áž¢áž¶áž€áž¶ážŸáž’áž¶ážáž»áž“áŸ…áž€áŸ’ážšáž»áž„áž€áŸ†áž–áž„áŸ‹áž…áž¶áž˜áž•áŸ’áž‘áž¶áž›áŸ‹",
                 descEn: "Display real-time temperature and forecast in Kampong Cham",
-                icon: "⛅",
+                icon: "â›…",
               },
             ].map((feat) => {
               const isEnabled = formSettings.features[feat.key];
@@ -1805,7 +1805,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                           : "bg-gray-200 text-gray-600"
                       }`}
                     >
-                      {isEnabled ? "បើក (ON)" : "បិទ (OFF)"}
+                      {isEnabled ? "áž”áž¾áž€ (ON)" : "áž”áž·áž‘ (OFF)"}
                     </span>
                   </div>
 
@@ -1828,12 +1828,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
       {activeTab === "telegram" && (
         <div className="bg-white border border-amber-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
           <div className="border-b border-gray-100 pb-4">
-            <h3 className="font-mool text-base sm:text-lg text-[#0c2340]">
-              {lang === "km" ? "ការកំណត់ Telegram Bot (@vvotel_bot)" : "Telegram Bot Setup & Alert Routing"}
+            <h3 className="font-siemreap font-bold text-base sm:text-lg text-[#0c2340]">
+              {lang === "km" ? "áž€áž¶ážšáž€áŸ†ážŽážáŸ‹ Telegram Bot (@vvotel_bot)" : "Telegram Bot Setup & Alert Routing"}
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
               {lang === "km"
-                ? "គ្រប់គ្រង Bot Token, Username, និង Chat ID ដើម្បីទទួល Alert រាល់ពេលមានភ្ញៀវកក់ ឬបង់ប្រាក់"
+                ? "áž‚áŸ’ážšáž”áŸ‹áž‚áŸ’ážšáž„ Bot Token, Username, áž“áž·áž„ Chat ID ážŠáž¾áž˜áŸ’áž”áž¸áž‘áž‘áž½áž› Alert ážšáž¶áž›áŸ‹áž–áŸáž›áž˜áž¶áž“áž—áŸ’áž‰áŸ€ážœáž€áž€áŸ‹ áž¬áž”áž„áŸ‹áž”áŸ’ážšáž¶áž€áŸ‹"
                 : "Manage bot token and receiver chat IDs for instantaneous dispatch."}
             </p>
           </div>
@@ -1841,7 +1841,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
           <div className="p-4 bg-sky-50 border border-sky-200 rounded-2xl flex items-start space-x-3 text-xs text-sky-900">
             <Send className="w-5 h-5 text-sky-600 shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              <strong>Official Hotel Bot:</strong> Bot ផ្លូវការរបស់សណ្ឋាគារគឺ{" "}
+              <strong>Official Hotel Bot:</strong> Bot áž•áŸ’áž›áž¼ážœáž€áž¶ážšážšáž”ážŸáŸ‹ážŸážŽáŸ’áž‹áž¶áž‚áž¶ážšáž‚ážº{" "}
               <a
                 href="https://t.me/vvotel_bot"
                 target="_blank"
@@ -1850,7 +1850,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               >
                 @vvotel_bot
               </a>
-              ។ រាល់ការកក់បន្ទប់ ការកក់តុអាហារ ឬការផ្ទៀងផ្ទាត់លុយចូលកុង នឹងលោតសារ Alert ទៅកាន់ Bot ភ្លាមៗក្នុងពេល Real-time!
+              áŸ” ážšáž¶áž›áŸ‹áž€áž¶ážšáž€áž€áŸ‹áž”áž“áŸ’áž‘áž”áŸ‹ áž€áž¶ážšáž€áž€áŸ‹ážáž»áž¢áž¶áž áž¶ážš áž¬áž€áž¶ážšáž•áŸ’áž‘áŸ€áž„áž•áŸ’áž‘áž¶ážáŸ‹áž›áž»áž™áž…áž¼áž›áž€áž»áž„ áž“áž¹áž„áž›áŸ„ážážŸáž¶ážš Alert áž‘áŸ…áž€áž¶áž“áŸ‹ Bot áž—áŸ’áž›áž¶áž˜áŸ—áž€áŸ’áž“áž»áž„áž–áŸáž› Real-time!
             </div>
           </div>
 
@@ -1870,7 +1870,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "Admin Chat ID ទទួល Alert:" : "Admin Chat ID:"}
+                {lang === "km" ? "Admin Chat ID áž‘áž‘áž½áž› Alert:" : "Admin Chat ID:"}
               </label>
               <input
                 type="text"
@@ -1883,7 +1883,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
             <div className="md:col-span-2">
               <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                {lang === "km" ? "Telegram Bot API Token (ពី @BotFather):" : "Telegram Bot API Token:"}
+                {lang === "km" ? "Telegram Bot API Token (áž–áž¸ @BotFather):" : "Telegram Bot API Token:"}
               </label>
               <div className="relative">
                 <input
@@ -1913,8 +1913,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
           <div className="border-b border-gray-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center space-x-2">
-                <h3 className="font-mool text-base sm:text-lg text-[#0c2340]">
-                  {lang === "km" ? "ប្រព័ន្ធបម្រុងទុកទិន្នន័យស្វ័យប្រវត្តិ (Auto Backup)" : "Automatic Continuous Data Backup & Restore"}
+                <h3 className="font-siemreap font-bold text-base sm:text-lg text-[#0c2340]">
+                  {lang === "km" ? "áž”áŸ’ážšáž–áŸáž“áŸ’áž’áž”áž˜áŸ’ážšáž»áž„áž‘áž»áž€áž‘áž·áž“áŸ’áž“áž“áŸáž™ážŸáŸ’ážœáŸáž™áž”áŸ’ážšážœážáŸ’ážáž· (Auto Backup)" : "Automatic Continuous Data Backup & Restore"}
                 </h3>
                 <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase flex items-center space-x-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
@@ -1923,7 +1923,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               </div>
               <p className="text-xs text-gray-500 mt-0.5">
                 {lang === "km"
-                  ? "ទិន្នន័យទាំងអស់ (បន្ទប់, មុខម្ហូប, ទីតាំង, ការកក់ និងការកំណត់) ត្រូវបានថតបម្រុងទុកជាប្រចាំដោយស្វ័យប្រវត្តិ ជាប់រហូតមិនបាត់បង់ឡើយ។"
+                  ? "áž‘áž·áž“áŸ’áž“áž“áŸáž™áž‘áž¶áŸ†áž„áž¢ážŸáŸ‹ (áž”áž“áŸ’áž‘áž”áŸ‹, áž˜áž»ážáž˜áŸ’áž áž¼áž”, áž‘áž¸ážáž¶áŸ†áž„, áž€áž¶ážšáž€áž€áŸ‹ áž“áž·áž„áž€áž¶ážšáž€áŸ†ážŽážáŸ‹) ážáŸ’ážšáž¼ážœáž”áž¶áž“ážážáž”áž˜áŸ’ážšáž»áž„áž‘áž»áž€áž‡áž¶áž”áŸ’ážšáž…áž¶áŸ†ážŠáŸ„áž™ážŸáŸ’ážœáŸáž™áž”áŸ’ážšážœážáŸ’ážáž· áž‡áž¶áž”áŸ‹ážšáž áž¼ážáž˜áž·áž“áž”áž¶ážáŸ‹áž”áž„áŸ‹áž¡áž¾áž™áŸ”"
                   : "All data including rooms, menus, locations, bookings and settings are continuously backed up and preserved."}
               </p>
             </div>
@@ -1934,7 +1934,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition self-start sm:self-auto"
             >
               <RefreshCw className="w-3.5 h-3.5 text-gray-600" />
-              <span>{lang === "km" ? "Refresh បញ្ជី" : "Refresh List"}</span>
+              <span>{lang === "km" ? "Refresh áž”áž‰áŸ’áž‡áž¸" : "Refresh List"}</span>
             </button>
           </div>
 
@@ -1972,14 +1972,14 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               </div>
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
-                  <h4 className="font-mool text-sm text-emerald-950">
-                    {lang === "km" ? "ដំណើរការការពារទិន្នន័យស្វ័យប្រវត្ត (Continuous Auto-Backup Active)" : "Continuous Data Protection Active"}
+                  <h4 className="font-siemreap font-bold text-sm text-emerald-950">
+                    {lang === "km" ? "ážŠáŸ†ážŽáž¾ážšáž€áž¶ážšáž€áž¶ážšáž–áž¶ážšáž‘áž·áž“áŸ’áž“áž“áŸáž™ážŸáŸ’ážœáŸáž™áž”áŸ’ážšážœážáŸ’áž (Continuous Auto-Backup Active)" : "Continuous Data Protection Active"}
                   </h4>
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 </div>
                 <p className="text-xs text-emerald-900/80 leading-relaxed">
                   {lang === "km"
-                    ? "រាល់ពេលមានការផ្លាស់ប្តូរទិន្នន័យ (Add, Update, Edit, Delete បន្ទប់, មុខម្ហូប, ទីតាំង, ការកក់) ប្រព័ន្ធនឹងថត Snapshot រក្សាទុកដោយស្វ័យប្រវត្តិភ្លាមៗ ទាំងក្នុង Local Device និង Server Disk។ លើសពីនេះ ប្រព័ន្ធក៏ធ្វើការ Auto-Backup រៀងរាល់ ៥ នាទីម្តងជាប្រចាំ។"
+                    ? "ážšáž¶áž›áŸ‹áž–áŸáž›áž˜áž¶áž“áž€áž¶ážšáž•áŸ’áž›áž¶ážŸáŸ‹áž”áŸ’ážáž¼ážšáž‘áž·áž“áŸ’áž“áž“áŸáž™ (Add, Update, Edit, Delete áž”áž“áŸ’áž‘áž”áŸ‹, áž˜áž»ážáž˜áŸ’áž áž¼áž”, áž‘áž¸ážáž¶áŸ†áž„, áž€áž¶ážšáž€áž€áŸ‹) áž”áŸ’ážšáž–áŸáž“áŸ’áž’áž“áž¹áž„ážáž Snapshot ážšáž€áŸ’ážŸáž¶áž‘áž»áž€ážŠáŸ„áž™ážŸáŸ’ážœáŸáž™áž”áŸ’ážšážœážáŸ’ážáž·áž—áŸ’áž›áž¶áž˜áŸ— áž‘áž¶áŸ†áž„áž€áŸ’áž“áž»áž„ Local Device áž“áž·áž„ Server DiskáŸ” áž›áž¾ážŸáž–áž¸áž“áŸáŸ‡ áž”áŸ’ážšáž–áŸáž“áŸ’áž’áž€áŸáž’áŸ’ážœáž¾áž€áž¶ážš Auto-Backup ážšáŸ€áž„ážšáž¶áž›áŸ‹ áŸ¥ áž“áž¶áž‘áž¸áž˜áŸ’ážáž„áž‡áž¶áž”áŸ’ážšáž…áž¶áŸ†áŸ”"
                     : "Every modification (rooms, foods, destinations, bookings) is instantly auto-saved to disk and browser storage, plus a 5-minute background interval."}
                 </p>
               </div>
@@ -1987,13 +1987,13 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
             <div className="pt-2 border-t border-emerald-200/60 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-emerald-800 font-bold">
               <div className="flex items-center space-x-1.5">
-                <span>⚡ ស្វ័យប្រវត្តពេលកែប្រែទិន្នន័យ</span>
+                <span>âš¡ ážŸáŸ’ážœáŸáž™áž”áŸ’ážšážœážáŸ’ážáž–áŸáž›áž€áŸ‚áž”áŸ’ážšáŸ‚áž‘áž·áž“áŸ’áž“áž“áŸáž™</span>
               </div>
               <div className="flex items-center space-x-1.5">
-                <span>⏱️ Backup រៀងរាល់ ៥ នាទី</span>
+                <span>â±ï¸ Backup ážšáŸ€áž„ážšáž¶áž›áŸ‹ áŸ¥ áž“áž¶áž‘áž¸</span>
               </div>
               <div className="flex items-center space-x-1.5">
-                <span>🛡️ Snapshot ការពារមុនពេល Restore</span>
+                <span>ðŸ›¡ï¸ Snapshot áž€áž¶ážšáž–áž¶ážšáž˜áž»áž“áž–áŸáž› Restore</span>
               </div>
             </div>
           </div>
@@ -2006,12 +2006,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
                   <Download className="w-4 h-4" />
                 </div>
-                <h4 className="font-mool text-xs sm:text-sm text-[#0c2340]">
-                  {lang === "km" ? "ទាញយក Backup ពេញលេញ" : "Export Full Backup"}
+                <h4 className="font-siemreap font-bold text-xs sm:text-sm text-[#0c2340]">
+                  {lang === "km" ? "áž‘áž¶áž‰áž™áž€ Backup áž–áŸáž‰áž›áŸáž‰" : "Export Full Backup"}
                 </h4>
                 <p className="text-[11px] text-gray-600 leading-relaxed">
                   {lang === "km"
-                    ? "ទាញយកទិន្នន័យប្រព័ន្ធទាំងអស់ជាឯកសារ .json ទុកក្នុងកុំព្យូទ័រផ្ទាល់ខ្លួនដើម្បីសុវត្ថិភាព។"
+                    ? "áž‘áž¶áž‰áž™áž€áž‘áž·áž“áŸ’áž“áž“áŸáž™áž”áŸ’ážšáž–áŸáž“áŸ’áž’áž‘áž¶áŸ†áž„áž¢ážŸáŸ‹áž‡áž¶áž¯áž€ážŸáž¶ážš .json áž‘áž»áž€áž€áŸ’áž“áž»áž„áž€áž»áŸ†áž–áŸ’áž™áž¼áž‘áŸážšáž•áŸ’áž‘áž¶áž›áŸ‹ážáŸ’áž›áž½áž“ážŠáž¾áž˜áŸ’áž”áž¸ážŸáž»ážœážáŸ’ážáž·áž—áž¶áž–áŸ”"
                     : "Download complete database as a .json file to your computer drive."}
                 </p>
               </div>
@@ -2021,7 +2021,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 className="w-full py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow transition"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>{lang === "km" ? "ទាញយក File .json" : "Download .json"}</span>
+                <span>{lang === "km" ? "áž‘áž¶áž‰áž™áž€ File .json" : "Download .json"}</span>
               </button>
             </div>
 
@@ -2031,12 +2031,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
                   <HardDrive className="w-4 h-4" />
                 </div>
-                <h4 className="font-mool text-xs sm:text-sm text-[#0c2340]">
-                  {lang === "km" ? "បង្កើត Snapshot ថ្មីឥឡូវនេះ" : "Create Instant Snapshot"}
+                <h4 className="font-siemreap font-bold text-xs sm:text-sm text-[#0c2340]">
+                  {lang === "km" ? "áž”áž„áŸ’áž€áž¾áž Snapshot ážáŸ’áž˜áž¸áž¥áž¡áž¼ážœáž“áŸáŸ‡" : "Create Instant Snapshot"}
                 </h4>
                 <p className="text-[11px] text-gray-600 leading-relaxed">
                   {lang === "km"
-                    ? "ថត Snapshot រក្សាទុកទិន្នន័យជាក់ស្តែងពេលនេះភ្លាមៗ ដើម្បីអាចស្ដារឡើងវិញបានគ្រប់ពេល។"
+                    ? "ážáž Snapshot ážšáž€áŸ’ážŸáž¶áž‘áž»áž€áž‘áž·áž“áŸ’áž“áž“áŸáž™áž‡áž¶áž€áŸ‹ážŸáŸ’ážáŸ‚áž„áž–áŸáž›áž“áŸáŸ‡áž—áŸ’áž›áž¶áž˜áŸ— ážŠáž¾áž˜áŸ’áž”áž¸áž¢áž¶áž…ážŸáŸ’ážŠáž¶ážšáž¡áž¾áž„ážœáž·áž‰áž”áž¶áž“áž‚áŸ’ážšáž”áŸ‹áž–áŸáž›áŸ”"
                     : "Freeze current system state into a new snapshot right now."}
                 </p>
               </div>
@@ -2047,7 +2047,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 className="w-full py-2.5 px-3 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow transition"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isTakingSnapshot ? "animate-spin" : ""}`} />
-                <span>{isTakingSnapshot ? (lang === "km" ? "កំពុងបង្កើត..." : "Saving...") : (lang === "km" ? "បង្កើត Snapshot ភ្លាមៗ" : "Create Snapshot")}</span>
+                <span>{isTakingSnapshot ? (lang === "km" ? "áž€áŸ†áž–áž»áž„áž”áž„áŸ’áž€áž¾áž..." : "Saving...") : (lang === "km" ? "áž”áž„áŸ’áž€áž¾áž Snapshot áž—áŸ’áž›áž¶áž˜áŸ—" : "Create Snapshot")}</span>
               </button>
             </div>
 
@@ -2057,18 +2057,18 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
                   <RotateCcw className="w-4 h-4" />
                 </div>
-                <h4 className="font-mool text-xs sm:text-sm text-[#0c2340]">
-                  {lang === "km" ? "ស្ដារឡើងវិញពី File .json" : "Restore From File"}
+                <h4 className="font-siemreap font-bold text-xs sm:text-sm text-[#0c2340]">
+                  {lang === "km" ? "ážŸáŸ’ážŠáž¶ážšáž¡áž¾áž„ážœáž·áž‰áž–áž¸ File .json" : "Restore From File"}
                 </h4>
                 <p className="text-[11px] text-gray-600 leading-relaxed">
                   {lang === "km"
-                    ? "ជ្រើសរើសឯកសារ Backup .json ពីកុំព្យូទ័រ ដើម្បីស្ដារប្រព័ន្ធ និងទិន្នន័យទាំងមូលឡើងវិញភ្លាមៗ។"
+                    ? "áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸáž¯áž€ážŸáž¶ážš Backup .json áž–áž¸áž€áž»áŸ†áž–áŸ’áž™áž¼áž‘áŸážš ážŠáž¾áž˜áŸ’áž”áž¸ážŸáŸ’ážŠáž¶ážšáž”áŸ’ážšáž–áŸáž“áŸ’áž’ áž“áž·áž„áž‘áž·áž“áŸ’áž“áž“áŸáž™áž‘áž¶áŸ†áž„áž˜áž¼áž›áž¡áž¾áž„ážœáž·áž‰áž—áŸ’áž›áž¶áž˜áŸ—áŸ”"
                     : "Upload a previously saved .json backup file to restore all data."}
                 </p>
               </div>
               <label className="w-full py-2.5 px-3 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow transition cursor-pointer text-center">
                 <Upload className="w-3.5 h-3.5" />
-                <span>{lang === "km" ? "ជ្រើសរើស File Restore..." : "Select File to Restore..."}</span>
+                <span>{lang === "km" ? "áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸ File Restore..." : "Select File to Restore..."}</span>
                 <input
                   type="file"
                   accept=".json,application/json"
@@ -2083,13 +2083,13 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
           {/* Recent Snapshots History Table */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
-              <h4 className="font-mool text-xs sm:text-sm text-[#0c2340] flex items-center space-x-2">
+              <h4 className="font-siemreap font-bold text-xs sm:text-sm text-[#0c2340] flex items-center space-x-2">
                 <History className="w-4 h-4 text-amber-600" />
-                <span>{lang === "km" ? "បញ្ជី Snapshot បម្រុងទុកទិន្នន័យថ្មីៗ" : "Recent Backup Snapshots"}</span>
+                <span>{lang === "km" ? "áž”áž‰áŸ’áž‡áž¸ Snapshot áž”áž˜áŸ’ážšáž»áž„áž‘áž»áž€áž‘áž·áž“áŸ’áž“áž“áŸáž™ážáŸ’áž˜áž¸áŸ—" : "Recent Backup Snapshots"}</span>
                 <span className="text-xs font-mono font-normal text-gray-500">({backupSnapshots.length})</span>
               </h4>
               <span className="text-[11px] text-gray-500 italic">
-                {lang === "km" ? "ចុចប៊ូតុង \"ស្ដារទិន្នន័យ\" ដើម្បីត្រឡប់ទៅរក្សាទុកចាស់" : "Click Restore to rollback to any snapshot"}
+                {lang === "km" ? "áž…áž»áž…áž”áŸŠáž¼ážáž»áž„ \"ážŸáŸ’ážŠáž¶ážšáž‘áž·áž“áŸ’áž“áž“áŸáž™\" ážŠáž¾áž˜áŸ’áž”áž¸ážáŸ’ážšáž¡áž”áŸ‹áž‘áŸ…ážšáž€áŸ’ážŸáž¶áž‘áž»áž€áž…áž¶ážŸáŸ‹" : "Click Restore to rollback to any snapshot"}
               </span>
             </div>
 
@@ -2097,7 +2097,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               <div className="p-8 text-center bg-gray-50 border border-gray-200 rounded-2xl space-y-2">
                 <Database className="w-8 h-8 text-gray-400 mx-auto" />
                 <p className="text-xs text-gray-600 font-bold">
-                  {lang === "km" ? "មិនទាន់មាន Snapshot ទេ! សូមចុចបង្កើត Snapshot ថ្មីខាងលើ។" : "No snapshots recorded yet."}
+                  {lang === "km" ? "áž˜áž·áž“áž‘áž¶áž“áŸ‹áž˜áž¶áž“ Snapshot áž‘áŸ! ážŸáž¼áž˜áž…áž»áž…áž”áž„áŸ’áž€áž¾áž Snapshot ážáŸ’áž˜áž¸ážáž¶áž„áž›áž¾áŸ”" : "No snapshots recorded yet."}
                 </p>
               </div>
             ) : (
@@ -2137,14 +2137,14 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                         </div>
                         <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-500 font-mono">
                           <span>{snap.id}</span>
-                          <span>•</span>
+                          <span>â€¢</span>
                           <span>{dateStr}</span>
                         </div>
                         <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-600 pt-0.5 font-bold">
-                          <span>🛏️ បន្ទប់: {snap.stats?.roomCount ?? snap.settings?.rooms?.length ?? 0}</span>
-                          <span>🍽️ ម្ហូប: {snap.stats?.diningCount ?? snap.settings?.dining?.length ?? 0}</span>
-                          <span>🗺️ ទីតាំង: {snap.stats?.destinationCount ?? snap.settings?.destinations?.length ?? 0}</span>
-                          <span>📑 ការកក់: {snap.stats?.bookingCount ?? snap.bookings?.length ?? 0}</span>
+                          <span>ðŸ›ï¸ áž”áž“áŸ’áž‘áž”áŸ‹: {snap.stats?.roomCount ?? snap.settings?.rooms?.length ?? 0}</span>
+                          <span>ðŸ½ï¸ áž˜áŸ’áž áž¼áž”: {snap.stats?.diningCount ?? snap.settings?.dining?.length ?? 0}</span>
+                          <span>ðŸ—ºï¸ áž‘áž¸ážáž¶áŸ†áž„: {snap.stats?.destinationCount ?? snap.settings?.destinations?.length ?? 0}</span>
+                          <span>ðŸ“‘ áž€áž¶ážšáž€áž€áŸ‹: {snap.stats?.bookingCount ?? snap.bookings?.length ?? 0}</span>
                           {snap.stats?.totalRevenueUSD !== undefined && (
                             <span className="text-emerald-700">${snap.stats.totalRevenueUSD.toFixed(2)}</span>
                           )}
@@ -2168,7 +2168,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                           className="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow transition"
                         >
                           <RotateCcw className={`w-3.5 h-3.5 ${isRestoring ? "animate-spin" : ""}`} />
-                          <span>{lang === "km" ? "ស្ដារទិន្នន័យ (Restore)" : "Restore"}</span>
+                          <span>{lang === "km" ? "ážŸáŸ’ážŠáž¶ážšáž‘áž·áž“áŸ’áž“áž“áŸáž™ (Restore)" : "Restore"}</span>
                         </button>
                       </div>
                     </div>
@@ -2185,8 +2185,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-siemreap animate-in fade-in duration-200">
           <div className="bg-white border border-amber-200 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h3 className="font-mool text-base text-[#0c2340]">
-                {lang === "km" ? "➕ បន្ថែមបន្ទប់ស្នាក់នៅថ្មី" : "➕ Add New Room"}
+              <h3 className="font-siemreap font-bold text-base text-[#0c2340]">
+                {lang === "km" ? "âž• áž”áž“áŸ’ážáŸ‚áž˜áž”áž“áŸ’áž‘áž”áŸ‹ážŸáŸ’áž“áž¶áž€áŸ‹áž“áŸ…ážáŸ’áž˜áž¸" : "âž• Add New Room"}
               </h3>
               <button
                 type="button"
@@ -2201,21 +2201,21 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះបន្ទប់ (ភាសាខ្មែរ) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž”áž“áŸ’áž‘áž”áŸ‹ (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš) *
                   </label>
                   <input
                     type="text"
                     required
                     value={newRoom.nameKm}
                     onChange={(e) => setNewRoom({ ...newRoom, nameKm: e.target.value })}
-                    placeholder="ឧ. បន្ទប់ដេលុច្ស ទេសភាពទន្លេ"
+                    placeholder="áž§. áž”áž“áŸ’áž‘áž”áŸ‹ážŠáŸáž›áž»áž…áŸ’ážŸ áž‘áŸážŸáž—áž¶áž–áž‘áž“áŸ’áž›áŸ"
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   />
                 </div>
 
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះបន្ទប់ (ភាសាអង់គ្លេស) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž”áž“áŸ’áž‘áž”áŸ‹ (áž—áž¶ážŸáž¶áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ) *
                   </label>
                   <input
                     type="text"
@@ -2229,7 +2229,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    តម្លៃ ($/យប់) *
+                    ážáž˜áŸ’áž›áŸƒ ($/áž™áž”áŸ‹) *
                   </label>
                   <input
                     type="number"
@@ -2243,7 +2243,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    តម្លៃដើម ($)
+                    ážáž˜áŸ’áž›áŸƒážŠáž¾áž˜ ($)
                   </label>
                   <input
                     type="number"
@@ -2255,7 +2255,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ទំហំ (m²)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž‘áŸ†áž áŸ† (mÂ²)</label>
                   <input
                     type="number"
                     min={10}
@@ -2266,7 +2266,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ចំនួនបន្ទប់សរុប (Units)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž…áŸ†áž“áž½áž“áž”áž“áŸ’áž‘áž”áŸ‹ážŸážšáž»áž” (Units)</label>
                   <input
                     type="number"
                     min={1}
@@ -2277,18 +2277,18 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ប្រភេទគ្រែ (ភាសាខ្មែរ)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž”áŸ’ážšáž—áŸáž‘áž‚áŸ’ážšáŸ‚ (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš)</label>
                   <input
                     type="text"
                     value={newRoom.bedTypeKm}
                     onChange={(e) => setNewRoom({ ...newRoom, bedTypeKm: e.target.value })}
-                    placeholder="គ្រែឃីង ១ ឬ គ្រែទោល ២"
+                    placeholder="áž‚áŸ’ážšáŸ‚ážƒáž¸áž„ áŸ¡ áž¬ áž‚áŸ’ážšáŸ‚áž‘áŸ„áž› áŸ¢"
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ប្រភេទគ្រែ (ភាសាអង់គ្លេស)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž”áŸ’ážšáž—áŸáž‘áž‚áŸ’ážšáŸ‚ (áž—áž¶ážŸáž¶áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ)</label>
                   <input
                     type="text"
                     value={newRoom.bedTypeEn}
@@ -2299,7 +2299,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">មនុស្សចាស់ / ក្មេង (Pax)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž˜áž“áž»ážŸáŸ’ážŸáž…áž¶ážŸáŸ‹ / áž€áŸ’áž˜áŸáž„ (Pax)</label>
                   <div className="flex items-center space-x-2">
                     <input
                       type="number"
@@ -2322,22 +2322,22 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ប្រភេទទេសភាព (View)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž”áŸ’ážšáž—áŸáž‘áž‘áŸážŸáž—áž¶áž– (View)</label>
                   <input
                     type="text"
                     value={newRoom.viewTypeKm}
                     onChange={(e) => setNewRoom({ ...newRoom, viewTypeKm: e.target.value })}
-                    placeholder="ទេសភាពទន្លេមេគង្គ"
+                    placeholder="áž‘áŸážŸáž—áž¶áž–áž‘áž“áŸ’áž›áŸáž˜áŸáž‚áž„áŸ’áž‚"
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block font-bold text-gray-700">រូបភាពបន្ទប់ (Image Upload ឬ URL)</label>
+                    <label className="block font-bold text-gray-700">ážšáž¼áž”áž—áž¶áž–áž”áž“áŸ’áž‘áž”áŸ‹ (Image Upload áž¬ URL)</label>
                     <label className="cursor-pointer bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-lg text-[10px] font-bold flex items-center space-x-1">
                       <Upload className="w-3 h-3 text-amber-800" />
-                      <span>ជ្រើសរើសរូបពីទូរស័ព្ទ...</span>
+                      <span>áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸážšáž¼áž”áž–áž¸áž‘áž¼ážšážŸáŸáž–áŸ’áž‘...</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -2351,7 +2351,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                       type="text"
                       value={newRoom.imageUrl}
                       onChange={(e) => setNewRoom({ ...newRoom, imageUrl: e.target.value })}
-                      placeholder="https://... ឬ Upload ផ្ទាល់"
+                      placeholder="https://... áž¬ Upload áž•áŸ’áž‘áž¶áž›áŸ‹"
                       className="flex-1 bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs font-mono"
                     />
                     {newRoom.imageUrl && (
@@ -2363,12 +2363,12 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-bold text-gray-700 mb-1">ការពិពណ៌នាពីបន្ទប់ (ភាសាខ្មែរ)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž€áž¶ážšáž–áž·áž–ážŽáŸŒáž“áž¶áž–áž¸áž”áž“áŸ’áž‘áž”áŸ‹ (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš)</label>
                   <textarea
                     rows={2}
                     value={newRoom.descriptionKm || ""}
                     onChange={(e) => setNewRoom({ ...newRoom, descriptionKm: e.target.value })}
-                    placeholder="ពិពណ៌នាពីចំណុចពិសេសនៃបន្ទប់..."
+                    placeholder="áž–áž·áž–ážŽáŸŒáž“áž¶áž–áž¸áž…áŸ†ážŽáž»áž…áž–áž·ážŸáŸážŸáž“áŸƒáž”áž“áŸ’áž‘áž”áŸ‹..."
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   />
                 </div>
@@ -2380,13 +2380,13 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                   onClick={() => setIsAddRoomModalOpen(false)}
                   className="px-4 py-2 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-100"
                 >
-                  {lang === "km" ? "បោះបង់" : "Cancel"}
+                  {lang === "km" ? "áž”áŸ„áŸ‡áž”áž„áŸ‹" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl shadow"
                 >
-                  {lang === "km" ? "យល់ព្រមបន្ថែមបន្ទប់" : "Add Room"}
+                  {lang === "km" ? "áž™áž›áŸ‹áž–áŸ’ážšáž˜áž”áž“áŸ’ážáŸ‚áž˜áž”áž“áŸ’áž‘áž”áŸ‹" : "Add Room"}
                 </button>
               </div>
             </form>
@@ -2399,8 +2399,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-siemreap animate-in fade-in duration-200">
           <div className="bg-white border border-amber-200 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h3 className="font-mool text-base text-[#0c2340]">
-                {lang === "km" ? "✏️ កែប្រែព័ត៌មានបន្ទប់" : "✏️ Edit Room"}
+              <h3 className="font-siemreap font-bold text-base text-[#0c2340]">
+                {lang === "km" ? "âœï¸ áž€áŸ‚áž”áŸ’ážšáŸ‚áž–áŸážáŸŒáž˜áž¶áž“áž”áž“áŸ’áž‘áž”áŸ‹" : "âœï¸ Edit Room"}
               </h3>
               <button
                 type="button"
@@ -2415,7 +2415,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះបន្ទប់ (ភាសាខ្មែរ) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž”áž“áŸ’áž‘áž”áŸ‹ (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš) *
                   </label>
                   <input
                     type="text"
@@ -2428,7 +2428,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះបន្ទប់ (ភាសាអង់គ្លេស) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž”áž“áŸ’áž‘áž”áŸ‹ (áž—áž¶ážŸáž¶áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ) *
                   </label>
                   <input
                     type="text"
@@ -2440,7 +2440,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">តម្លៃ ($/យប់) *</label>
+                  <label className="block font-bold text-gray-700 mb-1">ážáž˜áŸ’áž›áŸƒ ($/áž™áž”áŸ‹) *</label>
                   <input
                     type="number"
                     min={1}
@@ -2452,7 +2452,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">តម្លៃដើម ($)</label>
+                  <label className="block font-bold text-gray-700 mb-1">ážáž˜áŸ’áž›áŸƒážŠáž¾áž˜ ($)</label>
                   <input
                     type="number"
                     min={1}
@@ -2463,7 +2463,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ទំហំ (m²)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž‘áŸ†áž áŸ† (mÂ²)</label>
                   <input
                     type="number"
                     min={10}
@@ -2474,7 +2474,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ចំនួនបន្ទប់សរុប (Units)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž…áŸ†áž“áž½áž“áž”áž“áŸ’áž‘áž”áŸ‹ážŸážšáž»áž” (Units)</label>
                   <input
                     type="number"
                     min={1}
@@ -2485,7 +2485,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ប្រភេទគ្រែ (ភាសាខ្មែរ)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž”áŸ’ážšáž—áŸáž‘áž‚áŸ’ážšáŸ‚ (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš)</label>
                   <input
                     type="text"
                     value={editingRoom.bedTypeKm || ""}
@@ -2495,7 +2495,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ប្រភេទគ្រែ (ភាសាអង់គ្លេស)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž”áŸ’ážšáž—áŸáž‘áž‚áŸ’ážšáŸ‚ (áž—áž¶ážŸáž¶áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ)</label>
                   <input
                     type="text"
                     value={editingRoom.bedTypeEn || ""}
@@ -2506,10 +2506,10 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
                 <div className="sm:col-span-2">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block font-bold text-gray-700">រូបភាពបន្ទប់ (Image Upload ឬ URL)</label>
+                    <label className="block font-bold text-gray-700">ážšáž¼áž”áž—áž¶áž–áž”áž“áŸ’áž‘áž”áŸ‹ (Image Upload áž¬ URL)</label>
                     <label className="cursor-pointer bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-lg text-[10px] font-bold flex items-center space-x-1">
                       <Upload className="w-3 h-3 text-amber-800" />
-                      <span>ជ្រើសរើសរូបថ្មី...</span>
+                      <span>áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸážšáž¼áž”ážáŸ’áž˜áž¸...</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -2534,7 +2534,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-bold text-gray-700 mb-1">ការពិពណ៌នាពីបន្ទប់ (ភាសាខ្មែរ)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž€áž¶ážšáž–áž·áž–ážŽáŸŒáž“áž¶áž–áž¸áž”áž“áŸ’áž‘áž”áŸ‹ (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš)</label>
                   <textarea
                     rows={2}
                     value={editingRoom.descriptionKm || ""}
@@ -2550,13 +2550,13 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                   onClick={() => setIsEditRoomModalOpen(false)}
                   className="px-4 py-2 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-100"
                 >
-                  {lang === "km" ? "បោះបង់" : "Cancel"}
+                  {lang === "km" ? "áž”áŸ„áŸ‡áž”áž„áŸ‹" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl shadow"
                 >
-                  {lang === "km" ? "រក្សាទុកការកែប្រែ" : "Save Changes"}
+                  {lang === "km" ? "ážšáž€áŸ’ážŸáž¶áž‘áž»áž€áž€áž¶ážšáž€áŸ‚áž”áŸ’ážšáŸ‚" : "Save Changes"}
                 </button>
               </div>
             </form>
@@ -2569,8 +2569,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-siemreap animate-in fade-in duration-200">
           <div className="bg-white border border-amber-200 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h3 className="font-mool text-base text-[#0c2340]">
-                {lang === "km" ? "➕ បន្ថែមភោជនីយដ្ឋាន / មុខម្ហូបថ្មី" : "➕ Add Dining Venue / Menu"}
+              <h3 className="font-siemreap font-bold text-base text-[#0c2340]">
+                {lang === "km" ? "âž• áž”áž“áŸ’ážáŸ‚áž˜áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“ / áž˜áž»ážáž˜áŸ’áž áž¼áž”ážáŸ’áž˜áž¸" : "âž• Add Dining Venue / Menu"}
               </h3>
               <button
                 type="button"
@@ -2585,21 +2585,21 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះភោជនីយដ្ឋាន/ហាង (ខ្មែរ) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“/áž áž¶áž„ (ážáŸ’áž˜áŸ‚ážš) *
                   </label>
                   <input
                     type="text"
                     required
                     value={newDining.nameKm}
                     onChange={(e) => setNewDining({ ...newDining, nameKm: e.target.value })}
-                    placeholder="ឧ. ភោជនីយដ្ឋាន មេគង្គប្រ៊ីស"
+                    placeholder="áž§. áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“ áž˜áŸáž‚áž„áŸ’áž‚áž”áŸ’ážšáŸŠáž¸ážŸ"
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   />
                 </div>
 
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះភោជនីយដ្ឋាន/ហាង (អង់គ្លេស) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“/áž áž¶áž„ (áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ) *
                   </label>
                   <input
                     type="text"
@@ -2612,18 +2612,18 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ប្រភេទម្ហូប (ភាសាខ្មែរ)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž”áŸ’ážšáž—áŸáž‘áž˜áŸ’áž áž¼áž” (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš)</label>
                   <input
                     type="text"
                     value={newDining.cuisineKm}
                     onChange={(e) => setNewDining({ ...newDining, cuisineKm: e.target.value })}
-                    placeholder="ម្ហូបខ្មែរ & អន្តរជាតិ"
+                    placeholder="áž˜áŸ’áž áž¼áž”ážáŸ’áž˜áŸ‚ážš & áž¢áž“áŸ’ážážšáž‡áž¶ážáž·"
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ប្រភេទម្ហូប (ភាសាអង់គ្លេស)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž”áŸ’ážšáž—áŸáž‘áž˜áŸ’áž áž¼áž” (áž—áž¶ážŸáž¶áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ)</label>
                   <input
                     type="text"
                     value={newDining.cuisineEn}
@@ -2634,33 +2634,33 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ម៉ោងបើកបម្រើ</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž˜áŸ‰áŸ„áž„áž”áž¾áž€áž”áž˜áŸ’ážšáž¾</label>
                   <input
                     type="text"
                     value={newDining.hoursKm}
                     onChange={(e) => setNewDining({ ...newDining, hoursKm: e.target.value, hoursEn: e.target.value })}
-                    placeholder="០៦:០០ - ២២:០០"
+                    placeholder="áŸ áŸ¦:áŸ áŸ  - áŸ¢áŸ¢:áŸ áŸ "
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">កម្រិតតម្លៃ (Price Range)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž€áž˜áŸ’ážšáž·ážážáž˜áŸ’áž›áŸƒ (Price Range)</label>
                   <input
                     type="text"
                     value={newDining.priceRangeUSD || "$$"}
                     onChange={(e) => setNewDining({ ...newDining, priceRangeUSD: e.target.value })}
-                    placeholder="$$ - $$$ (ឧ. $10 - $50)"
+                    placeholder="$$ - $$$ (áž§. $10 - $50)"
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs font-mono"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block font-bold text-gray-700">រូបភាពភោជនីយដ្ឋាន (Image Upload ឬ URL)</label>
+                    <label className="block font-bold text-gray-700">ážšáž¼áž”áž—áž¶áž–áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“ (Image Upload áž¬ URL)</label>
                     <label className="cursor-pointer bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-lg text-[10px] font-bold flex items-center space-x-1">
                       <Upload className="w-3 h-3 text-amber-800" />
-                      <span>ជ្រើសរើសរូបពីទូរស័ព្ទ...</span>
+                      <span>áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸážšáž¼áž”áž–áž¸áž‘áž¼ážšážŸáŸáž–áŸ’áž‘...</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -2674,7 +2674,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                       type="text"
                       value={newDining.imageUrl}
                       onChange={(e) => setNewDining({ ...newDining, imageUrl: e.target.value })}
-                      placeholder="https://... ឬ Upload រូបផ្ទាល់"
+                      placeholder="https://... áž¬ Upload ážšáž¼áž”áž•áŸ’áž‘áž¶áž›áŸ‹"
                       className="flex-1 bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs font-mono"
                     />
                     {newDining.imageUrl && (
@@ -2686,7 +2686,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-bold text-gray-700 mb-1">មុខម្ហូបល្បីៗ (បំបែកដោយសញ្ញាក្បៀស ,)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž˜áž»ážáž˜áŸ’áž áž¼áž”áž›áŸ’áž”áž¸áŸ— (áž”áŸ†áž”áŸ‚áž€ážŠáŸ„áž™ážŸáž‰áŸ’áž‰áž¶áž€áŸ’áž”áŸ€ážŸ ,)</label>
                   <input
                     type="text"
                     value={
@@ -2700,18 +2700,18 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                       const list = e.target.value.split(",").map((s) => s.trim()).filter(Boolean);
                       setNewDining({ ...newDining, signatureDishesKm: list, signatureDishesEn: list });
                     }}
-                    placeholder="អាម៉ុកត្រីមេគង្គ, បង្កងទន្លេអាំង, សាច់គោអាំង"
+                    placeholder="áž¢áž¶áž˜áŸ‰áž»áž€ážáŸ’ážšáž¸áž˜áŸáž‚áž„áŸ’áž‚, áž”áž„áŸ’áž€áž„áž‘áž“áŸ’áž›áŸáž¢áž¶áŸ†áž„, ážŸáž¶áž…áŸ‹áž‚áŸ„áž¢áž¶áŸ†áž„"
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-bold text-gray-700 mb-1">ការពិពណ៌នា (ភាសាខ្មែរ)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž€áž¶ážšáž–áž·áž–ážŽáŸŒáž“áž¶ (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš)</label>
                   <textarea
                     rows={2}
                     value={newDining.descriptionKm || ""}
                     onChange={(e) => setNewDining({ ...newDining, descriptionKm: e.target.value })}
-                    placeholder="ពិពណ៌នាពីបរិយាកាស និងរសជាតិម្ហូប..."
+                    placeholder="áž–áž·áž–ážŽáŸŒáž“áž¶áž–áž¸áž”ážšáž·áž™áž¶áž€áž¶ážŸ áž“áž·áž„ážšážŸáž‡áž¶ážáž·áž˜áŸ’áž áž¼áž”..."
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   />
                 </div>
@@ -2723,13 +2723,13 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                   onClick={() => setIsAddDiningModalOpen(false)}
                   className="px-4 py-2 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-100"
                 >
-                  {lang === "km" ? "បោះបង់" : "Cancel"}
+                  {lang === "km" ? "áž”áŸ„áŸ‡áž”áž„áŸ‹" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl shadow"
                 >
-                  {lang === "km" ? "យល់ព្រមបន្ថែម" : "Add Venue"}
+                  {lang === "km" ? "áž™áž›áŸ‹áž–áŸ’ážšáž˜áž”áž“áŸ’ážáŸ‚áž˜" : "Add Venue"}
                 </button>
               </div>
             </form>
@@ -2742,8 +2742,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-siemreap animate-in fade-in duration-200">
           <div className="bg-white border border-amber-200 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h3 className="font-mool text-base text-[#0c2340]">
-                {lang === "km" ? "✏️ កែប្រែព័ត៌មានភោជនីយដ្ឋាន/មុខម្ហូប" : "✏️ Edit Dining Venue / Menu"}
+              <h3 className="font-siemreap font-bold text-base text-[#0c2340]">
+                {lang === "km" ? "âœï¸ áž€áŸ‚áž”áŸ’ážšáŸ‚áž–áŸážáŸŒáž˜áž¶áž“áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“/áž˜áž»ážáž˜áŸ’áž áž¼áž”" : "âœï¸ Edit Dining Venue / Menu"}
               </h3>
               <button
                 type="button"
@@ -2758,7 +2758,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះភោជនីយដ្ឋាន/ហាង (ខ្មែរ) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“/áž áž¶áž„ (ážáŸ’áž˜áŸ‚ážš) *
                   </label>
                   <input
                     type="text"
@@ -2771,7 +2771,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះភោជនីយដ្ឋាន/ហាង (អង់គ្លេស) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“/áž áž¶áž„ (áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ) *
                   </label>
                   <input
                     type="text"
@@ -2783,7 +2783,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ប្រភេទម្ហូប (ភាសាខ្មែរ)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž”áŸ’ážšáž—áŸáž‘áž˜áŸ’áž áž¼áž” (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš)</label>
                   <input
                     type="text"
                     value={editingDining.cuisineKm}
@@ -2793,7 +2793,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ម៉ោងបើកបម្រើ</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž˜áŸ‰áŸ„áž„áž”áž¾áž€áž”áž˜áŸ’ážšáž¾</label>
                   <input
                     type="text"
                     value={editingDining.hoursKm}
@@ -2803,7 +2803,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">កម្រិតតម្លៃ (Price Range)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž€áž˜áŸ’ážšáž·ážážáž˜áŸ’áž›áŸƒ (Price Range)</label>
                   <input
                     type="text"
                     value={editingDining.priceRangeUSD || "$$"}
@@ -2813,7 +2813,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">សម្លៀកបំពាក់ (Dress Code)</label>
+                  <label className="block font-bold text-gray-700 mb-1">ážŸáž˜áŸ’áž›áŸ€áž€áž”áŸ†áž–áž¶áž€áŸ‹ (Dress Code)</label>
                   <input
                     type="text"
                     value={editingDining.dressCodeKm || ""}
@@ -2824,10 +2824,10 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
                 <div className="sm:col-span-2">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block font-bold text-gray-700">រូបភាពភោជនីយដ្ឋាន (Image Upload ឬ URL)</label>
+                    <label className="block font-bold text-gray-700">ážšáž¼áž”áž—áž¶áž–áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“ (Image Upload áž¬ URL)</label>
                     <label className="cursor-pointer bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-lg text-[10px] font-bold flex items-center space-x-1">
                       <Upload className="w-3 h-3 text-amber-800" />
-                      <span>ជ្រើសរើសរូបថ្មី...</span>
+                      <span>áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸážšáž¼áž”ážáŸ’áž˜áž¸...</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -2852,7 +2852,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-bold text-gray-700 mb-1">មុខម្ហូបល្បីៗ (បំបែកដោយសញ្ញាក្បៀស ,)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž˜áž»ážáž˜áŸ’áž áž¼áž”áž›áŸ’áž”áž¸áŸ— (áž”áŸ†áž”áŸ‚áž€ážŠáŸ„áž™ážŸáž‰áŸ’áž‰áž¶áž€áŸ’áž”áŸ€ážŸ ,)</label>
                   <input
                     type="text"
                     value={
@@ -2871,7 +2871,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-bold text-gray-700 mb-1">ការពិពណ៌នា (ភាសាខ្មែរ)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž€áž¶ážšáž–áž·áž–ážŽáŸŒáž“áž¶ (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš)</label>
                   <textarea
                     rows={2}
                     value={editingDining.descriptionKm || ""}
@@ -2887,13 +2887,13 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                   onClick={() => setIsEditDiningModalOpen(false)}
                   className="px-4 py-2 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-100"
                 >
-                  {lang === "km" ? "បោះបង់" : "Cancel"}
+                  {lang === "km" ? "áž”áŸ„áŸ‡áž”áž„áŸ‹" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl shadow"
                 >
-                  {lang === "km" ? "រក្សាទុកការកែប្រែ" : "Save Changes"}
+                  {lang === "km" ? "ážšáž€áŸ’ážŸáž¶áž‘áž»áž€áž€áž¶ážšáž€áŸ‚áž”áŸ’ážšáŸ‚" : "Save Changes"}
                 </button>
               </div>
             </form>
@@ -2906,8 +2906,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-siemreap animate-in fade-in duration-200">
           <div className="bg-white border border-amber-200 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h3 className="font-mool text-base text-[#0c2340]">
-                {lang === "km" ? "➕ បន្ថែមទីតាំងទេសចរណ៍ថ្មី" : "➕ Add New Destination"}
+              <h3 className="font-siemreap font-bold text-base text-[#0c2340]">
+                {lang === "km" ? "âž• áž”áž“áŸ’ážáŸ‚áž˜áž‘áž¸ážáž¶áŸ†áž„áž‘áŸážŸáž…ážšážŽáŸážáŸ’áž˜áž¸" : "âž• Add New Destination"}
               </h3>
               <button
                 type="button"
@@ -2922,21 +2922,21 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះទីតាំង (ភាសាខ្មែរ) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž‘áž¸ážáž¶áŸ†áž„ (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš) *
                   </label>
                   <input
                     type="text"
                     required
                     value={newDest.nameKm}
                     onChange={(e) => setNewDest({ ...newDest, nameKm: e.target.value })}
-                    placeholder="ឧ. ភ្នំប្រុស ភ្នំស្រី"
+                    placeholder="áž§. áž—áŸ’áž“áŸ†áž”áŸ’ážšáž»ážŸ áž—áŸ’áž“áŸ†ážŸáŸ’ážšáž¸"
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   />
                 </div>
 
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះទីតាំង (ភាសាអង់គ្លេស) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž‘áž¸ážáž¶áŸ†áž„ (áž—áž¶ážŸáž¶áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ) *
                   </label>
                   <input
                     type="text"
@@ -2949,21 +2949,21 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ប្រភេទទីតាំង</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž”áŸ’ážšáž—áŸáž‘áž‘áž¸ážáž¶áŸ†áž„</label>
                   <select
                     value={newDest.category}
                     onChange={(e) => setNewDest({ ...newDest, category: e.target.value as any })}
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   >
-                    <option value="culture-local-life">វប្បធម៌ & ជីវភាពអ្នកស្រុក (Culture)</option>
-                    <option value="beaches-nature">ឆ្នេរខ្សាច់ & ធម្មជាតិ (Nature)</option>
-                    <option value="sports-activities">កីឡា & ផ្សងព្រេង (Activities)</option>
-                    <option value="restaurants">ភោជនីយដ្ឋាន & ម្ហូបអាហារ (Dining)</option>
+                    <option value="culture-local-life">ážœáž”áŸ’áž”áž’áž˜áŸŒ & áž‡áž¸ážœáž—áž¶áž–áž¢áŸ’áž“áž€ážŸáŸ’ážšáž»áž€ (Culture)</option>
+                    <option value="beaches-nature">áž†áŸ’áž“áŸážšážáŸ’ážŸáž¶áž…áŸ‹ & áž’áž˜áŸ’áž˜áž‡áž¶ážáž· (Nature)</option>
+                    <option value="sports-activities">áž€áž¸áž¡áž¶ & áž•áŸ’ážŸáž„áž–áŸ’ážšáŸáž„ (Activities)</option>
+                    <option value="restaurants">áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“ & áž˜áŸ’áž áž¼áž”áž¢áž¶áž áž¶ážš (Dining)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ចម្ងាយពីសណ្ឋាគារ (km)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž…áž˜áŸ’áž„áž¶áž™áž–áž¸ážŸážŽáŸ’áž‹áž¶áž‚áž¶ážš (km)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -2997,10 +2997,10 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
                 <div className="sm:col-span-2">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block font-bold text-gray-700">រូបភាពទីតាំង (Image Upload ឬ URL)</label>
+                    <label className="block font-bold text-gray-700">ážšáž¼áž”áž—áž¶áž–áž‘áž¸ážáž¶áŸ†áž„ (Image Upload áž¬ URL)</label>
                     <label className="cursor-pointer bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-lg text-[10px] font-bold flex items-center space-x-1">
                       <Upload className="w-3 h-3 text-amber-800" />
-                      <span>ជ្រើសរើសរូបពីទូរស័ព្ទ...</span>
+                      <span>áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸážšáž¼áž”áž–áž¸áž‘áž¼ážšážŸáŸáž–áŸ’áž‘...</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -3014,7 +3014,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                       type="text"
                       value={newDest.imageUrl}
                       onChange={(e) => setNewDest({ ...newDest, imageUrl: e.target.value })}
-                      placeholder="https://images.unsplash.com/... ឬ Upload រូបផ្ទាល់"
+                      placeholder="https://images.unsplash.com/... áž¬ Upload ážšáž¼áž”áž•áŸ’áž‘áž¶áž›áŸ‹"
                       className="flex-1 bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs font-mono"
                     />
                     {newDest.imageUrl && (
@@ -3043,13 +3043,13 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                   onClick={() => setIsAddDestModalOpen(false)}
                   className="px-4 py-2 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-100"
                 >
-                  {lang === "km" ? "បោះបង់" : "Cancel"}
+                  {lang === "km" ? "áž”áŸ„áŸ‡áž”áž„áŸ‹" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl shadow"
                 >
-                  {lang === "km" ? "យល់ព្រមបន្ថែម" : "Add Location"}
+                  {lang === "km" ? "áž™áž›áŸ‹áž–áŸ’ážšáž˜áž”áž“áŸ’ážáŸ‚áž˜" : "Add Location"}
                 </button>
               </div>
             </form>
@@ -3062,8 +3062,8 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-siemreap animate-in fade-in duration-200">
           <div className="bg-white border border-amber-200 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h3 className="font-mool text-base text-[#0c2340]">
-                {lang === "km" ? "✏️ កែប្រែទីតាំងទេសចរណ៍" : "✏️ Edit Destination"}
+              <h3 className="font-siemreap font-bold text-base text-[#0c2340]">
+                {lang === "km" ? "âœï¸ áž€áŸ‚áž”áŸ’ážšáŸ‚áž‘áž¸ážáž¶áŸ†áž„áž‘áŸážŸáž…ážšážŽáŸ" : "âœï¸ Edit Destination"}
               </h3>
               <button
                 type="button"
@@ -3078,7 +3078,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះទីតាំង (ភាសាខ្មែរ) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž‘áž¸ážáž¶áŸ†áž„ (áž—áž¶ážŸáž¶ážáŸ’áž˜áŸ‚ážš) *
                   </label>
                   <input
                     type="text"
@@ -3091,7 +3091,7 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">
-                    ឈ្មោះទីតាំង (ភាសាអង់គ្លេស) *
+                    ážˆáŸ’áž˜áŸ„áŸ‡áž‘áž¸ážáž¶áŸ†áž„ (áž—áž¶ážŸáž¶áž¢áž„áŸ‹áž‚áŸ’áž›áŸážŸ) *
                   </label>
                   <input
                     type="text"
@@ -3103,21 +3103,21 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ប្រភេទទីតាំង</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž”áŸ’ážšáž—áŸáž‘áž‘áž¸ážáž¶áŸ†áž„</label>
                   <select
                     value={editingDest.category}
                     onChange={(e) => setEditingDest({ ...editingDest, category: e.target.value as any })}
                     className="w-full bg-[#FAF8F4] border border-gray-300 rounded-xl px-3 py-2 text-xs"
                   >
-                    <option value="culture-local-life">វប្បធម៌ & ជីវភាពអ្នកស្រុក (Culture)</option>
-                    <option value="beaches-nature">ឆ្នេរខ្សាច់ & ធម្មជាតិ (Nature)</option>
-                    <option value="sports-activities">កីឡា & ផ្សងព្រេង (Activities)</option>
-                    <option value="restaurants">ភោជនីយដ្ឋាន & ម្ហូបអាហារ (Dining)</option>
+                    <option value="culture-local-life">ážœáž”áŸ’áž”áž’áž˜áŸŒ & áž‡áž¸ážœáž—áž¶áž–áž¢áŸ’áž“áž€ážŸáŸ’ážšáž»áž€ (Culture)</option>
+                    <option value="beaches-nature">áž†áŸ’áž“áŸážšážáŸ’ážŸáž¶áž…áŸ‹ & áž’áž˜áŸ’áž˜áž‡áž¶ážáž· (Nature)</option>
+                    <option value="sports-activities">áž€áž¸áž¡áž¶ & áž•áŸ’ážŸáž„áž–áŸ’ážšáŸáž„ (Activities)</option>
+                    <option value="restaurants">áž—áŸ„áž‡áž“áž¸áž™ážŠáŸ’áž‹áž¶áž“ & áž˜áŸ’áž áž¼áž”áž¢áž¶áž áž¶ážš (Dining)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">ចម្ងាយពីសណ្ឋាគារ (km)</label>
+                  <label className="block font-bold text-gray-700 mb-1">áž…áž˜áŸ’áž„áž¶áž™áž–áž¸ážŸážŽáŸ’áž‹áž¶áž‚áž¶ážš (km)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -3151,10 +3151,10 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
 
                 <div className="sm:col-span-2">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block font-bold text-gray-700">រូបភាពទីតាំង (Image Upload ឬ URL)</label>
+                    <label className="block font-bold text-gray-700">ážšáž¼áž”áž—áž¶áž–áž‘áž¸ážáž¶áŸ†áž„ (Image Upload áž¬ URL)</label>
                     <label className="cursor-pointer bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-lg text-[10px] font-bold flex items-center space-x-1">
                       <Upload className="w-3 h-3 text-amber-800" />
-                      <span>ជ្រើសរើសរូបថ្មី...</span>
+                      <span>áž‡áŸ’ážšáž¾ážŸážšáž¾ážŸážšáž¼áž”ážáŸ’áž˜áž¸...</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -3195,13 +3195,13 @@ export const AdminSettingsPortal: React.FC<AdminSettingsPortalProps> = ({ lang }
                   onClick={() => setIsEditDestModalOpen(false)}
                   className="px-4 py-2 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-100"
                 >
-                  {lang === "km" ? "បោះបង់" : "Cancel"}
+                  {lang === "km" ? "áž”áŸ„áŸ‡áž”áž„áŸ‹" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl shadow"
                 >
-                  {lang === "km" ? "រក្សាទុកការកែប្រែ" : "Save Changes"}
+                  {lang === "km" ? "ážšáž€áŸ’ážŸáž¶áž‘áž»áž€áž€áž¶ážšáž€áŸ‚áž”áŸ’ážšáŸ‚" : "Save Changes"}
                 </button>
               </div>
             </form>

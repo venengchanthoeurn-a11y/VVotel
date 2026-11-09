@@ -1123,16 +1123,354 @@ export function generateOfficialHtmlReport(
 <head>
   <meta charset="UTF-8">
   <title>របាយការណ៍បូកសរុបប្រតិបត្តិការអាជីវកម្ម • សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Moul&family=Siemreap&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Moul&family=Siemreap&family=Kantumruy+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #f3f4f6;
+      font-family: 'Siemreap', 'Kantumruy Pro', sans-serif;
+      color: #111827;
+      padding: 24px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-mool {
+      font-family: 'Moul', cursive, serif;
+    }
+    .font-siemreap {
+      font-family: 'Siemreap', 'Kantumruy Pro', sans-serif;
+    }
+    .action-bar {
+      max-width: 900px;
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #ffffff;
+      padding: 16px 20px;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      border: 1px solid #e5e7eb;
+    }
+    .action-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .action-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 10px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-print {
+      background-color: #0c2340;
+      color: #fde68a;
+    }
+    .btn-print:hover {
+      background-color: #163a66;
+    }
+    .btn-docx {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+    .btn-docx:hover {
+      background-color: #1d4ed8;
+    }
+    .btn-excel {
+      background-color: #047857;
+      color: #ffffff;
+    }
+    .btn-excel:hover {
+      background-color: #065f46;
+    }
+    .page-sheet {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 48px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      border: 1px solid #e5e7eb;
+      position: relative;
+    }
+    .report-logo {
+      width: 48px !important;
+      height: 48px !important;
+      max-width: 48px !important;
+      max-height: 48px !important;
+      object-fit: contain !important;
+      border-radius: 10px;
+      border: 1px solid #f59e0b;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: block !important;
+      flex-shrink: 0;
+    }
+    .top-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .top-header h1 {
+      font-family: 'Moul', cursive, serif;
+      font-size: 20px;
+      color: #0c2340;
+      letter-spacing: 0.05em;
+    }
+    .top-header h2 {
+      font-family: 'Moul', cursive, serif;
+      font-size: 16px;
+      color: #0c2340;
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+    }
+    .top-header .symbols {
+      color: #b45309;
+      font-size: 14px;
+      margin-top: 6px;
+      letter-spacing: 0.3em;
+    }
+    .org-date-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #1f2937;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+    .org-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+    .org-info h2 {
+      font-family: 'Moul', cursive, serif;
+      font-size: 15px;
+      color: #0c2340;
+      line-height: 1.4;
+    }
+    .org-info p {
+      font-size: 12px;
+      color: #4b5563;
+      margin-top: 2px;
+    }
+    .date-info {
+      text-align: right;
+      padding-top: 4px;
+      font-size: 12px;
+      font-style: italic;
+      color: #374151;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    .report-title-block {
+      text-align: center;
+      margin: 24px 0;
+    }
+    .report-title-block h1 {
+      font-family: 'Moul', cursive, serif;
+      font-size: 22px;
+      color: #0c2340;
+      letter-spacing: 0.02em;
+    }
+    .report-title-block h2 {
+      font-family: 'Moul', cursive, serif;
+      font-size: 15px;
+      color: #374151;
+      margin-top: 6px;
+    }
+    .date-badge {
+      display: inline-block;
+      background: #fef3c7;
+      color: #78350f;
+      border: 1px solid #fcd34d;
+      padding: 4px 16px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .directives-box {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 12.5px;
+      margin-bottom: 24px;
+      line-height: 1.7;
+    }
+    .directives-box p {
+      margin-bottom: 6px;
+    }
+    .directives-intro {
+      padding-top: 8px;
+      margin-top: 8px;
+      border-top: 1px solid #e5e7eb;
+      color: #374151;
+      text-align: justify;
+    }
+    .section-title {
+      font-family: 'Moul', cursive, serif;
+      font-size: 14px;
+      color: #0c2340;
+      margin-bottom: 12px;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      padding: 12px 8px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+    }
+    .kpi-card .kpi-label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .kpi-card .kpi-val {
+      font-size: 18px;
+      font-weight: bold;
+      font-family: monospace, sans-serif;
+    }
+    .kpi-card .kpi-sub {
+      display: block;
+      font-size: 10.5px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    .kpi-blue { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+    .kpi-green { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+    .kpi-amber { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+    .kpi-purple { background: #faf5ff; border-color: #e9d5ff; color: #6b21a8; }
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      margin-bottom: 24px;
+    }
+    table.report-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+    table.report-table th {
+      background-color: #0c2340;
+      color: #ffffff;
+      padding: 10px 8px;
+      font-weight: bold;
+      border: 1px solid #1f2937;
+      white-space: nowrap;
+    }
+    table.report-table td {
+      padding: 8px;
+      border-bottom: 1px solid #e5e7eb;
+      color: #1f2937;
+    }
+    table.report-table tr:hover {
+      background-color: #fffbeb;
+    }
+    table.report-table tfoot tr {
+      background-color: #f3f4f6;
+      font-weight: bold;
+      border-top: 2px solid #9ca3af;
+    }
+    .badge-paid {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      font-weight: bold;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #6ee7b7;
+    }
+    .badge-pending {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      font-weight: bold;
+      background: #fffbeb;
+      color: #b45309;
+      border: 1px solid #fcd34d;
+    }
+    .remarks-block {
+      font-size: 12.5px;
+      line-height: 1.8;
+      color: #1f2937;
+      margin-bottom: 28px;
+    }
+    .remarks-block p {
+      margin-bottom: 6px;
+    }
+    .signatures-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+    }
+    .sig-role {
+      font-family: 'Moul', cursive, serif;
+      font-size: 13px;
+      color: #0c2340;
+      margin-top: 4px;
+    }
+    .sig-space {
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-style: italic;
+      font-size: 12px;
+    }
+    .cc-block {
+      margin-top: 24px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .cc-list {
+      display: flex;
+      gap: 24px;
+      margin-top: 4px;
+    }
     @media print {
       body {
         margin: 0;
         padding: 0;
-        background: white;
+        background: #ffffff;
       }
       .no-print {
         display: none !important;
@@ -1142,6 +1480,7 @@ export function generateOfficialHtmlReport(
         border: none !important;
         padding: 0 !important;
         margin: 0 !important;
+        max-width: 100% !important;
         width: 100% !important;
       }
       @page {
@@ -1149,138 +1488,132 @@ export function generateOfficialHtmlReport(
         margin: 15mm 15mm 15mm 15mm;
       }
     }
-    .font-mool {
-      font-family: 'Moul', cursive, serif;
-    }
-    .font-siemreap {
-      font-family: 'Siemreap', sans-serif;
-    }
   </style>
 </head>
-<body class="bg-gray-100 font-siemreap text-gray-900 p-4 sm:p-8 antialiased print:p-0 print:bg-white">
+<body>
 
   <!-- Printable Action Bar (Hidden in Print) -->
-  <div class="no-print max-w-4xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl shadow-md border border-gray-200">
-    <div class="flex items-center space-x-3">
-      <img src="/images/vvotel-logo.png?v=2" alt="Logo" class="w-10 h-10 rounded-xl object-contain shadow border border-amber-300 shrink-0" onerror="this.onerror=null;this.src='/icons/icon-192.png?v=2';" />
+  <div class="action-bar no-print">
+    <div class="action-bar-left">
+      <img src="/images/vvotel-logo.png?v=2" alt="Logo" class="report-logo" style="width: 44px !important; height: 44px !important; max-width: 44px !important; max-height: 44px !important; object-fit: contain !important;" onerror="this.onerror=null;this.src='/icons/icon-192.png?v=2';" />
       <div>
-        <h3 class="font-mool text-sm text-[#0c2340]">របាយការណ៍រដ្ឋបាលផ្លូវការ (Administrative Report)</h3>
-        <p class="text-xs text-gray-500 font-siemreap">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ប្រព័ន្ធកណ្តាល PMS</p>
+        <h3 class="font-mool" style="font-size: 13px; color: #0c2340;">របាយការណ៍រដ្ឋបាលផ្លូវការ (Administrative Report)</h3>
+        <p style="font-size: 11.5px; color: #6b7280;">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ប្រព័ន្ធកណ្តាល PMS</p>
       </div>
     </div>
-    <div class="flex items-center space-x-2">
-      <button onclick="window.print()" class="px-4 py-2 bg-[#0c2340] text-amber-300 rounded-xl font-bold text-xs hover:bg-[#12335e] flex items-center space-x-1.5 shadow">
+    <div class="action-bar-right">
+      <button onclick="window.print()" class="btn btn-print">
         <span>🖨️ បោះពុម្ព / រក្សាទុកជា PDF</span>
       </button>
-      <a href="/api/reports?format=docx&period=${period}" class="px-3.5 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-700 flex items-center space-x-1 shadow">
+      <a href="/api/reports?format=docx&period=${period}" class="btn btn-docx">
         <span>📄 ទាញយក Word (.docx)</span>
       </a>
-      <a href="/api/reports?format=excel&period=${period}" class="px-3.5 py-2 bg-emerald-700 text-white rounded-xl font-bold text-xs hover:bg-emerald-800 flex items-center space-x-1 shadow">
+      <a href="/api/reports?format=excel&period=${period}" class="btn btn-excel">
         <span>📊 ទាញយក Excel (.xlsx)</span>
       </a>
     </div>
   </div>
 
   <!-- A4 Official Administrative Page Document -->
-  <div class="page-sheet max-w-4xl mx-auto bg-white p-8 sm:p-12 shadow-xl border border-gray-200 rounded-xl relative print:shadow-none print:border-none print:rounded-none">
+  <div class="page-sheet">
     
     <!-- 1. Royal Kingdom Motto: TOP CENTER -->
-    <div class="text-center mb-6 space-y-1">
-      <h1 class="font-mool text-lg sm:text-xl text-[#0c2340] tracking-wide">ព្រះរាជាណាចក្រកម្ពុជា</h1>
-      <h2 class="font-mool text-sm sm:text-base text-[#0c2340] tracking-wide">ជាតិ សាសនា ព្រះមហាក្សត្រ</h2>
-      <div class="text-xs text-amber-800 tracking-[0.25em] font-serif pt-0.5">❖ ❖ ❖</div>
+    <div class="top-header">
+      <h1>ព្រះរាជាណាចក្រកម្ពុជា</h1>
+      <h2>ជាតិ សាសនា ព្រះមហាក្សត្រ</h2>
+      <div class="symbols">❖ ❖ ❖</div>
     </div>
 
     <!-- 2. Hotel on Left & Date on Right on the SAME HORIZONTAL LINE -->
-    <div class="flex justify-between items-start border-b-2 border-gray-800 pb-4 mb-6">
+    <div class="org-date-row">
       <!-- Left: Organization & Ref Number with Official Logo -->
-      <div class="flex items-center space-x-3 pt-1">
-        <img src="/images/vvotel-logo.png?v=2" alt="VVotel Logo" class="w-12 h-12 rounded-xl object-contain border border-amber-400/80 shadow-sm shrink-0" onerror="this.onerror=null;this.src='/icons/icon-192.png?v=2';" />
-        <div class="space-y-0.5 text-left">
-          <h2 class="font-mool text-base text-[#0c2340] leading-relaxed">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម</h2>
-          <p class="text-xs font-bold text-gray-700">ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ</p>
-          <p class="text-xs text-gray-600">លេខ: ០២៤/២៦ វវ.កច</p>
+      <div class="org-info">
+        <img src="/images/vvotel-logo.png?v=2" alt="VVotel Logo" class="report-logo" style="width: 48px !important; height: 48px !important; max-width: 48px !important; max-height: 48px !important; object-fit: contain !important; display: block;" onerror="this.onerror=null;this.src='/icons/icon-192.png?v=2';" />
+        <div>
+          <h2>សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម</h2>
+          <p><strong>ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ</strong></p>
+          <p>លេខ: ០២៤/២៦ វវ.កច</p>
         </div>
       </div>
 
       <!-- Right: Date aligned horizontally on the same line as hotel name -->
-      <div class="text-right pt-2">
-        <p class="text-xs font-bold italic text-gray-700">${dateInfo.standardHeaderDate}</p>
+      <div class="date-info">
+        ${dateInfo.standardHeaderDate}
       </div>
     </div>
 
     <!-- Official Report Title -->
-    <div class="text-center my-6 space-y-2">
-      <h1 class="font-mool text-xl sm:text-2xl text-[#0c2340] uppercase tracking-wide">${periodInfo.periodLabelKm}</h1>
-      <h2 class="font-mool text-sm sm:text-base text-gray-800">ស្តីពី ប្រតិបត្តិការអាជីវកម្មស្នាក់នៅ និងភោជនីយដ្ឋាន</h2>
-      <div class="inline-block bg-amber-50 text-amber-900 border border-amber-300 px-4 py-1 rounded-full text-xs font-bold font-siemreap shadow-xs">
+    <div class="report-title-block">
+      <h1>${periodInfo.periodLabelKm}</h1>
+      <h2>ស្តីពី ប្រតិបត្តិការអាជីវកម្មស្នាក់នៅ និងភោជនីយដ្ឋាន</h2>
+      <div class="date-badge">
         ${periodInfo.dateRangeText}
       </div>
     </div>
 
     <!-- Administrative Directives -->
-    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-xs sm:text-sm space-y-2 mb-6">
+    <div class="directives-box">
       <p><strong>គោរពជូន:</strong> ឯកឧត្តម/លោកជំទាវ/លោក-លោកស្រី អគ្គនាយកសណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម</p>
       <p><strong>កម្មវត្ថុ:</strong> របាយការណ៍បូកសរុបទិន្នន័យភ្ញៀវកក់បន្ទប់ស្នាក់នៅ ការកក់តុអាហារ ស្ថានភាពចំណូល និងប្រតិបត្តិការអាជីវកម្មសរុប។</p>
       <p><strong>យោង:</strong> ប្រព័ន្ធគ្រប់គ្រងសណ្ឋាគារកណ្តាល VVotel PMS Cloud Database & ALL Accor Interface។</p>
-      <p class="pt-2 text-gray-700 leading-relaxed border-t border-gray-200">
+      <p class="directives-intro">
         សេចក្តីដូចបានជម្រាបជូនក្នុងកម្មវត្ថុ និងយោងខាងលើ ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ នៃសណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម មានកិត្តិយសសូមគោរពជម្រាបជូននូវរបាយការណ៍បូកសរុបប្រតិបត្តិការ និងស្ថិតិលម្អិតដូចខាងក្រោម៖
       </p>
     </div>
 
     <!-- Section I: KPI Cards Summary -->
-    <div class="mb-6">
-      <h3 class="font-mool text-sm text-[#0c2340] mb-3">I. តារាងស្ថិតិសង្ខេបប្រតិបត្តិការ (Executive Operational Summary)</h3>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-        <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl">
-          <span class="text-xs text-blue-800 font-bold block">ការកក់សរុប</span>
-          <span class="text-xl font-bold text-blue-900 font-mono">${toKhmerNum(metrics.totalBookings)}</span>
-          <span class="text-[11px] text-gray-500 block">បន្ទប់ ${toKhmerNum(metrics.roomBookings)} | តុ ${toKhmerNum(metrics.diningBookings)}</span>
+    <div style="margin-bottom: 24px;">
+      <h3 class="section-title">I. តារាងស្ថិតិសង្ខេបប្រតិបត្តិការ (Executive Operational Summary)</h3>
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-blue">
+          <span class="kpi-label">ការកក់សរុប</span>
+          <span class="kpi-val">${toKhmerNum(metrics.totalBookings)}</span>
+          <span class="kpi-sub">បន្ទប់ ${toKhmerNum(metrics.roomBookings)} | តុ ${toKhmerNum(metrics.diningBookings)}</span>
         </div>
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-          <span class="text-xs text-emerald-800 font-bold block">កំពុងស្នាក់នៅ (In-House)</span>
-          <span class="text-xl font-bold text-emerald-900 font-mono">${toKhmerNum(metrics.inHouseCount)}</span>
-          <span class="text-[11px] text-gray-500 block">ភ្ញៀវសកម្ម</span>
+        <div class="kpi-card kpi-green">
+          <span class="kpi-label">កំពុងស្នាក់នៅ (In-House)</span>
+          <span class="kpi-val">${toKhmerNum(metrics.inHouseCount)}</span>
+          <span class="kpi-sub">ភ្ញៀវសកម្ម</span>
         </div>
-        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl">
-          <span class="text-xs text-amber-800 font-bold block">ចំណូលសរុប ($ USD)</span>
-          <span class="text-xl font-bold text-amber-900 font-mono">$${metrics.totalPaidUSD.toFixed(2)}</span>
-          <span class="text-[11px] text-gray-500 block">ទូទាត់រួចរាល់</span>
+        <div class="kpi-card kpi-amber">
+          <span class="kpi-label">ចំណូលសរុប ($ USD)</span>
+          <span class="kpi-val">$${metrics.totalPaidUSD.toFixed(2)}</span>
+          <span class="kpi-sub">ទូទាត់រួចរាល់</span>
         </div>
-        <div class="p-3 bg-purple-50 border border-purple-200 rounded-xl">
-          <span class="text-xs text-purple-800 font-bold block">ចំណូលសរុប (៛ KHR)</span>
-          <span class="text-base sm:text-lg font-bold text-purple-900 font-mono">${toKhmerNum(metrics.totalPaidKHR.toLocaleString())} ៛</span>
-          <span class="text-[11px] text-gray-500 block">អត្រា ៤,១០០ ៛</span>
+        <div class="kpi-card kpi-purple">
+          <span class="kpi-label">ចំណូលសរុប (៛ KHR)</span>
+          <span class="kpi-val" style="font-size: 15px;">${toKhmerNum(metrics.totalPaidKHR.toLocaleString())} ៛</span>
+          <span class="kpi-sub">អត្រា ៤,១០០ ៛</span>
         </div>
       </div>
     </div>
 
     <!-- Section II: Detailed Table -->
-    <div class="mb-6">
-      <h3 class="font-mool text-sm text-[#0c2340] mb-3">II. តារាងបញ្ជីលម្អិតនៃប្រតិបត្តិការ (Detailed Operational Records)</h3>
-      <div class="overflow-x-auto border border-gray-300 rounded-xl">
-        <table class="w-full text-left border-collapse">
+    <div style="margin-bottom: 24px;">
+      <h3 class="section-title">II. តារាងបញ្ជីលម្អិតនៃប្រតិបត្តិការ (Detailed Operational Records)</h3>
+      <div class="table-container">
+        <table class="report-table">
           <thead>
-            <tr class="bg-[#0c2340] text-white text-[12px] font-bold">
-              <th class="py-2.5 px-2 text-center">ល.រ</th>
-              <th class="py-2.5 px-2">កូដកក់</th>
-              <th class="py-2.5 px-2">ឈ្មោះភ្ញៀវ</th>
-              <th class="py-2.5 px-2">សេវាកម្ម / បន្ទប់</th>
-              <th class="py-2.5 px-2 text-center">កាលបរិច្ឆេទ</th>
-              <th class="py-2.5 px-2 text-center">ការទូទាត់</th>
-              <th class="py-2.5 px-2 text-center">ស្ថានភាព</th>
-              <th class="py-2.5 px-2 text-right">ទឹកប្រាក់ ($)</th>
-              <th class="py-2.5 px-2 text-right">ទឹកប្រាក់ (៛)</th>
+            <tr>
+              <th style="text-align: center; width: 40px;">ល.រ</th>
+              <th style="width: 100px;">កូដកក់</th>
+              <th>ឈ្មោះភ្ញៀវ</th>
+              <th>សេវាកម្ម / បន្ទប់</th>
+              <th style="text-align: center; width: 90px;">កាលបរិច្ឆេទ</th>
+              <th style="text-align: center; width: 85px;">ការទូទាត់</th>
+              <th style="text-align: center; width: 85px;">ស្ថានភាព</th>
+              <th style="text-align: right; width: 90px;">ទឹកប្រាក់ ($)</th>
+              <th style="text-align: right; width: 110px;">ទឹកប្រាក់ (៛)</th>
             </tr>
           </thead>
           <tbody>
             ${tableRows}
           </tbody>
           <tfoot>
-            <tr class="bg-gray-100 font-bold text-xs border-t-2 border-gray-400">
-              <td colspan="7" class="py-3 px-3 text-right text-gray-800 font-mool">សរុបរួម (GRAND TOTAL):</td>
-              <td class="py-3 px-2 text-right font-mono text-[#0c2340] text-sm">$${metrics.totalPaidUSD.toFixed(2)}</td>
-              <td class="py-3 px-2 text-right font-mono text-gray-900 text-sm">${toKhmerNum(metrics.totalPaidKHR.toLocaleString())} ៛</td>
+            <tr>
+              <td colspan="7" style="text-align: right; padding: 10px; font-weight: bold; font-family: 'Siemreap', sans-serif;">សរុបរួម (GRAND TOTAL):</td>
+              <td style="text-align: right; font-family: monospace; font-size: 13px; font-weight: bold; color: #0c2340;">$${metrics.totalPaidUSD.toFixed(2)}</td>
+              <td style="text-align: right; font-family: monospace; font-size: 13px; font-weight: bold; color: #111827;">${toKhmerNum(metrics.totalPaidKHR.toLocaleString())} ៛</td>
             </tr>
           </tfoot>
         </table>
@@ -1288,38 +1621,38 @@ export function generateOfficialHtmlReport(
     </div>
 
     <!-- Section III: Administrative Conclusions -->
-    <div class="mb-8 space-y-1.5 text-xs sm:text-sm text-gray-800">
-      <h3 class="font-mool text-sm text-[#0c2340] mb-2">III. ការសន្និដ្ឋាន និងសំណូមពរ (Administrative Conclusion & Remarks)</h3>
+    <div class="remarks-block">
+      <h3 class="section-title">III. ការសន្និដ្ឋាន និងសំណូមពរ (Administrative Conclusion & Remarks)</h3>
       <p>១. ប្រតិបត្តិការទទួលភ្ញៀវស្នាក់នៅ និងភោជនីយដ្ឋានប្រព្រឹត្តទៅដោយរលូន ស្របតាមបទដ្ឋានសេវាកម្មលំដាប់ផ្កាយ ៥ និងក្រមសីលធម៌វិជ្ជាជីវៈខ្ពស់។</p>
       <p>២. ប្រព័ន្ធទូទាត់ប្រាក់ឌីជីថល Bakong KHQR និង Card 3DS ធានាសុវត្ថិភាពប្រតិបត្តិការ ១០០% ការពារហានិភ័យ និងគ្មានការក្លែងបន្លំ។</p>
       <p>៣. ទិន្នន័យប្រតិបត្តិការទាំងអស់ត្រូវបានកត់ត្រា និងធ្វើសមកាលកម្មស្វ័យប្រវត្តិក្នងប្រព័ន្ធកណ្តាល VVotel PMS និង Telegram Real-time Bot (@vvotel_bot)។</p>
     </div>
 
     <!-- Signatures and Official Stamp Blocks -->
-    <div class="grid grid-cols-2 gap-8 pt-4 border-t border-gray-300">
+    <div class="signatures-grid">
       <!-- Left Signature: Chief Accountant -->
-      <div class="text-center space-y-1">
-        <p class="font-bold text-xs text-gray-700">បានឃើញ និងឯកភាព</p>
-        <p class="font-mool text-xs sm:text-sm text-[#0c2340]">ប្រធានផ្នែកគណនេយ្យ និងហិរញ្ញវត្ថុ</p>
-        <div class="h-24 flex items-center justify-center text-gray-400 italic text-xs">
+      <div>
+        <p style="font-weight: bold; font-size: 12px; color: #374151;">បានឃើញ និងឯកភាព</p>
+        <p class="sig-role">ប្រធានផ្នែកគណនេយ្យ និងហិរញ្ញវត្ថុ</p>
+        <div class="sig-space">
           ( ហត្ថលេខា និងត្រា )
         </div>
       </div>
 
       <!-- Right Signature: Report Compiler -->
-      <div class="text-center space-y-1">
-        <p class="text-xs text-gray-600">${dateInfo.standardHeaderDate}</p>
-        <p class="font-mool text-xs sm:text-sm text-[#0c2340]">អ្នកធ្វើតារាងរបាយការណ៍</p>
-        <div class="h-24 flex items-center justify-center text-gray-400 italic text-xs">
+      <div>
+        <p style="font-size: 12px; color: #4b5563;">${dateInfo.standardHeaderDate}</p>
+        <p class="sig-role">អ្នកធ្វើតារាងរបាយការណ៍</p>
+        <div class="sig-space">
           ( ហត្ថលេខា និងត្រា )
         </div>
       </div>
     </div>
 
     <!-- Bottom CC -->
-    <div class="mt-6 pt-3 border-t border-gray-200 text-[11px] text-gray-500">
+    <div class="cc-block">
       <strong>កន្លែងទទួល (CC):</strong>
-      <div class="flex gap-6 mt-1">
+      <div class="cc-list">
         <span>- ក្រុមប្រឹក្សាភិបាល</span>
         <span>- នាយកដ្ឋានគ្រប់គ្រងទូទៅ</span>
         <span>- ឯកសារ-កាលប្បវត្ត</span>
