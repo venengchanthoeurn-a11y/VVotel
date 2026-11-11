@@ -53,7 +53,7 @@ export const SPECIAL_OFFERS: SpecialOffer[] = [
       { en: "Late Check-out until 14:00", km: "ចាកចេញយឺតរហូតដល់ម៉ោង ២ រសៀល" },
     ],
     imageUrl:
-      "/images/rooms/vv_google_maps_photo.jpg",
+      "/images/rooms/vv_superior_bed.jpg?v=4",
   },
   {
     id: "family-holiday",
@@ -82,7 +82,7 @@ export const SPECIAL_OFFERS: SpecialOffer[] = [
       { en: "Complimentary extra rollaway bed in suite", km: "គ្រែបន្ថែមឥតគិតថ្លៃក្នុងបន្ទប់ស្វ៊ីត" },
     ],
     imageUrl:
-      "/images/rooms/vv_executive_living.jpg",
+      "/images/rooms/vv_family_space.jpg?v=4",
   },
   {
     id: "romantic-retreat",

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vvotel-v3';
+const CACHE_NAME = 'vvotel-v4';
 const PRECACHE_ASSETS = [
   '/',
   '/manifest.json?v=2',

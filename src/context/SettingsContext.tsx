@@ -5,7 +5,7 @@ import { SiteSettings, DEFAULT_SETTINGS, sanitizeMediaSettings } from "@/lib/set
 import { recordClientAutoBackup } from "@/lib/clientBackup";
 import { BookingRecord } from "@/lib/bookings";
 
-const PERSISTED_SETTINGS_KEY = "vvotel_persisted_site_settings";
+const PERSISTED_SETTINGS_KEY = "vvotel_persisted_site_settings_v4";
 
 interface SettingsContextType {
   settings: SiteSettings;
@@ -32,6 +32,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Synchronously load from localStorage on client mount so settings are instantly restored
   useEffect(() => {
     try {
+      if (typeof window !== "undefined") {
+        // Purge obsolete legacy storage keys that may contain old building or pool photos
+        localStorage.removeItem("vvotel_persisted_site_settings");
+        localStorage.removeItem("vvotel_persisted_site_settings_v2");
+        localStorage.removeItem("vvotel_persisted_site_settings_v3");
+      }
       const local = localStorage.getItem(PERSISTED_SETTINGS_KEY);
       if (local) {
         const rawParsed = JSON.parse(local);

@@ -132,7 +132,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 85,
         size: "34 m²",
         bed: "1 King Bed or 2 Twins",
-        img: "/images/rooms/vv_standard_king.jpg?v=3",
+        img: "/images/rooms/vv_standard_king.jpg?v=4",
       },
       "superior-river": {
         nameEn: "Superior Room River View",
@@ -140,7 +140,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 125,
         size: "42 m²",
         bed: "1 King Bed / Balcony",
-        img: "/images/rooms/vv_superior_bed.jpg?v=3",
+        img: "/images/rooms/vv_superior_bed.jpg?v=4",
       },
       "executive-suite": {
         nameEn: "Executive Mekong Suite (1 Bedroom)",
@@ -148,7 +148,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 195,
         size: "68 m²",
         bed: "1 Super King / Living Lounge",
-        img: "/images/rooms/vv_suite_bedroom.jpg?v=3",
+        img: "/images/rooms/vv_suite_bedroom.jpg?v=4",
       },
       "royal-family-suite": {
         nameEn: "Royal Family River Suite (2 Bedroom)",
@@ -156,7 +156,7 @@ export const BookingBar: React.FC = () => {
         basePrice: 280,
         size: "95 m²",
         bed: "2 En-suite Bedrooms / Dining Area",
-        img: "/images/rooms/vv_family_space.jpg?v=3",
+        img: "/images/rooms/vv_family_space.jpg?v=4",
       },
       "royal-family": {
         nameEn: "Royal Family River Suite (2 Bedroom)",
@@ -164,20 +164,29 @@ export const BookingBar: React.FC = () => {
         basePrice: 280,
         size: "95 m²",
         bed: "2 En-suite Bedrooms / Dining Area",
-        img: "/images/rooms/vv_family_space.jpg?v=3",
+        img: "/images/rooms/vv_family_space.jpg?v=4",
       },
     };
 
     if (settings.rooms && settings.rooms.length > 0) {
       settings.rooms.forEach((r) => {
+        const isLegacyBuilding =
+          r.imageUrl &&
+          (r.imageUrl.includes("vv_real_room") ||
+           r.imageUrl.includes("vv_google_maps") ||
+           r.imageUrl.includes("vv_executive_living") ||
+           r.imageUrl.includes("vv_hotel_main_facade") ||
+           r.imageUrl.includes("vv_pool"));
+
         const cleanImg =
+          !isLegacyBuilding &&
           r.imageUrl &&
           !r.imageUrl.includes("unsplash.com") &&
           !r.imageUrl.includes("website-files.com") &&
           !r.imageUrl.startsWith("http://") &&
           !r.imageUrl.startsWith("https://")
             ? r.imageUrl
-            : baseCatalog[r.id]?.img || "/images/rooms/vv_deluxe_double.jpg";
+            : baseCatalog[r.id]?.img || "/images/rooms/vv_standard_king.jpg?v=4";
 
         baseCatalog[r.id] = {
           nameEn: r.nameEn,
@@ -1079,7 +1088,7 @@ export const BookingBar: React.FC = () => {
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.currentTarget.onerror = null;
-                                e.currentTarget.src = "/images/rooms/vv_standard_king.jpg?v=3";
+                                e.currentTarget.src = "/images/rooms/vv_standard_king.jpg?v=4";
                               }}
                             />
                             <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">

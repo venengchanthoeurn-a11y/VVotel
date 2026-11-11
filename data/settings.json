@@ -39,7 +39,7 @@
       "bedTypeEn": "1 King Bed or 2 Twin Beds",
       "viewKm": "ទេសភាពទីក្រុងកំពង់ចាម",
       "viewEn": "Kampong Cham City Skyline",
-      "imageUrl": "/images/rooms/vv_standard_king.jpg?v=3",
+      "imageUrl": "/images/rooms/vv_standard_king.jpg?v=4",
       "availableCount": 15,
       "enabled": true
     },
@@ -58,7 +58,7 @@
       "bedTypeEn": "1 King Bed with Luxury Pillowtop",
       "viewKm": "ទេសភាពទន្លេមេគង្គ និងស្ពានគីហ្សូណា",
       "viewEn": "Direct Mekong River & Kizuna Bridge View",
-      "imageUrl": "/images/rooms/vv_superior_bed.jpg?v=3",
+      "imageUrl": "/images/rooms/vv_superior_bed.jpg?v=4",
       "availableCount": 12,
       "enabled": true
     },
@@ -77,7 +77,7 @@
       "bedTypeEn": "1 Master King Bed + Daybed Sofa",
       "viewKm": "ទេសភាពមាត់ទន្លេ ១៨០ ដឺក្រេ និងបន្ទប់ទទួលភ្ញៀវ",
       "viewEn": "180° Panoramic Riverfront with Private Balcony",
-      "imageUrl": "/images/rooms/vv_suite_bedroom.jpg?v=3",
+      "imageUrl": "/images/rooms/vv_suite_bedroom.jpg?v=4",
       "availableCount": 8,
       "enabled": true
     },
@@ -96,7 +96,7 @@
       "bedTypeEn": "2 King Master Bedrooms + 2 Twin Beds",
       "viewKm": "ទេសភាពទន្លេមេគង្គពេញលេញ ផ្ទះបាយ និងអាងត្រាំទឹក",
       "viewEn": "Full Mekong View with Dining Kitchen & Jacuzzi",
-      "imageUrl": "/images/rooms/vv_family_space.jpg?v=3",
+      "imageUrl": "/images/rooms/vv_family_space.jpg?v=4",
       "availableCount": 4,
       "enabled": true
     }
