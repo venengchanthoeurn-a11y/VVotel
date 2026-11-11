@@ -377,6 +377,10 @@ export async function sendTelegramReportMenu(chatId: string | number) {
       ],
       [
         {
+          text: "📑 ទាញយក CSV (.csv)",
+          callback_data: "cmd_report_csv",
+        },
+        {
           text: "📕 បើកមើល / បោះពុម្ព PDF ផ្លូវការ",
           url: `${APP_BASE_URL}/api/reports?format=html`,
         },
@@ -460,6 +464,9 @@ export async function sendTelegramReportExcel(chatId: string | number) {
         inline_keyboard: [
           [
             { text: "📄 ទាញយក Word (.docx)", callback_data: "cmd_report_docx" },
+            { text: "📑 ទាញយក CSV (.csv)", callback_data: "cmd_report_csv" },
+          ],
+          [
             { text: "🔄 ត្រឡប់ទៅម៉ឺនុយរបាយការណ៍", callback_data: "cmd_report" },
           ],
         ],
@@ -470,6 +477,98 @@ export async function sendTelegramReportExcel(chatId: string | number) {
     return await sendTelegramMessage(
       chatId,
       "❌ មានបញ្ហាក្នុងការបង្កើតរបាយការណ៍ Excel សូមសាកល្បងម្តងទៀត។"
+    );
+  }
+}
+
+/**
+ * Generate and deliver official CSV Administrative Report
+ */
+export async function sendTelegramReportCsv(chatId: string | number) {
+  try {
+    await sendTelegramMessage(
+      chatId,
+      "⏳ <i>កំពុងរៀបចំផលិតរបាយការណ៍រដ្ឋបាលជាទម្រង់ CSV (UTF-8 BOM)...</i>"
+    );
+    const bookings = getAllBookings();
+    const dateInfo = getOfficialKhmerDate();
+    const metrics = computeReportMetrics(bookings);
+
+    const letterhead = [
+      `"ព្រះរាជាណាចក្រកម្ពុជា • ជាតិ សាសនា ព្រះមហាក្សត្រ"`,
+      `"សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ"`,
+      `"របាយការណ៍បូកសរុបប្រតិបត្តិការ • កាលបរិច្ឆេទ: ${dateInfo.standardHeaderDate}"`,
+      `"ចំនួនការកក់សរុប: ${bookings.length} | ចំណូលសរុប USD: $${metrics.totalPaidUSD.toFixed(2)} | ចំណូលសរុប KHR: ${metrics.totalPaidKHR.toLocaleString()} ៛"`,
+      `""`,
+    ];
+
+    const headers = [
+      "ល.រ (No),កូដកក់ (Booking ID),ប្រភេទ (Category),ឈ្មោះភ្ញៀវ (Guest Name),លេខទូរស័ព្ទ (Phone),សេវាកម្ម/បន្ទប់ (Room/Venue),ថ្ងៃចូល (Check-In),ថ្ងៃចេញ (Check-Out),ចំនួនភ្ញៀវ (Guests),ទឹកប្រាក់ ($ USD),ទឹកប្រាក់ (៛ KHR),ស្ថានភាពទូទាត់ (Payment Status),ស្ថានភាពស្នាក់នៅ (Stay Status)",
+    ];
+    const rows = bookings.map((b, i) =>
+      [
+        i + 1,
+        `"${b.id}"`,
+        b.bookingCategory === "DINING" || b.id.startsWith("DIN") ? '"ភោជនីយដ្ឋាន (Dining)"' : '"បន្ទប់ស្នាក់នៅ (Room)"',
+        `"${(b.guestName || "").replace(/"/g, '""')}"`,
+        `"${(b.phone || "").replace(/"/g, '""')}"`,
+        `"${(b.roomNameKm || b.roomNameEn || b.roomType || "").replace(/"/g, '""')}"`,
+        `"${b.checkIn}"`,
+        `"${b.checkOut || b.checkIn}"`,
+        b.adults || 1,
+        b.totalAmountUSD || 0,
+        b.totalAmountKHR || 0,
+        b.paymentStatus === "PAID" ? '"បង់ប្រាក់រួច (PAID)"' : '"មិនទាន់បង់ (PENDING)"',
+        b.stayStatus === "CHECKED_IN" || b.stayStatus === "SEATED" ? '"កំពុងស្នាក់នៅ (IN_HOUSE)"' : b.stayStatus === "CHECKED_OUT" ? '"បានចាកចេញ (CHECKED_OUT)"' : '"បានបញ្ជាក់ (CONFIRMED)"',
+      ].join(",")
+    );
+
+    const totalRow = [
+      `""`,
+      `"GRAND TOTAL"`,
+      `""`,
+      `""`,
+      `""`,
+      `""`,
+      `""`,
+      `""`,
+      `""`,
+      metrics.totalPaidUSD.toFixed(2),
+      metrics.totalPaidKHR,
+      `""`,
+      `""`,
+    ].join(",");
+
+    const csvData = "\uFEFF" + [...letterhead, headers[0], ...rows, totalRow].join("\r\n");
+    const buffer = Buffer.from(csvData, "utf-8");
+    const filename = `VVotel_Official_Report_${dateInfo.isoDate}.csv`;
+    const caption = `
+📑 <b>របាយការណ៍ទិន្នន័យ (CSV Document • .csv)</b>
+<i>សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • UTF-8 BOM សម្រាប់ Excel</i>
+━━━━━━━━━━━━━━━━━━━━━━
+• <b>កាលបរិច្ឆេទ:</b> ${dateInfo.standardHeaderDate}
+• <b>ចំនួនប្រតិបត្តិការ:</b> ${bookings.length} ការកក់
+• <b>ភាពត្រូវគ្នា:</b> UTF-8 BOM បង្ហាញអក្សរខ្មែរច្បាស់ត្រឹមត្រូវ 100% លើ Microsoft Excel គ្រប់ជំនាន់។
+`;
+
+    return await sendTelegramDocument(chatId, buffer, filename, caption, {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "📄 ទាញយក Word (.docx)", callback_data: "cmd_report_docx" },
+            { text: "📊 ទាញយក Excel (.xlsx)", callback_data: "cmd_report_excel" },
+          ],
+          [
+            { text: "🔄 ត្រឡប់ទៅម៉ឺនុយរបាយការណ៍", callback_data: "cmd_report" },
+          ],
+        ],
+      },
+    });
+  } catch (err) {
+    console.error("Error sending csv report to telegram:", err);
+    return await sendTelegramMessage(
+      chatId,
+      "❌ មានបញ្ហាក្នុងការបង្កើតរបាយការណ៍ CSV សូមសាកល្បងម្តងទៀត។"
     );
   }
 }
@@ -862,6 +961,8 @@ export async function handleTelegramUpdate(update: any) {
           return await sendTelegramReportDocx(chatId);
         case "cmd_report_excel":
           return await sendTelegramReportExcel(chatId);
+        case "cmd_report_csv":
+          return await sendTelegramReportCsv(chatId);
         case "cmd_pms":
           return await sendTelegramPmsBridge(chatId);
         case "cmd_admin":

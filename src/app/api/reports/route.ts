@@ -6,6 +6,7 @@ import {
   generateOfficialHtmlReport,
   getOfficialKhmerDate,
   filterBookingsByPeriod,
+  computeReportMetrics,
   ReportPeriod,
 } from "@/lib/reports";
 import { verifyAuth } from "@/lib/auth";
@@ -90,29 +91,55 @@ async function handleReportRequest(
   if (format === "csv") {
     const periodInfo = filterBookingsByPeriod(bookings, period, refDate);
     const filteredList = periodInfo.filtered;
+    const metrics = computeReportMetrics(filteredList);
+
+    const letterhead = [
+      `"ព្រះរាជាណាចក្រកម្ពុជា • ជាតិ សាសនា ព្រះមហាក្សត្រ"`,
+      `"សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ផ្នែករដ្ឋបាល និងហិរញ្ញវត្ថុ"`,
+      `"របាយការណ៍បូកសរុបប្រតិបត្តិការ (${periodInfo.periodLabelKm}) • កាលបរិច្ឆេទ: ${dateInfo.standardHeaderDate}"`,
+      `"ចំនួនការកក់សរុប: ${filteredList.length} | ចំណូលសរុប USD: $${metrics.totalPaidUSD.toFixed(2)} | ចំណូលសរុប KHR: ${metrics.totalPaidKHR.toLocaleString()} ៛"`,
+      `""`,
+    ];
 
     const headers = [
-      "No,ID,Category,Guest Name,Phone,Unit,CheckIn,CheckOut,Guests,AmountUSD,AmountKHR,PaymentStatus,StayStatus",
+      "ល.រ (No),កូដកក់ (Booking ID),ប្រភេទ (Category),ឈ្មោះភ្ញៀវ (Guest Name),លេខទូរស័ព្ទ (Phone),សេវាកម្ម/បន្ទប់ (Room/Venue),ថ្ងៃចូល (Check-In),ថ្ងៃចេញ (Check-Out),ចំនួនភ្ញៀវ (Guests),ទឹកប្រាក់ ($ USD),ទឹកប្រាក់ (៛ KHR),ស្ថានភាពទូទាត់ (Payment Status),ស្ថានភាពស្នាក់នៅ (Stay Status)",
     ];
     const rows = filteredList.map((b, i) =>
       [
         i + 1,
-        b.id,
-        b.bookingCategory || "ROOM",
-        `"${b.guestName}"`,
-        `"${b.phone || ""}"`,
-        `"${b.roomNameEn || b.roomType || ""}"`,
-        b.checkIn,
-        b.checkOut,
+        `"${b.id}"`,
+        b.bookingCategory === "DINING" || b.id.startsWith("DIN") ? '"ភោជនីយដ្ឋាន (Dining)"' : '"បន្ទប់ស្នាក់នៅ (Room)"',
+        `"${(b.guestName || "").replace(/"/g, '""')}"`,
+        `"${(b.phone || "").replace(/"/g, '""')}"`,
+        `"${(b.roomNameKm || b.roomNameEn || b.roomType || "").replace(/"/g, '""')}"`,
+        `"${b.checkIn}"`,
+        `"${b.checkOut || b.checkIn}"`,
         b.adults || 1,
         b.totalAmountUSD || 0,
         b.totalAmountKHR || 0,
-        b.paymentStatus,
-        b.stayStatus,
+        b.paymentStatus === "PAID" ? '"បង់ប្រាក់រួច (PAID)"' : '"មិនទាន់បង់ (PENDING)"',
+        b.stayStatus === "CHECKED_IN" || b.stayStatus === "SEATED" ? '"កំពុងស្នាក់នៅ (IN_HOUSE)"' : b.stayStatus === "CHECKED_OUT" ? '"បានចាកចេញ (CHECKED_OUT)"' : '"បានបញ្ជាក់ (CONFIRMED)"',
       ].join(",")
     );
-    const csvData = "\uFEFF" + [headers, ...rows].join("\n");
-    const filename = `VVotel_${period}_Report_${dateInfo.isoDate}.csv`;
+
+    const totalRow = [
+      `""`,
+      `"GRAND TOTAL"`,
+      `""`,
+      `""`,
+      `""`,
+      `""`,
+      `""`,
+      `""`,
+      `""`,
+      metrics.totalPaidUSD.toFixed(2),
+      metrics.totalPaidKHR,
+      `""`,
+      `""`,
+    ].join(",");
+
+    const csvData = "\uFEFF" + [...letterhead, headers[0], ...rows, totalRow].join("\r\n");
+    const filename = `VVotel_Official_${period}_Report_${dateInfo.isoDate}.csv`;
 
     return new NextResponse(csvData, {
       status: 200,

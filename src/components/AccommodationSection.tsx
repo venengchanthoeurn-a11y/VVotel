@@ -69,12 +69,12 @@ export const ROOMS: RoomItem[] = [
       en: "Designed for business or leisure travelers, our Standard Room features plush signature bedding, an ergonomic workstation, high-speed Wi-Fi, and expansive soundproof windows overlooking the vibrant streetscapes of Kampong Cham.",
       km: "រចនាឡើងយ៉ាងស័ក្តិសមសម្រាប់ភ្ញៀវទេសចរនិងធុរកិច្ច បន្ទប់ស្តង់ដារបំពាក់ដោយពូកប្រណីត តុធ្វើការ អ៊ីនធឺណិតល្បឿនលឿន និងបង្អួចកញ្ចក់ការពារសំឡេងយ៉ាងទូលាយមើលឃើញទិដ្ឋភាពក្រុងកំពង់ចាម។",
     },
-    imageUrl: "/images/rooms/vv_real_room_1280_5.jpg",
+    imageUrl: "/images/rooms/vv_standard_king.jpg?v=3",
     galleryImages: [
-      "/images/rooms/vv_real_room_1280_5.jpg",
-      "/images/rooms/vv_google_maps_photo.jpg",
-      "/images/rooms/vv_standard_king.jpg",
-      "/images/rooms/vv_real_room_1280_1.jpg",
+      "/images/rooms/vv_standard_king.jpg?v=3",
+      "/images/rooms/vv_deluxe_double.jpg",
+      "/images/rooms/vv_room_bathroom.jpg",
+      "/images/rooms/vv_room_view.jpg",
     ],
     highlight: {
       en: "Best Value",
@@ -121,12 +121,12 @@ export const ROOMS: RoomItem[] = [
       en: "Indulge in peaceful mornings watching traditional longboats glide across the golden waters of the Mekong. Features a private furnished balcony, marble bathroom with deep soaking tub, and premium French linen.",
       km: "ទទួលអារម្មណ៍ស្រស់ស្រាយនាពេលព្រឹកព្រលឹមគយគន់ទូកនេសាទលើទន្លេមេគង្គ។ មានយ៉រឯកជន បន្ទប់ទឹកថ្មម៉ាបជាមួយអាងត្រាំទឹកធំទូលាយ និងកម្រាលពូកកប្បាសបារាំងប្រណីត។",
     },
-    imageUrl: "/images/rooms/vv_google_maps_photo.jpg",
+    imageUrl: "/images/rooms/vv_superior_bed.jpg?v=3",
     galleryImages: [
-      "/images/rooms/vv_google_maps_photo.jpg",
-      "/images/rooms/vv_real_room_1280_5.jpg",
-      "/images/rooms/vv_real_room_1280_2.jpg",
-      "/images/rooms/vv_superior_bed.jpg",
+      "/images/rooms/vv_superior_bed.jpg?v=3",
+      "/images/rooms/vv_deluxe_twin.jpg",
+      "/images/rooms/vv_room_interior_1.jpg",
+      "/images/rooms/vv_room_bathroom.jpg",
     ],
     highlight: {
       en: "Most Popular",
@@ -173,12 +173,12 @@ export const ROOMS: RoomItem[] = [
       en: "A refined residential haven boasting a private living salon, executive dining table, freestanding stone bathtub facing the river, and VIP privileges including afternoon tea and sunset cocktails at the Club Lounge.",
       km: "លំនៅឋានដ៏ប្រណីតដែលមានបន្ទប់ទទួលភ្ញៀវធំទូលាយ តុទទួលទានអាហារ អាងត្រាំទឹកបែរមុខទៅទន្លេ និងសិទ្ធិពិសេស VIP ទទួលទានតែពេលរសៀល និងស្រាក្រឡុកពេលថ្ងៃលិចនៅ Club Lounge។",
     },
-    imageUrl: "/images/rooms/vv_suite_bedroom.jpg",
+    imageUrl: "/images/rooms/vv_suite_bedroom.jpg?v=3",
     galleryImages: [
-      "/images/rooms/vv_suite_bedroom.jpg",
-      "/images/rooms/vv_executive_living.jpg",
-      "/images/rooms/vv_room_interior_2.jpg",
-      "/images/rooms/vv_room_bathroom.jpg",
+      "/images/rooms/vv_suite_bedroom.jpg?v=3",
+      "/images/rooms/vv_room_interior_1.jpg",
+      "/images/rooms/vv_deluxe_double.jpg",
+      "/images/rooms/vv_deluxe_twin.jpg",
     ],
     highlight: {
       en: "VIP Club Privileges",
@@ -225,12 +225,12 @@ export const ROOMS: RoomItem[] = [
       en: "Our flagship accommodation provides ultimate space and privacy for families. Features two expansive ensuite bedrooms, kids’ welcome gifts, fully equipped kitchenette, dining table for 6, and wraparound terrace over the Mekong.",
       km: "បន្ទប់លំដាប់កំពូលផ្តល់ភាពឯកជននិងផាសុកភាពសម្រាប់គ្រួសារធំ។ មានបន្ទប់គេងភ្ជាប់បន្ទប់ទឹកចំនួន ២ កាដូស្វាគមន៍សម្រាប់កុមារ ផ្ទះបាយខ្នាតតូច តុអាហារសម្រាប់ ៦ នាក់ និងរាបធំទូលាយគយគន់ទន្លេមេគង្គ។",
     },
-    imageUrl: "/images/rooms/vv_executive_living.jpg",
+    imageUrl: "/images/rooms/vv_family_space.jpg?v=3",
     galleryImages: [
-      "/images/rooms/vv_executive_living.jpg",
-      "/images/rooms/vv_suite_bedroom.jpg",
-      "/images/rooms/vv_real_room_1280_2.jpg",
-      "/images/rooms/vv_family_space.jpg",
+      "/images/rooms/vv_family_space.jpg?v=3",
+      "/images/rooms/vv_suite_bedroom.jpg?v=3",
+      "/images/rooms/vv_superior_bed.jpg?v=3",
+      "/images/rooms/vv_standard_king.jpg?v=3",
     ],
     highlight: {
       en: "Ultimate Family Luxury",
@@ -382,13 +382,13 @@ export const AccommodationSection: React.FC = () => {
                   onError={(e) => {
                     e.currentTarget.onerror = null;
                     const fallbackMap: Record<string, string> = {
-                      "standard-city": "/images/rooms/vv_real_room_1280_5.jpg",
-                      "superior-river": "/images/rooms/vv_google_maps_photo.jpg",
-                      "executive-suite": "/images/rooms/vv_suite_bedroom.jpg",
-                      "royal-family-suite": "/images/rooms/vv_executive_living.jpg",
-                      "royal-family": "/images/rooms/vv_executive_living.jpg",
+                      "standard-city": "/images/rooms/vv_standard_king.jpg?v=3",
+                      "superior-river": "/images/rooms/vv_superior_bed.jpg?v=3",
+                      "executive-suite": "/images/rooms/vv_suite_bedroom.jpg?v=3",
+                      "royal-family-suite": "/images/rooms/vv_family_space.jpg?v=3",
+                      "royal-family": "/images/rooms/vv_family_space.jpg?v=3",
                     };
-                    e.currentTarget.src = fallbackMap[room.id] || "/images/rooms/vv_real_room_1280_5.jpg";
+                    e.currentTarget.src = fallbackMap[room.id] || "/images/rooms/vv_standard_king.jpg?v=3";
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -482,12 +482,13 @@ export const AccommodationSection: React.FC = () => {
                 onError={(e) => {
                   e.currentTarget.onerror = null;
                   const fallbackMap: Record<string, string> = {
-                    "standard-city": "/images/rooms/vv_standard_king.jpg",
-                    "superior-river": "/images/rooms/vv_superior_bed.jpg",
-                    "executive-suite": "/images/rooms/vv_suite_bedroom.jpg",
-                    "royal-family-suite": "/images/rooms/vv_family_space.jpg",
+                    "standard-city": "/images/rooms/vv_standard_king.jpg?v=3",
+                    "superior-river": "/images/rooms/vv_superior_bed.jpg?v=3",
+                    "executive-suite": "/images/rooms/vv_suite_bedroom.jpg?v=3",
+                    "royal-family-suite": "/images/rooms/vv_family_space.jpg?v=3",
+                    "royal-family": "/images/rooms/vv_family_space.jpg?v=3",
                   };
-                  e.currentTarget.src = fallbackMap[activeModalRoom.id] || "/images/rooms/vv_deluxe_double.jpg";
+                  e.currentTarget.src = fallbackMap[activeModalRoom.id] || "/images/rooms/vv_standard_king.jpg?v=3";
                 }}
               />
               <button

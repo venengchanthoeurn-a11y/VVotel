@@ -168,7 +168,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       bedTypeEn: "1 King Bed or 2 Twin Beds",
       viewKm: "ទេសភាពទីក្រុងកំពង់ចាម",
       viewEn: "Kampong Cham City Skyline",
-      imageUrl: "/images/rooms/vv_real_room_1280_5.jpg",
+      imageUrl: "/images/rooms/vv_standard_king.jpg?v=3",
       availableCount: 15,
       enabled: true,
     },
@@ -187,7 +187,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       bedTypeEn: "1 King Bed with Luxury Pillowtop",
       viewKm: "ទេសភាពទន្លេមេគង្គ និងស្ពានគីហ្សូណា",
       viewEn: "Direct Mekong River & Kizuna Bridge View",
-      imageUrl: "/images/rooms/vv_google_maps_photo.jpg",
+      imageUrl: "/images/rooms/vv_superior_bed.jpg?v=3",
       availableCount: 12,
       enabled: true,
     },
@@ -206,7 +206,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       bedTypeEn: "1 Master King Bed + Daybed Sofa",
       viewKm: "ទេសភាពមាត់ទន្លេ ១៨០ ដឺក្រេ និងបន្ទប់ទទួលភ្ញៀវ",
       viewEn: "180° Panoramic Riverfront with Private Balcony",
-      imageUrl: "/images/rooms/vv_suite_bedroom.jpg",
+      imageUrl: "/images/rooms/vv_suite_bedroom.jpg?v=3",
       availableCount: 8,
       enabled: true,
     },
@@ -225,7 +225,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       bedTypeEn: "2 King Master Bedrooms + 2 Twin Beds",
       viewKm: "ទេសភាពទន្លេមេគង្គពេញលេញ ផ្ទះបាយ និងអាងត្រាំទឹក",
       viewEn: "Full Mekong View with Dining Kitchen & Jacuzzi",
-      imageUrl: "/images/rooms/vv_executive_living.jpg",
+      imageUrl: "/images/rooms/vv_family_space.jpg?v=3",
       availableCount: 4,
       enabled: true,
     },
@@ -448,17 +448,17 @@ export function sanitizeMediaSettings(settings: any): SiteSettings {
 
   // 2. Rooms: Enforce local room photography
   const roomFallbackMap: Record<string, string> = {
-    "standard-city": "/images/rooms/vv_real_room_1280_5.jpg",
-    "superior-river": "/images/rooms/vv_google_maps_photo.jpg",
-    "executive-suite": "/images/rooms/vv_suite_bedroom.jpg",
-    "royal-family-suite": "/images/rooms/vv_executive_living.jpg",
-    "royal-family": "/images/rooms/vv_executive_living.jpg",
+    "standard-city": "/images/rooms/vv_standard_king.jpg?v=3",
+    "superior-river": "/images/rooms/vv_superior_bed.jpg?v=3",
+    "executive-suite": "/images/rooms/vv_suite_bedroom.jpg?v=3",
+    "royal-family-suite": "/images/rooms/vv_family_space.jpg?v=3",
+    "royal-family": "/images/rooms/vv_family_space.jpg?v=3",
   };
 
   if (Array.isArray(result.rooms)) {
     result.rooms = result.rooms.map((r: any) => {
       const cleanRoom = { ...r };
-      const fallback = roomFallbackMap[cleanRoom.id] || "/images/rooms/vv_real_room_1280_5.jpg";
+      const fallback = roomFallbackMap[cleanRoom.id] || "/images/rooms/vv_standard_king.jpg?v=3";
       if (
         !cleanRoom.imageUrl ||
         cleanRoom.imageUrl.includes("unsplash.com") ||

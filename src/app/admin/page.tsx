@@ -307,6 +307,7 @@ export default function AdminPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [dateFilter, setDateFilter] = useState<string>("ALL");
   const [currentAdminTab, setCurrentAdminTab] = useState<"dashboard" | "settings">("dashboard");
+  const [tableViewMode, setTableViewMode] = useState<"table" | "cards">("table");
 
   // Tracking
   const knownBookingIdsRef = useRef<Set<string>>(new Set());
@@ -2011,57 +2012,334 @@ export default function AdminPage() {
 
         {/* Master Booking Table */}
         <div className="bg-white border border-amber-200/80 rounded-2xl shadow-sm overflow-hidden font-siemreap">
-          <div className="p-4 border-b border-amber-200/60 bg-[#FAF8F4] flex flex-wrap items-center justify-between gap-2">
+          <div className="p-3 sm:p-4 border-b border-amber-200/60 bg-[#FAF8F4] flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center space-x-2">
-              <Building className="w-4 h-4 text-amber-700" />
-              <h3 className="font-siemreap font-bold text-sm sm:text-base text-[#0c2340]">
+              <Building className="w-4 h-4 text-amber-700 shrink-0" />
+              <h3 className="font-siemreap font-bold text-xs sm:text-base text-[#0c2340]">
                 {t.tableHeading} ({filteredBookings.length})
               </h3>
             </div>
-            <span className="text-xs text-gray-500 font-siemreap">
-              Check-in: <strong className="text-amber-800">14:00</strong> | Check-out: <strong className="text-amber-800">12:00</strong>
-            </span>
+            <div className="flex items-center flex-wrap gap-2">
+              {/* Responsive View Switcher: Table vs Mobile Cards */}
+              <div className="flex items-center bg-amber-100/80 p-0.5 rounded-lg border border-amber-300 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setTableViewMode("table")}
+                  className={`px-2.5 py-1 rounded-md font-bold transition text-[11px] flex items-center space-x-1 ${
+                    tableViewMode === "table"
+                      ? "bg-[#0c2340] text-amber-300 shadow-2xs"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                  title="តារាងពេញលេញ"
+                >
+                  <span>📋</span>
+                  <span>{lang === "km" ? "តារាង" : "Table"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTableViewMode("cards")}
+                  className={`px-2.5 py-1 rounded-md font-bold transition text-[11px] flex items-center space-x-1 ${
+                    tableViewMode === "cards"
+                      ? "bg-[#0c2340] text-amber-300 shadow-2xs"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                  title="ទម្រង់កាតទូរស័ព្ទដៃ"
+                >
+                  <span>📱</span>
+                  <span>{lang === "km" ? "កាតទូរស័ព្ទ" : "Cards"}</span>
+                </button>
+              </div>
+              <span className="text-[11px] text-gray-500 font-siemreap hidden sm:inline">
+                In: <strong className="text-amber-800">14:00</strong> | Out: <strong className="text-amber-800">12:00</strong>
+              </span>
+            </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-gray-700">
-              <thead className="bg-[#F6F2E9] text-gray-700 font-bold uppercase tracking-wider text-[11px] border-b border-amber-200/70">
-                <tr>
-                  <th className="py-4 px-4 sm:px-5">{t.thRef}</th>
-                  <th className="py-4 px-4 sm:px-5">{t.thGuest}</th>
-                  <th className="py-4 px-4 sm:px-5">{t.thRoomVenue}</th>
-                  <th className="py-4 px-4 sm:px-5">{t.thSchedule}</th>
-                  <th className="py-4 px-4 sm:px-5">{t.thFinance}</th>
-                  <th className="py-4 px-4 sm:px-5">{t.thStatus}</th>
-                  <th className="py-4 px-4 sm:px-5 text-right">{t.thAction}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 font-siemreap">
-                {loading ? (
+          {tableViewMode === "table" ? (
+            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <div className="text-[10px] text-amber-800 bg-amber-50/80 px-3 py-1.5 border-b border-amber-200/50 md:hidden flex items-center justify-between">
+                <span>👉 អូសទៅឆ្វេង-ស្តាំ ដើម្បីមើលទិន្នន័យគ្រប់ជួរឈរ</span>
+                <button
+                  type="button"
+                  onClick={() => setTableViewMode("cards")}
+                  className="font-bold underline text-amber-900 hover:text-amber-950"
+                >
+                  ប្តូរទៅមើលជាកាត 📱
+                </button>
+              </div>
+              <table className="w-full text-left text-xs text-gray-700 min-w-[720px]">
+                <thead className="bg-[#F6F2E9] text-gray-700 font-bold uppercase tracking-wider text-[10px] sm:text-[11px] border-b border-amber-200/70">
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-gray-500">
-                      <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-600" />
-                      <span>Loading bookings...</span>
-                    </td>
+                    <th className="py-2.5 sm:py-3.5 px-3 sm:px-4">{t.thRef}</th>
+                    <th className="py-2.5 sm:py-3.5 px-3 sm:px-4">{t.thGuest}</th>
+                    <th className="py-2.5 sm:py-3.5 px-3 sm:px-4">{t.thRoomVenue}</th>
+                    <th className="py-2.5 sm:py-3.5 px-3 sm:px-4">{t.thSchedule}</th>
+                    <th className="py-2.5 sm:py-3.5 px-3 sm:px-4">{t.thFinance}</th>
+                    <th className="py-2.5 sm:py-3.5 px-3 sm:px-4">{t.thStatus}</th>
+                    <th className="py-2.5 sm:py-3.5 px-3 sm:px-4 text-right">{t.thAction}</th>
                   </tr>
-                ) : filteredBookings.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="text-center py-12 text-gray-400">
-                      {lang === "km" ? "មិនមានទិន្នន័យត្រូវគ្នានឹងការស្វែងរកឡើយ" : "No matching bookings found"}
-                    </td>
-                  </tr>
-                ) : (
-                  filteredBookings.map((b) => {
+                </thead>
+                <tbody className="divide-y divide-gray-100 font-siemreap text-[11px] sm:text-xs">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-12 text-gray-500">
+                        <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-600" />
+                        <span>Loading bookings...</span>
+                      </td>
+                    </tr>
+                  ) : filteredBookings.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-12 text-gray-400">
+                        {lang === "km" ? "មិនមានទិន្នន័យត្រូវគ្នានឹងការស្វែងរកឡើយ" : "No matching bookings found"}
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredBookings.map((b) => {
+                      const isDin = b.bookingCategory === "DINING" || b.id.startsWith("DIN");
+                      return (
+                        <tr key={b.id} className="hover:bg-amber-50/40 transition">
+                          {/* Ref, Category Badge & Date */}
+                          <td className="py-2.5 sm:py-3.5 px-3 sm:px-4">
+                            <div className="flex items-center space-x-1.5 mb-1">
+                              {isDin ? (
+                                <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full flex items-center space-x-1">
+                                  <Utensils className="w-2.5 h-2.5" />
+                                  <span>{lang === "km" ? "កក់តុ" : "Dining"}</span>
+                                </span>
+                              ) : (
+                                <span className="bg-sky-100 text-sky-900 border border-sky-300 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full flex items-center space-x-1">
+                                  <BedDouble className="w-2.5 h-2.5" />
+                                  <span>{lang === "km" ? "កក់បន្ទប់" : "Room"}</span>
+                                </span>
+                              )}
+                            </div>
+                            <span className="font-mono font-bold text-amber-900 block text-xs">
+                              {b.id}
+                            </span>
+                            <span className="text-[10px] text-gray-500 block mt-0.5 font-mono">
+                              {new Date(b.createdAt).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </td>
+
+                          {/* Guest Info */}
+                          <td className="py-2.5 sm:py-3.5 px-3 sm:px-4">
+                            <span className="font-bold text-[#0c2340] text-xs sm:text-sm block">
+                              {b.guestName}
+                            </span>
+                            <div className="flex items-center space-x-2 text-[10px] sm:text-[11px] text-gray-500 mt-0.5">
+                              <span className="flex items-center space-x-1 font-mono">
+                                <Phone className="w-3 h-3 text-gray-400" />
+                                <span>{b.phone}</span>
+                              </span>
+                              <span>•</span>
+                              <span>{b.country || "Cambodia"}</span>
+                            </div>
+                          </td>
+
+                          {/* Room or Dining Venue Info */}
+                          <td className="py-2.5 sm:py-3.5 px-3 sm:px-4">
+                            <span className="font-semibold text-gray-900 block text-xs truncate max-w-[200px]" title={lang === "km" ? (b.roomNameKm || b.roomNameEn) : (b.roomNameEn || b.roomNameKm)}>
+                              {lang === "km" ? (b.roomNameKm || b.roomNameEn || b.roomType) : (b.roomNameEn || b.roomNameKm || b.roomType)}
+                            </span>
+                            <div className="flex items-center space-x-2 mt-1 text-[10px]">
+                              {b.roomNumber ? (
+                                <span className="bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded font-mono font-bold">
+                                  {isDin ? b.roomNumber : (lang === "km" ? `បន្ទប់: ${b.roomNumber}` : `Room: ${b.roomNumber}`)}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400 italic">{lang === "km" ? "មិនទាន់កំណត់" : "Unassigned"}</span>
+                              )}
+                              <span className="text-gray-500">
+                                {isDin ? `${b.adults} Pax` : `(${b.adults}A, ${b.children}C)`}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Schedule & Dates */}
+                          <td className="py-2.5 sm:py-3.5 px-3 sm:px-4">
+                            {isDin ? (
+                              <div>
+                                <div className="font-bold text-gray-900 font-mono">{b.checkIn}</div>
+                                <span className="text-[10px] text-amber-800 font-bold block mt-0.5">
+                                  {lang === "km" ? "ម៉ោងកក់:" : "Time:"} {b.checkInTime || b.reservationTime || "19:00"}
+                                </span>
+                              </div>
+                            ) : (
+                              <div>
+                                <div className="font-semibold text-gray-900 font-mono">
+                                  {b.checkIn} → {b.checkOut}
+                                </div>
+                                <span className="text-[10px] text-gray-500 block mt-0.5">
+                                  {b.nights} {lang === "km" ? "យប់" : "Nights"} • In 14:00 / Out 12:00
+                                </span>
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Financials & Payment */}
+                          <td className="py-2.5 sm:py-3.5 px-3 sm:px-4">
+                            {isDin ? (
+                              <div>
+                                <span className="font-semibold text-gray-900 block text-xs">
+                                  {lang === "km" ? "កក់តុជាមុន" : "Table Reservation"}
+                                </span>
+                                <span className="text-[10px] text-emerald-700 font-semibold block mt-0.5">
+                                  {lang === "km" ? "ធានាកក់រួចរាល់" : "Guaranteed"}
+                                </span>
+                              </div>
+                            ) : (
+                              <div>
+                                <span className="font-bold text-emerald-700 block font-mono text-xs sm:text-sm">
+                                  ${(b.totalAmountUSD || 0).toFixed(2)}
+                                </span>
+                                <div className="flex items-center space-x-1.5 mt-0.5">
+                                  <span
+                                    className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                                      b.paymentMethod === "KHQR_BAKONG"
+                                        ? "bg-red-50 text-red-700 border border-red-200"
+                                        : b.paymentMethod.includes("CARD")
+                                        ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                        : "bg-amber-50 text-amber-800 border border-amber-200"
+                                    }`}
+                                  >
+                                    {b.paymentMethod === "KHQR_BAKONG"
+                                      ? "Bakong KHQR"
+                                      : b.paymentMethod.includes("CARD")
+                                      ? "Card 3D Sec"
+                                      : "Pay at Hotel"}
+                                  </span>
+                                  <span className="text-[10px] text-gray-500">
+                                    {b.paymentStatus === "PAID" ? "✅ Paid" : "⏳ Guaranteed"}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Status */}
+                          <td className="py-2.5 sm:py-3.5 px-3 sm:px-4">
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border inline-flex items-center space-x-1 ${
+                                b.stayStatus === "CHECKED_IN" || b.stayStatus === "SEATED"
+                                  ? "bg-amber-100 text-amber-900 border-amber-300"
+                                  : b.stayStatus === "CHECKED_OUT" || b.stayStatus === "COMPLETED"
+                                  ? "bg-purple-100 text-purple-900 border-purple-300"
+                                  : b.stayStatus === "CANCELLED"
+                                  ? "bg-red-100 text-red-900 border-red-300"
+                                  : "bg-emerald-100 text-emerald-900 border-emerald-300"
+                              }`}
+                            >
+                              <span>
+                                {b.stayStatus === "CHECKED_IN"
+                                  ? t.statusInHouseText
+                                  : b.stayStatus === "SEATED"
+                                  ? t.statusSeatedText
+                                  : b.stayStatus === "CHECKED_OUT"
+                                  ? t.statusCheckedOutText
+                                  : b.stayStatus === "COMPLETED"
+                                  ? t.statusCompletedText
+                                  : b.stayStatus === "CANCELLED"
+                                  ? t.statusCancelledText
+                                  : t.statusConfirmedText}
+                              </span>
+                            </span>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-2.5 sm:py-3.5 px-3 sm:px-4 text-right">
+                            <div className="flex items-center justify-end space-x-1 font-siemreap">
+                              {/* Check-In or Seat */}
+                              {b.stayStatus !== "CHECKED_IN" &&
+                                b.stayStatus !== "SEATED" &&
+                                b.stayStatus !== "CHECKED_OUT" &&
+                                b.stayStatus !== "COMPLETED" && (
+                                  <button
+                                    onClick={() => {
+                                      setCheckInModalBooking(b);
+                                      setAssignedRoomNumber(b.roomNumber || "");
+                                    }}
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-2 py-1 rounded-lg transition shadow-xs"
+                                  >
+                                    {isDin ? t.btnSeat : t.btnCheckIn}
+                                  </button>
+                                )}
+
+                              {/* Check-Out or Complete */}
+                              {(b.stayStatus === "CHECKED_IN" || b.stayStatus === "SEATED") && (
+                                <button
+                                  onClick={() => handleCheckOut(b.id, isDin)}
+                                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] px-2 py-1 rounded-lg transition shadow-xs"
+                                >
+                                  {isDin ? t.btnComplete : t.btnCheckOut}
+                                </button>
+                              )}
+
+                              {/* Print POS 80mm */}
+                              <button
+                                onClick={() => {
+                                  setReceiptBooking(b);
+                                  setReceiptMode("pos-80mm");
+                                  setReceiptOpen(true);
+                                }}
+                                className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 p-1.5 rounded-lg transition"
+                                title="POS 80mm Receipt"
+                              >
+                                <Printer className="w-3 h-3" />
+                              </button>
+
+                              {/* Print A4 Tax Invoice */}
+                              <button
+                                onClick={() => {
+                                  setReceiptBooking(b);
+                                  setReceiptMode("a4-invoice");
+                                  setReceiptOpen(true);
+                                }}
+                                className="bg-white hover:bg-amber-50 text-[#0c2340] border border-gray-300 px-1.5 py-1 rounded-lg text-[10px] font-bold transition shadow-xs"
+                                title="A4 Tax Invoice"
+                              >
+                                A4
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            /* ======================= RESPONSIVE MOBILE CARDS VIEW ======================= */
+            <div className="p-3 sm:p-4 bg-slate-50/50 font-siemreap">
+              {loading ? (
+                <div className="text-center py-12 text-gray-500">
+                  <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-600" />
+                  <span>Loading bookings...</span>
+                </div>
+              ) : filteredBookings.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">
+                  {lang === "km" ? "មិនមានទិន្នន័យត្រូវគ្នានឹងការស្វែងរកឡើយ" : "No matching bookings found"}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {filteredBookings.map((b) => {
                     const isDin = b.bookingCategory === "DINING" || b.id.startsWith("DIN");
                     return (
-                      <tr key={b.id} className="hover:bg-amber-50/40 transition">
-                        {/* Ref, Category Badge & Date */}
-                        <td className="py-4 px-4 sm:px-5">
-                          <div className="flex items-center space-x-1.5 mb-1">
+                      <div
+                        key={b.id}
+                        className="bg-white border border-amber-200/90 rounded-2xl p-3.5 shadow-xs hover:shadow-md transition space-y-2.5"
+                      >
+                        {/* Header: Ref, Category Badge & Status */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center space-x-1.5">
                             {isDin ? (
                               <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full flex items-center space-x-1">
                                 <Utensils className="w-2.5 h-2.5" />
-                                <span>{lang === "km" ? "កក់តុអាហារ" : "Dining"}</span>
+                                <span>{lang === "km" ? "កក់តុ" : "Dining"}</span>
                               </span>
                             ) : (
                               <span className="bg-sky-100 text-sky-900 border border-sky-300 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full flex items-center space-x-1">
@@ -2069,118 +2347,10 @@ export default function AdminPage() {
                                 <span>{lang === "km" ? "កក់បន្ទប់" : "Room"}</span>
                               </span>
                             )}
+                            <span className="font-mono font-bold text-amber-900 text-xs">{b.id}</span>
                           </div>
-                          <span className="font-mono font-bold text-amber-900 block text-xs">
-                            {b.id}
-                          </span>
-                          <span className="text-[10px] text-gray-500 block mt-0.5 font-mono">
-                            {new Date(b.createdAt).toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </span>
-                        </td>
-
-                        {/* Guest Info */}
-                        <td className="py-4 px-4 sm:px-5">
-                          <span className="font-bold text-[#0c2340] text-sm block">
-                            {b.guestName}
-                          </span>
-                          <div className="flex items-center space-x-2 text-[11px] text-gray-500 mt-0.5">
-                            <span className="flex items-center space-x-1 font-mono">
-                              <Phone className="w-3 h-3 text-gray-400" />
-                              <span>{b.phone}</span>
-                            </span>
-                            <span>•</span>
-                            <span>{b.country || "Cambodia"}</span>
-                          </div>
-                        </td>
-
-                        {/* Room or Dining Venue Info */}
-                        <td className="py-4 px-4 sm:px-5">
-                          <span className="font-semibold text-gray-900 block text-xs truncate max-w-[220px]" title={lang === "km" ? (b.roomNameKm || b.roomNameEn) : (b.roomNameEn || b.roomNameKm)}>
-                            {lang === "km" ? (b.roomNameKm || b.roomNameEn || b.roomType) : (b.roomNameEn || b.roomNameKm || b.roomType)}
-                          </span>
-                          <div className="flex items-center space-x-2 mt-1 text-[10px]">
-                            {b.roomNumber ? (
-                              <span className="bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded font-mono font-bold">
-                                {isDin ? b.roomNumber : (lang === "km" ? `បន្ទប់: ${b.roomNumber}` : `Room: ${b.roomNumber}`)}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 italic">{lang === "km" ? "មិនទាន់កំណត់" : "Unassigned"}</span>
-                            )}
-                            <span className="text-gray-500">
-                              {isDin ? `${b.adults} Pax` : `(${b.adults}A, ${b.children}C)`}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* Schedule & Dates */}
-                        <td className="py-4 px-4 sm:px-5">
-                          {isDin ? (
-                            <div>
-                              <div className="font-bold text-gray-900 font-mono">{b.checkIn}</div>
-                              <span className="text-[10px] text-amber-800 font-bold block mt-0.5">
-                                {lang === "km" ? "ម៉ោងកក់:" : "Time:"} {b.checkInTime || b.reservationTime || "19:00"}
-                              </span>
-                            </div>
-                          ) : (
-                            <div>
-                              <div className="font-semibold text-gray-900 font-mono">
-                                {b.checkIn} → {b.checkOut}
-                              </div>
-                              <span className="text-[10px] text-gray-500 block mt-0.5">
-                                {b.nights} {lang === "km" ? "យប់" : "Nights"} • In 14:00 / Out 12:00
-                              </span>
-                            </div>
-                          )}
-                        </td>
-
-                        {/* Financials & Payment */}
-                        <td className="py-4 px-4 sm:px-5">
-                          {isDin ? (
-                            <div>
-                              <span className="font-semibold text-gray-900 block text-xs">
-                                {lang === "km" ? "កក់តុជាមុន" : "Table Reservation"}
-                              </span>
-                              <span className="text-[10px] text-emerald-700 font-semibold block mt-0.5">
-                                {lang === "km" ? "ធានាកក់រួចរាល់" : "Guaranteed"}
-                              </span>
-                            </div>
-                          ) : (
-                            <div>
-                              <span className="font-bold text-emerald-700 block font-mono text-sm">
-                                ${(b.totalAmountUSD || 0).toFixed(2)}
-                              </span>
-                              <div className="flex items-center space-x-1.5 mt-0.5">
-                                <span
-                                  className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                                    b.paymentMethod === "KHQR_BAKONG"
-                                      ? "bg-red-50 text-red-700 border border-red-200"
-                                      : b.paymentMethod.includes("CARD")
-                                      ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                      : "bg-amber-50 text-amber-800 border border-amber-200"
-                                  }`}
-                                >
-                                  {b.paymentMethod === "KHQR_BAKONG"
-                                    ? "Bakong KHQR"
-                                    : b.paymentMethod.includes("CARD")
-                                    ? "Card 3D Sec"
-                                    : "Pay at Hotel"}
-                                </span>
-                                <span className="text-[10px] text-gray-500">
-                                  {b.paymentStatus === "PAID" ? "✅ Paid" : "⏳ Guaranteed"}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </td>
-
-                        {/* Status */}
-                        <td className="py-4 px-4 sm:px-5">
                           <span
-                            className={`text-[10px] font-bold px-2.5 py-1 rounded-full border inline-flex items-center space-x-1 ${
+                            className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                               b.stayStatus === "CHECKED_IN" || b.stayStatus === "SEATED"
                                 ? "bg-amber-100 text-amber-900 border-amber-300"
                                 : b.stayStatus === "CHECKED_OUT" || b.stayStatus === "COMPLETED"
@@ -2190,26 +2360,77 @@ export default function AdminPage() {
                                 : "bg-emerald-100 text-emerald-900 border-emerald-300"
                             }`}
                           >
-                            <span>
-                              {b.stayStatus === "CHECKED_IN"
-                                ? t.statusInHouseText
-                                : b.stayStatus === "SEATED"
-                                ? t.statusSeatedText
-                                : b.stayStatus === "CHECKED_OUT"
-                                ? t.statusCheckedOutText
-                                : b.stayStatus === "COMPLETED"
-                                ? t.statusCompletedText
-                                : b.stayStatus === "CANCELLED"
-                                ? t.statusCancelledText
-                                : t.statusConfirmedText}
-                            </span>
+                            {b.stayStatus === "CHECKED_IN"
+                              ? t.statusInHouseText
+                              : b.stayStatus === "SEATED"
+                              ? t.statusSeatedText
+                              : b.stayStatus === "CHECKED_OUT"
+                              ? t.statusCheckedOutText
+                              : b.stayStatus === "COMPLETED"
+                              ? t.statusCompletedText
+                              : b.stayStatus === "CANCELLED"
+                              ? t.statusCancelledText
+                              : t.statusConfirmedText}
                           </span>
-                        </td>
+                        </div>
 
-                        {/* Actions */}
-                        <td className="py-4 px-4 sm:px-5 text-right">
-                          <div className="flex items-center justify-end space-x-1.5 font-siemreap">
-                            {/* Check-In or Seat */}
+                        {/* Guest & Phone */}
+                        <div>
+                          <div className="font-bold text-[#0c2340] text-sm">{b.guestName}</div>
+                          <div className="flex items-center space-x-2 text-xs text-gray-500 mt-0.5">
+                            <span className="font-mono">{b.phone}</span>
+                            <span>•</span>
+                            <span>{b.country || "Cambodia"}</span>
+                          </div>
+                        </div>
+
+                        {/* Room/Venue & Schedule */}
+                        <div className="p-2.5 bg-[#FAF8F4] rounded-xl border border-amber-200/50 text-xs space-y-1">
+                          <div className="font-semibold text-gray-900 truncate">
+                            {lang === "km" ? (b.roomNameKm || b.roomNameEn || b.roomType) : (b.roomNameEn || b.roomNameKm || b.roomType)}
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-gray-600">
+                            <span>
+                              {b.roomNumber ? (
+                                <strong className="text-amber-900">{isDin ? b.roomNumber : `បន្ទប់ ${b.roomNumber}`}</strong>
+                              ) : (
+                                <em className="text-gray-400">មិនទាន់កំណត់</em>
+                              )}
+                            </span>
+                            <span>{isDin ? `${b.adults} Pax` : `${b.adults}A, ${b.children}C`}</span>
+                          </div>
+                          <div className="text-[10px] font-mono text-gray-600 pt-0.5 border-t border-amber-200/40">
+                            {isDin ? (
+                              <span>កាលបរិច្ឆេទ: {b.checkIn} ({b.checkInTime || "19:00"})</span>
+                            ) : (
+                              <span>{b.checkIn} → {b.checkOut} ({b.nights} យប់)</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Financials */}
+                        <div className="flex items-center justify-between text-xs pt-0.5">
+                          <div>
+                            <span className="font-bold text-emerald-700 font-mono text-xs sm:text-sm block">
+                              ${(b.totalAmountUSD || 0).toFixed(2)}
+                            </span>
+                            <span className="text-[10px] text-gray-500 font-mono">
+                              {Math.round((b.totalAmountUSD || 0) * 4100).toLocaleString()} ៛
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[9px] font-bold text-gray-600 block">
+                              {b.paymentMethod === "KHQR_BAKONG" ? "Bakong KHQR" : b.paymentMethod.includes("CARD") ? "Card 3DS" : "Pay at Hotel"}
+                            </span>
+                            <span className="text-[10px] text-emerald-700 font-semibold">
+                              {b.paymentStatus === "PAID" ? "✅ Paid" : "⏳ Guaranteed"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Quick Action Buttons */}
+                        <div className="pt-2 border-t border-gray-100 flex items-center justify-between gap-1.5 flex-wrap">
+                          <div className="flex items-center space-x-1">
                             {b.stayStatus !== "CHECKED_IN" &&
                               b.stayStatus !== "SEATED" &&
                               b.stayStatus !== "CHECKED_OUT" &&
@@ -2219,23 +2440,21 @@ export default function AdminPage() {
                                     setCheckInModalBooking(b);
                                     setAssignedRoomNumber(b.roomNumber || "");
                                   }}
-                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition shadow-sm"
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition shadow-xs"
                                 >
                                   {isDin ? t.btnSeat : t.btnCheckIn}
                                 </button>
                               )}
-
-                            {/* Check-Out or Complete */}
                             {(b.stayStatus === "CHECKED_IN" || b.stayStatus === "SEATED") && (
                               <button
                                 onClick={() => handleCheckOut(b.id, isDin)}
-                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition shadow-sm"
+                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition shadow-xs"
                               >
                                 {isDin ? t.btnComplete : t.btnCheckOut}
                               </button>
                             )}
-
-                            {/* Print POS 80mm */}
+                          </div>
+                          <div className="flex items-center space-x-1">
                             <button
                               onClick={() => {
                                 setReceiptBooking(b);
@@ -2243,32 +2462,30 @@ export default function AdminPage() {
                                 setReceiptOpen(true);
                               }}
                               className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 p-1.5 rounded-lg transition"
-                              title="POS 80mm Receipt"
+                              title="POS Receipt"
                             >
                               <Printer className="w-3.5 h-3.5" />
                             </button>
-
-                            {/* Print A4 Tax Invoice */}
                             <button
                               onClick={() => {
                                 setReceiptBooking(b);
                                 setReceiptMode("a4-invoice");
                                 setReceiptOpen(true);
                               }}
-                              className="bg-white hover:bg-amber-50 text-[#0c2340] border border-gray-300 px-2 py-1.5 rounded-lg text-[10px] font-bold transition shadow-sm"
+                              className="bg-white hover:bg-amber-50 text-[#0c2340] border border-gray-300 px-2 py-1.5 rounded-lg text-[10px] font-bold transition shadow-xs"
                               title="A4 Tax Invoice"
                             >
                               A4
                             </button>
                           </div>
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
                     );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </>
     )}
@@ -2776,6 +2993,38 @@ export default function AdminPage() {
                       <Printer className="w-3.5 h-3.5" />
                     )}
                     <span>{t.viewPrintPdfBtn}</span>
+                  </button>
+                </div>
+
+                {/* 4. CSV Spreadsheet */}
+                <div className="p-4 bg-white border-2 border-slate-200 hover:border-slate-400 rounded-2xl transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold shrink-0 mt-0.5">
+                      <FileSpreadsheet className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-siemreap font-bold text-sm text-[#0c2340]">
+                        {lang === "km" ? "របាយការណ៍ទិន្នន័យ CSV (.csv)" : "CSV Data Export (.csv)"} • {PERIOD_TITLES[selectedReportPeriod]?.km || ""}
+                      </h4>
+                      <p className="text-xs text-gray-600 mt-0.5">
+                        {lang === "km"
+                          ? "ឯកសារ CSV ស្តង់ដារ UTF-8 BOM សម្រាប់បើកផ្ទាល់ក្នុង Excel គាំទ្រអក្សរខ្មែរ ១០០%"
+                          : "Standard UTF-8 BOM CSV for universal spreadsheet import with Khmer support"}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadReport("csv")}
+                    disabled={downloadingReport !== null}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-slate-700 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow transition shrink-0 cursor-pointer"
+                  >
+                    {downloadingReport === "csv" ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5" />
+                    )}
+                    <span>{downloadingReport === "csv" ? "កំពុងទាញយក..." : "CSV (.csv)"}</span>
                   </button>
                 </div>
               </div>

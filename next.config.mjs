@@ -5,7 +5,8 @@ const ContentSecurityPolicy = `
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net;
   img-src 'self' data: blob: https:;
   font-src 'self' data: https://fonts.gstatic.com;
-  connect-src 'self' https://api-bakong.nbc.gov.kh https://api.telegram.org https://maps.googleapis.com https://nominatim.openstreetmap.org https://checkout.payway.com.kh https://checkout-sandbox.payway.com.kh;
+  connect-src 'self' https://api-bakong.nbc.gov.kh https://api.telegram.org https://maps.googleapis.com https://nominatim.openstreetmap.org https://checkout.payway.com.kh https://checkout-sandbox.payway.com.kh https://*.basemaps.cartocdn.com https://*.openstreetmap.org https://server.arcgisonline.com https://services.arcgisonline.com;
+  frame-src 'self' https://maps.google.com https://www.google.com;
   frame-ancestors 'none';
   object-src 'none';
   base-uri 'self';

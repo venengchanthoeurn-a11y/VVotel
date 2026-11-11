@@ -54,13 +54,12 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         zoomControl: true,
       });
 
-      // Add high-resolution crisp Roadmap tile layer (CartoDB Voyager with full Kampong Cham details)
+      // Add high-resolution crisp Roadmap tile layer (OpenStreetMap with high reliability)
       const roadTiles = L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
-          attribution: '&copy; <a href="https://maps.google.com">Google Maps Data</a> &copy; OpenStreetMap | VVotel Kampong Cham',
-          maxZoom: 20,
-          subdomains: ["a", "b", "c", "d"],
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Google Maps Data',
+          maxZoom: 19,
         }
       );
 
@@ -153,14 +152,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       const isSat = type === "google-satellite";
       const tileUrl = isSat
         ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-        : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+        : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
       const newLayer = L.tileLayer(tileUrl, {
         attribution: isSat
           ? '&copy; Esri &mdash; Satellite Imagery | VVotel Kampong Cham'
-          : '&copy; <a href="https://maps.google.com">Google Maps Data</a> &copy; OpenStreetMap | VVotel Kampong Cham',
-        maxZoom: 20,
-        subdomains: isSat ? [] : ["a", "b", "c", "d"],
+          : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Google Maps Data',
+        maxZoom: 19,
       });
       newLayer.addTo(map);
       currentTileLayerRef.current = newLayer;
@@ -180,14 +178,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     const isSat = type === "google-satellite";
     const tileUrl = isSat
       ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-      : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+      : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
     const newLayer = L.tileLayer(tileUrl, {
       attribution: isSat
         ? '&copy; Esri &mdash; Satellite Imagery | VVotel Kampong Cham'
-        : '&copy; <a href="https://maps.google.com">Google Maps Data</a> &copy; OpenStreetMap | VVotel Kampong Cham',
-      maxZoom: 20,
-      subdomains: isSat ? [] : ["a", "b", "c", "d"],
+        : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Google Maps Data',
+      maxZoom: 19,
     });
 
     newLayer.addTo(map);

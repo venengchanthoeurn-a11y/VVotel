@@ -1204,6 +1204,30 @@ export function generateOfficialHtmlReport(
     .btn-excel:hover {
       background-color: #065f46;
     }
+    .btn-back {
+      background-color: #ffffff;
+      color: #0c2340;
+      border: 1.5px solid #d1d5db;
+    }
+    .btn-back:hover {
+      background-color: #f3f4f6;
+      border-color: #9ca3af;
+    }
+    .btn-csv {
+      background-color: #4b5563;
+      color: #ffffff;
+    }
+    .btn-csv:hover {
+      background-color: #374151;
+    }
+    .btn-orientation {
+      background-color: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+    .btn-orientation:hover {
+      background-color: #fde68a;
+    }
     .page-sheet {
       max-width: 900px;
       margin: 0 auto;
@@ -1213,6 +1237,10 @@ export function generateOfficialHtmlReport(
       box-shadow: 0 10px 30px rgba(0,0,0,0.08);
       border: 1px solid #e5e7eb;
       position: relative;
+      transition: max-width 0.3s;
+    }
+    body.page-landscape .page-sheet {
+      max-width: 1120px;
     }
     .report-logo {
       width: 48px !important;
@@ -1467,10 +1495,12 @@ export function generateOfficialHtmlReport(
       margin-top: 4px;
     }
     @media print {
-      body {
-        margin: 0;
-        padding: 0;
-        background: #ffffff;
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       .no-print {
         display: none !important;
@@ -1485,31 +1515,136 @@ export function generateOfficialHtmlReport(
       }
       @page {
         size: A4 portrait;
-        margin: 15mm 15mm 15mm 15mm;
+        margin: 10mm 10mm 12mm 10mm;
+      }
+      body.page-landscape {
+        @page {
+          size: A4 landscape;
+          margin: 10mm 10mm 12mm 10mm;
+        }
+      }
+      .table-container {
+        overflow: visible !important;
+        border: none !important;
+        border-radius: 0 !important;
+        margin-bottom: 12px !important;
+      }
+      table.report-table {
+        width: 100% !important;
+        table-layout: fixed !important;
+        font-size: 9.5px !important;
+        border-collapse: collapse !important;
+        border: 1px solid #1f2937 !important;
+      }
+      table.report-table th, table.report-table td {
+        padding: 4px 4px !important;
+        border: 1px solid #4b5563 !important;
+        word-break: break-word !important;
+        white-space: normal !important;
+      }
+      table.report-table th {
+        background-color: #0c2340 !important;
+        color: #ffffff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      thead {
+        display: table-header-group !important;
+      }
+      tfoot {
+        display: table-footer-group !important;
+      }
+      tr {
+        page-break-inside: avoid !important;
+      }
+      .kpi-grid {
+        gap: 6px !important;
+        margin-bottom: 14px !important;
+      }
+      .kpi-card {
+        padding: 6px 4px !important;
+        border: 1px solid #9ca3af !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .kpi-card .kpi-label { font-size: 9.5px !important; }
+      .kpi-card .kpi-val { font-size: 14px !important; }
+      .kpi-card .kpi-sub { font-size: 8.5px !important; }
+      .directives-box {
+        padding: 8px 12px !important;
+        margin-bottom: 12px !important;
+        font-size: 10.5px !important;
+        border: 1px solid #9ca3af !important;
+      }
+      .remarks-block {
+        margin-bottom: 14px !important;
+        font-size: 10.5px !important;
+      }
+      .signatures-grid {
+        page-break-inside: avoid !important;
+        padding-top: 10px !important;
+      }
+      .sig-space {
+        height: 60px !important;
+      }
+      .cc-block {
+        margin-top: 10px !important;
+        page-break-inside: avoid !important;
       }
     }
   </style>
+  <script>
+    function toggleOrientation() {
+      var body = document.body;
+      var btn = document.getElementById('btnOrientation');
+      if (body.classList.contains('page-landscape')) {
+        body.classList.remove('page-landscape');
+        btn.innerHTML = '<span>🔄 ក្រដាស: បញ្ឈរ (Portrait)</span>';
+      } else {
+        body.classList.add('page-landscape');
+        btn.innerHTML = '<span>🔄 ក្រដាស: បដេក (Landscape)</span>';
+      }
+    }
+    function handleBackNavigation() {
+      if (window.opener && !window.opener.closed) {
+        window.close();
+      } else if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = '/admin';
+      }
+    }
+  </script>
 </head>
 <body>
 
   <!-- Printable Action Bar (Hidden in Print) -->
   <div class="action-bar no-print">
     <div class="action-bar-left">
-      <img src="/images/vvotel-logo.png?v=2" alt="Logo" class="report-logo" style="width: 44px !important; height: 44px !important; max-width: 44px !important; max-height: 44px !important; object-fit: contain !important;" onerror="this.onerror=null;this.src='/icons/icon-192.png?v=2';" />
+      <button onclick="handleBackNavigation()" class="btn btn-back" title="ត្រឡប់ទៅផ្ទាំងគ្រប់គ្រងរដ្ឋបាល">
+        <span>⬅️ ត្រឡប់ក្រោយ (Back to PMS)</span>
+      </button>
+      <img src="/images/vvotel-logo.png?v=2" alt="Logo" class="report-logo" style="width: 40px !important; height: 40px !important; max-width: 40px !important; max-height: 40px !important; object-fit: contain !important;" onerror="this.onerror=null;this.src='/icons/icon-192.png?v=2';" />
       <div>
-        <h3 class="font-mool" style="font-size: 13px; color: #0c2340;">របាយការណ៍រដ្ឋបាលផ្លូវការ (Administrative Report)</h3>
+        <h3 class="font-siemreap" style="font-size: 13px; font-weight: bold; color: #0c2340;">របាយការណ៍រដ្ឋបាលផ្លូវការ (Administrative Report)</h3>
         <p style="font-size: 11.5px; color: #6b7280;">សណ្ឋាគារ វឌ្ឍនៈ (VVotel) កំពង់ចាម • ប្រព័ន្ធកណ្តាល PMS</p>
       </div>
     </div>
     <div class="action-bar-right">
-      <button onclick="window.print()" class="btn btn-print">
+      <button type="button" onclick="toggleOrientation()" id="btnOrientation" class="btn btn-orientation" title="ប្តូរទម្រង់ក្រដាសរវាងបញ្ឈរ និងបដេក">
+        <span>🔄 ក្រដាស: បញ្ឈរ (Portrait)</span>
+      </button>
+      <button type="button" onclick="window.print()" class="btn btn-print">
         <span>🖨️ បោះពុម្ព / រក្សាទុកជា PDF</span>
       </button>
       <a href="/api/reports?format=docx&period=${period}" class="btn btn-docx">
-        <span>📄 ទាញយក Word (.docx)</span>
+        <span>📄 Word (.docx)</span>
       </a>
       <a href="/api/reports?format=excel&period=${period}" class="btn btn-excel">
-        <span>📊 ទាញយក Excel (.xlsx)</span>
+        <span>📊 Excel (.xlsx)</span>
+      </a>
+      <a href="/api/reports?format=csv&period=${period}" class="btn btn-csv">
+        <span>📑 CSV (.csv)</span>
       </a>
     </div>
   </div>
@@ -1595,15 +1730,15 @@ export function generateOfficialHtmlReport(
         <table class="report-table">
           <thead>
             <tr>
-              <th style="text-align: center; width: 40px;">ល.រ</th>
-              <th style="width: 100px;">កូដកក់</th>
-              <th>ឈ្មោះភ្ញៀវ</th>
-              <th>សេវាកម្ម / បន្ទប់</th>
-              <th style="text-align: center; width: 90px;">កាលបរិច្ឆេទ</th>
-              <th style="text-align: center; width: 85px;">ការទូទាត់</th>
-              <th style="text-align: center; width: 85px;">ស្ថានភាព</th>
-              <th style="text-align: right; width: 90px;">ទឹកប្រាក់ ($)</th>
-              <th style="text-align: right; width: 110px;">ទឹកប្រាក់ (៛)</th>
+              <th style="text-align: center; width: 4.5%;">ល.រ</th>
+              <th style="width: 13.5%;">កូដកក់</th>
+              <th style="width: 17%;">ឈ្មោះភ្ញៀវ</th>
+              <th style="width: 19%;">សេវាកម្ម / បន្ទប់</th>
+              <th style="text-align: center; width: 11%;">កាលបរិច្ឆេទ</th>
+              <th style="text-align: center; width: 9%;">ការទូទាត់</th>
+              <th style="text-align: center; width: 9%;">ស្ថានភាព</th>
+              <th style="text-align: right; width: 8%;">($)</th>
+              <th style="text-align: right; width: 9%;">(៛)</th>
             </tr>
           </thead>
           <tbody>
